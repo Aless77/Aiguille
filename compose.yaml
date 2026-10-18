@@ -1,0 +1,93 @@
+# Environnement de développement local : `docker compose up`
+# Rien d'autre que Docker et Git n'est nécessaire sur le poste.
+name: aiguille
+
+x-node: &node
+  build: .
+  working_dir: /app
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    DATABASE_URL: postgres://aiguille:aiguille@db:5432/aiguille
+    # Surveillance des fichiers fiable sur un dossier monté depuis Windows / macOS
+    WATCHPACK_POLLING: "true"
+  volumes:
+    - .:/app
+    # Les dépendances restent dans des volumes Docker : binaires Linux, I/O rapides,
+    # et aucun node_modules sur le PC hôte.
+    - node_modules:/app/node_modules
+    - web_node_modules:/app/apps/web/node_modules
+    - scraper_node_modules:/app/apps/scraper/node_modules
+    - db_node_modules:/app/packages/db/node_modules
+    - web_next:/app/apps/web/.next
+
+services:
+  # Installe les dépendances (npm ci) puis applique les migrations et le seed.
+  setup:
+    <<: *node
+    command: sh -c "npm ci --no-audit --no-fund && npm run db:migrate && npm run db:seed"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    <<: *node
+    command: npm run dev -w @aiguille/web -- --hostname 0.0.0.0
+    ports:
+      - "3000:3000"
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: aiguille
+      POSTGRES_PASSWORD: aiguille
+      POSTGRES_DB: aiguille
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aiguille -d aiguille"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  adminer:
+    image: adminer:5
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    depends_on:
+      - db
+
+  # Lancé à la demande : docker compose run --rm scraper
+  scraper:
+    <<: *node
+    profiles: ["scraper"]
+    command: npm run start -w @aiguille/scraper
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+
+  # Conteneur outil pour lint, tests, migrations… sans rien installer :
+  #   docker compose run --rm tools npm run check
+  tools:
+    <<: *node
+    profiles: ["tools"]
+    command: sh
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  node_modules:
+  web_node_modules:
+  scraper_node_modules:
+  db_node_modules:
+  web_next:
