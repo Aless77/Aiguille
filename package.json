@@ -1,0 +1,42 @@
+{
+  "name": "aiguille",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Site gratuit et non commercial pour choisir une montre grâce aux données : prix, disponibilité, note.",
+  "engines": {
+    "node": ">=24"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @aiguille/web",
+    "build": "npm run build -w @aiguille/web",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm run test",
+    "db:generate": "npm run generate -w @aiguille/db",
+    "db:migrate": "npm run migrate -w @aiguille/db",
+    "db:seed": "npm run seed -w @aiguille/db",
+    "db:studio": "npm run studio -w @aiguille/db",
+    "scraper": "npm run start -w @aiguille/scraper"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/node": "^24.19.2",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.4.2",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.10",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.2",
+    "vitest": "^5.0.5"
+  }
+}
