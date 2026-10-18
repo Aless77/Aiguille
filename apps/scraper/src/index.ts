@@ -1,19 +1,47 @@
-import { brands, closeDb, getDb } from "@aiguille/db";
+import { parseArgs } from "node:util";
+
+import { closeDb, getDb } from "@aiguille/db";
+
+import { USER_AGENT } from "./config.ts";
+import { runSource } from "./lib/crawl.ts";
+import { sources } from "./sources/index.ts";
 
 /**
  * Point d'entrée du scraper.
  *
- * Lot 1 : vérifie seulement que le conteneur atteint la base.
- * Lot 3 : chaque source aura son adaptateur (Crawlee), voir docs/architecture.md.
+ *   npm run scraper                       toutes les sources
+ *   npm run scraper -- tissot             une source
+ *   npm run scraper -- hamilton --limit 5 essai sur 5 fiches
  */
-const userAgent =
-  process.env.SCRAPER_USER_AGENT ?? "AiguilleBot/0.1 (+https://github.com/Aless77/Aiguille)";
+const { values, positionals } = parseArgs({
+  options: { limit: { type: "string" } },
+  allowPositionals: true,
+});
+const limit = values.limit ? Number(values.limit) : undefined;
+const selected = positionals.length ? positionals : Object.keys(sources);
 
+const unknown = selected.filter((name) => !sources[name]);
+if (unknown.length) {
+  console.error(
+    `Sources inconnues : ${unknown.join(", ")}. Disponibles : ${Object.keys(sources).join(", ")}`,
+  );
+  process.exit(1);
+}
+
+console.log(`User-Agent : ${USER_AGENT}`);
 const db = getDb();
-const rows = await db.select({ slug: brands.slug }).from(brands);
+let failed = false;
 
-console.log(`Scraper prêt. User-Agent : ${userAgent}`);
-console.log(`Base joignable, ${rows.length} marques : ${rows.map((r) => r.slug).join(", ")}`);
-console.log("Aucune source configurée pour l'instant (prévu au lot 3).");
+for (const name of selected) {
+  try {
+    const stats = await runSource(db, sources[name]!, { limit });
+    console.log(`[${stats.source}] terminé`, stats);
+  } catch (error) {
+    failed = true;
+    console.error(`[${name}] échec :`, error instanceof Error ? error.message : error);
+  }
+}
 
 await closeDb();
+// Code de sortie non nul : le workflow GitHub Actions signale la source cassée.
+process.exit(failed ? 1 : 0);

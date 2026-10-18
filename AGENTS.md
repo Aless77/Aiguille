@@ -44,8 +44,14 @@ code Next, lisez le guide correspondant dans `node_modules/next/dist/docs/` (dan
 [apps/web/AGENTS.md](apps/web/AGENTS.md), dont un bloc est géré automatiquement par `next dev`.
 
 `cacheComponents` est activé : toute donnée non mise en cache doit être sous `<Suspense>` ou marquée
-`"use cache"` avec `cacheLife`/`cacheTag`. Les fiches montres sont rendues côté serveur et
-régénérées périodiquement (équivalent ISR).
+`"use cache"` avec `cacheLife`/`cacheTag`. Les lectures du catalogue sont dans
+`apps/web/src/lib/catalog/queries.ts` (profil `hours`, étiquette `catalog`).
+
+Pages dynamiques indexables (marque, collection, fiche) : même gabarit partout.
+
+- `generateStaticParams` renvoie toutes les pages connues, via `withPlaceholder` (base vide = build OK).
+- `await params` puis `notFound()` **avant** tout `<Suspense>` (vrai 404), et `export const instant = false`.
+- `generateMetadata` via `pageMetadata()` ; JSON-LD via `<JsonLd>` ; fil d'Ariane via `<Breadcrumbs>`.
 
 ## Conventions de code
 
@@ -82,7 +88,9 @@ tiers copié (seulement note agrégée + lien). Un nouveau relevé n'est stocké
 
 ## Git et PR
 
-- Jamais de commit direct sur `main` : branche + PR. `main` déploie automatiquement en production.
+- Travailler sur la branche courante (en général `dev`). **Ne pas créer de branche, de commit ni de
+  PR, ne rien fusionner** : le propriétaire du dépôt s'en charge. `main` = production, protégée,
+  alimentée par des PR `dev` → `main`.
 - Messages de commit en français, à l'impératif, préfixés (Conventional Commits) :
   `feat: fiche montre`, `fix: …`, `docs: …`, `chore: …`, `refactor: …`, `test: …`, `ci: …`.
 - Une PR = un sujet. Remplir le modèle de PR (cases SEO et sources comprises).

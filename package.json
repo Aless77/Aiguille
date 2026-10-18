@@ -25,7 +25,7 @@
     "db:migrate": "npm run migrate -w @aiguille/db",
     "db:seed": "npm run seed -w @aiguille/db",
     "db:studio": "npm run studio -w @aiguille/db",
-    "scraper": "npm run start -w @aiguille/scraper"
+    "scraper": "npm run start -w @aiguille/scraper --"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

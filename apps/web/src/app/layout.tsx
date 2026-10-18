@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import { JsonLd, organizationJsonLd, websiteJsonLd } from "@/lib/seo/json-ld";
 import { getSiteUrl, isIndexable, siteConfig } from "@/lib/site";
 
@@ -16,6 +19,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Pas de canonique ici : chaque page déclare la sienne (pageMetadata), sinon toutes
+// hériteraient de « / ».
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: {
@@ -24,12 +29,10 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   applicationName: siteConfig.name,
-  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     siteName: siteConfig.name,
     locale: siteConfig.locale,
-    url: "/",
   },
   twitter: { card: "summary_large_image" },
   robots: isIndexable() ? { index: true, follow: true } : { index: false, follow: false },
@@ -44,7 +47,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col">
-        {children}
+        <NuqsAdapter>
+          <SiteHeader />
+          <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</div>
+          <SiteFooter />
+        </NuqsAdapter>
         <JsonLd data={[websiteJsonLd(), organizationJsonLd()]} />
       </body>
     </html>
