@@ -41,7 +41,9 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - run: npm ci --no-audit --no-fund
+      # Même installation que Vercel : seulement apps/web et ses workspaces. Échoue si une
+      # dépendance utilisée par le site n'est déclarée qu'à la racine.
+      - run: npm ci -w @aiguille/web --no-audit --no-fund
       - run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: 1
