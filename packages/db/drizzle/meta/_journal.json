@@ -8,6 +8,13 @@
       "when": 1792347173308,
       "tag": "0000_blue_aqueduct",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792352286097,
+      "tag": "0001_breezy_scorpion",
+      "breakpoints": true
     }
   ]
 }

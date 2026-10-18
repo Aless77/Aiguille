@@ -34,8 +34,16 @@ Settings → Branches → règle sur `main` :
 
 ### 3. Base de production
 
-Choix ouvert dans le cahier des charges (Neon ou Supabase), voir [decisions.md](decisions.md).
-Dans les deux cas : récupérer l'URL de connexion **poolée** (pgBouncer / pooler) pour Vercel.
+**Neon** (voir [decisions.md](decisions.md)). Le build Vercel **lit la base** (pages prérendues) :
+sans `DATABASE_URL`, le déploiement échoue.
+
+1. Vercel → projet `aiguille` → Storage (Marketplace) → **Neon** → Create, région Europe
+   (Francfort). L'intégration crée `DATABASE_URL` dans Production et Preview, et peut créer une
+   branche Neon par preview.
+2. Appliquer les migrations et le seed sur la base Neon depuis le poste :
+   `docker compose run --rm -e DATABASE_URL="<url Neon>" tools sh -c "npm run db:migrate && npm run db:seed"`
+3. Lancer une première collecte vers Neon (même commande avec `npm run scraper`), puis redéployer.
+   La collecte quotidienne par GitHub Actions arrive au lot 3.
 
 ### 4. Variables d'environnement
 

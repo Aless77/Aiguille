@@ -30,6 +30,15 @@ Après avoir ajouté une dépendance (`docker compose run --rm tools npm install
 committez `package.json` et `package-lock.json`. Les autres développeurs relancent `docker compose up`
 (le service `setup` refait `npm ci`).
 
+## Scraper
+
+```bash
+docker compose run --rm scraper                      # toutes les sources (long : 4 s par fiche)
+docker compose run --rm scraper hamilton --limit 5   # essai sur 5 fiches
+```
+
+En essai (`--limit`), les montres non revues ne sont jamais marquées « plus produites ».
+
 ## Base de données
 
 1. Modifier `packages/db/src/schema.ts`.
@@ -53,10 +62,22 @@ pages fonctionnelles (lot 2).
 
 ## Workflow Git
 
-1. Branche depuis `main` : `feat/catalogue-filtres`, `fix/prix-arrondi`…
-2. Commits en français, préfixés (`feat:`, `fix:`, `docs:`…).
-3. PR vers `main` : la CI tourne, Vercel publie une preview (non indexée).
-4. Fusion : déploiement automatique en production.
+- `dev` : branche d'intégration. Les développements (éventuellement en parallèle) y sont fusionnés
+  et testés ; chaque push produit une preview Vercel (non indexée).
+- `main` : production, protégée (PR obligatoire, CI verte). Une PR `dev` → `main` valide une version ;
+  sa fusion déploie automatiquement sur Vercel.
+- Commits en français, préfixés (`feat:`, `fix:`, `docs:`…). Les agents de code travaillent sur la
+  branche courante et ne créent ni branche, ni commit, ni PR.
+
+## Rechargement à chaud
+
+Docker Desktop ne transmet pas les événements fichiers de Windows/macOS au conteneur. Le service
+`web` sonde donc les fichiers toutes les secondes (`NEXT_DEV_POLL_MS` dans `compose.yaml`, lu par
+`next.config.ts`) : une modification apparaît en une à deux secondes, au prix d'un peu de CPU.
+
+Plus rapide et plus léger : cloner le dépôt **dans WSL 2** (pas sur `C:`) et lancer
+`docker compose up` depuis WSL. Les fichiers ne traversent plus la couche de partage et le
+sondage devient inutile (`NEXT_DEV_POLL_MS` vide).
 
 ## Éditeur
 

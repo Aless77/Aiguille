@@ -10,8 +10,8 @@ x-node: &node
       required: false
   environment:
     DATABASE_URL: postgres://aiguille:aiguille@db:5432/aiguille
-    # Surveillance des fichiers fiable sur un dossier monté depuis Windows / macOS
-    WATCHPACK_POLLING: "true"
+    # Rechargement à chaud : sondage des fichiers (événements non transmis par Docker Desktop)
+    NEXT_DEV_POLL_MS: "1000"
   volumes:
     - .:/app
     # Les dépendances restent dans des volumes Docker : binaires Linux, I/O rapides,
@@ -69,7 +69,9 @@ services:
   scraper:
     <<: *node
     profiles: ["scraper"]
-    command: npm run start -w @aiguille/scraper
+    # Arguments transmis au scraper : docker compose run --rm scraper hamilton --limit 5
+    entrypoint: ["npm", "run", "start", "-w", "@aiguille/scraper", "--"]
+    command: []
     depends_on:
       setup:
         condition: service_completed_successfully
