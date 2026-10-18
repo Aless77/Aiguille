@@ -11,8 +11,8 @@
   "dependencies": {
     "@aiguille/db": "*",
     "next": "16.4.2",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "schema-dts": "^2.1.0"
   },
   "devDependencies": {
