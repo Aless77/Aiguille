@@ -35,15 +35,31 @@ jobs:
     name: Build Next.js
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Les pages sont prérendues depuis la base : le build a besoin d'une base migrée (vide suffit,
+    # generateStaticParams renvoie alors un paramètre factice).
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: aiguille
+          POSTGRES_PASSWORD: aiguille
+          POSTGRES_DB: aiguille
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U aiguille -d aiguille"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgres://aiguille:aiguille@localhost:5432/aiguille
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
-      # Même installation que Vercel : seulement apps/web et ses workspaces. Échoue si une
-      # dépendance utilisée par le site n'est déclarée qu'à la racine.
-      - run: npm ci -w @aiguille/web --no-audit --no-fund
+      # Même installation que Vercel : seulement apps/web et ses workspaces (+ db pour les
+      # migrations). Échoue si une dépendance du site n'est déclarée qu'à la racine.
+      - run: npm ci -w @aiguille/web -w @aiguille/db --no-audit --no-fund
+      - run: npm run migrate -w @aiguille/db && npm run seed -w @aiguille/db
       - run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: 1
@@ -82,5 +98,3 @@ jobs:
           fi
       - run: npm run db:migrate
       - run: npm run db:seed
-      - name: Le scraper atteint la base
-        run: npm run scraper

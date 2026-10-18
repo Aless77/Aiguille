@@ -8,9 +8,16 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aiguille/db": "*"
+    "@aiguille/db": "*",
+    "@crawlee/cheerio": "^3.18.2",
+    "cheerio": "^1.0.0-rc.12",
+    "robots-parser": "^3.0.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "tsx": "^4.23.15"
+    "@types/node": "^24.19.2",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.5"
   }
 }

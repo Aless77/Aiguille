@@ -33,8 +33,23 @@ pas d'étape de build intermédiaire.
   migrations SQL dans `packages/db/drizzle/`, commitées et vérifiées par la CI.
 - Connexion paresseuse (`getDb()`) : le build Next peut tourner sans base.
 - Historique de prix : une ligne par **changement** de prix ou de stock (pas une ligne par jour).
-- Modèle prévu (lots 2-3) : `brands` → `models` (collection, ex. PRX) → `watches` (référence,
-  ex. T137.407.11.041.00) → `offers` (revendeur × montre) → `price_points` (historique).
+- Modèle : `brands` → `collections` (PRX, Khaki Field) → `watches` (une référence, ses
+  caractéristiques normalisées pour les filtres et `raw_specs` pour le reste) →
+  `price_observations` (historique par source). `scrape_runs` journalise chaque exécution.
+- Prix en centimes entiers. Une source = un identifiant (`tissot-officiel`, plus tard un par revendeur).
+
+## Scraper
+
+| Fichier               | Rôle                                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------------------- |
+| `sources/<marque>.ts` | Adaptateur : `discover()` lit le sitemap, `parse()` extrait une fiche (fonction pure, testée)           |
+| `lib/listing.ts`      | Schéma Zod d'une fiche : tout ce qui n'est pas conforme est rejeté et compté en erreur                  |
+| `lib/robots.ts`       | robots.txt lu avec notre User-Agent ; URL interdites écartées avant la collecte                         |
+| `lib/crawl.ts`        | Crawlee : 1 requête à la fois, 4 s minimum entre deux requêtes (ou Crawl-delay), échec si zéro résultat |
+| `lib/persist.ts`      | Upsert des montres, relevé de prix seulement en cas de changement, statut « plus produite »             |
+
+Ajouter une source : écrire l'adaptateur et ses tests sur un extrait HTML réel, l'inscrire dans
+`sources/index.ts`, compléter le registre de [sources.md](sources.md).
 
 ## Rendu et performance
 
