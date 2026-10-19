@@ -5,13 +5,20 @@
 | Événement                | GitHub Actions                                                       | Vercel                                |
 | ------------------------ | -------------------------------------------------------------------- | ------------------------------------- |
 | PR ouverte / mise à jour | CI : lint, format, types, tests, build, migrations                   | Preview (URL unique, **non indexée**) |
+| Push / fusion sur `dev`  | CI de la PR                                                          | Aucun déploiement                     |
 | Fusion sur `main`        | CI sur `main`                                                        | **Production** automatique            |
 | Chaque nuit à 03:00 UTC  | Workflow « Collecte quotidienne » → Neon, puis invalidation du cache | Pages régénérées à la visite suivante |
 
 Le déploiement passe par l'**intégration Git de Vercel** (pas de workflow de déploiement à
 maintenir). Vercel ne rebuild que si `apps/web`, `packages/` ou les fichiers npm racine changent
 (`ignoreCommand` dans [apps/web/vercel.json](../apps/web/vercel.json)) : une PR de doc seule ne
-consomme pas de build.
+consomme pas de build. La branche `dev` n'est jamais déployée (`git.deploymentEnabled` dans le même
+fichier) : seule `main` alimente le site, et une preview de `dev` n'apporterait rien.
+
+Dépendances : pas de PR de mise à jour automatique (Dependabot version updates retiré). Les
+**alertes de sécurité** Dependabot restent actives (Settings → Code security → Dependabot alerts).
+Les montées de version se font à la main, régulièrement :
+`docker compose run --rm tools npm outdated`, lecture du changelog, PR vers `dev`.
 
 ## Mise en place initiale (une seule fois)
 
