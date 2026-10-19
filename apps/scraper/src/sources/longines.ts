@@ -4,7 +4,7 @@ import { findProduct, parseAvailability } from "../lib/jsonld.ts";
 import { fetchSitemapPages } from "../lib/sitemap.ts";
 import { parseMovement, parseWaterResistance } from "../lib/specs.ts";
 import { cleanText, parseNumber, titleCase, toCents } from "../lib/text.ts";
-import { type SourceAdapter } from "./types.ts";
+import { type OfficialAdapter } from "./types.ts";
 
 /** Fiches montres françaises ; les bracelets et accessoires ont un autre préfixe que « watch- ». */
 const PRODUCT_URL = /^https:\/\/www\.longines\.com\/fr\/p\/watch-[a-z0-9-]+$/;
@@ -136,7 +136,8 @@ export function parseLongines($: CheerioAPI, url: string) {
   };
 }
 
-export const longines: SourceAdapter = {
+export const longines: OfficialAdapter = {
+  kind: "official",
   id: "longines-officiel",
   brandSlug: "longines",
   async discover() {

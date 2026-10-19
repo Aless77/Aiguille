@@ -76,6 +76,47 @@ services:
       setup:
         condition: service_completed_successfully
 
+  # Build de production pour les tests e2e (le serveur de dev compile à la demande : trop lent
+  # et instable sous des tests parallèles). Dossier de build séparé : .next-e2e.
+  web-prod:
+    <<: *node
+    profiles: ["e2e"]
+    environment:
+      # Surchargeable pour rejouer la CI sur une base de test : E2E_DATABASE_URL=… docker compose …
+      DATABASE_URL: ${E2E_DATABASE_URL:-postgres://aiguille:aiguille@db:5432/aiguille}
+      NEXT_DIST_DIR: .next-e2e
+    command: sh -c "npm run build -w @aiguille/web && npm run start -w @aiguille/web -- --hostname 0.0.0.0"
+    healthcheck:
+      # 127.0.0.1 et non localhost : sous Alpine, localhost se résout en IPv6, où Next n'écoute pas.
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/robots.txt >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 5s
+      # Le build prérend toutes les fiches : plusieurs minutes.
+      retries: 120
+      start_period: 30s
+    # Pas de dépendance à « setup » : son npm ci viderait node_modules sous le serveur de dev.
+    # Prérequis : docker compose up (dépendances installées, base migrée).
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Tests de bout en bout : docker compose run --rm e2e
+  # Image officielle Playwright (navigateurs inclus), même version que @playwright/test.
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.64.1-noble
+    profiles: ["e2e"]
+    working_dir: /app/apps/web
+    environment:
+      BASE_URL: http://web-prod:3000
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - web_node_modules:/app/apps/web/node_modules
+    command: npx playwright test
+    depends_on:
+      web-prod:
+        condition: service_healthy
+
   # Conteneur outil pour lint, tests, migrations… sans rien installer :
   #   docker compose run --rm tools npm run check
   tools:

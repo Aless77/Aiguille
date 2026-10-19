@@ -1,0 +1,115 @@
+# Collecte quotidienne des prix et du catalogue (lot 3), hors Vercel.
+# Une tâche par source, en parallèle : la règle « 1 requête toutes les quelques secondes » vaut
+# par domaine, chaque tâche ne visite qu'un domaine. Officiels (~1 h) puis revendeurs (~1 h 45).
+#
+# Configuration (Settings → Secrets and variables → Actions) :
+#   secrets   DATABASE_URL       base de production (Neon)
+#             REVALIDATE_SECRET  même valeur que dans Vercel (invalidation du cache du site)
+#   variables SITE_URL           https://aiguille.aless-villa.com
+#             SCRAPER_USER_AGENT AiguilleBot/0.1 (+https://aiguille.aless-villa.com/a-propos)
+name: Collecte quotidienne
+
+on:
+  schedule:
+    # 03:00 UTC (4 h ou 5 h à Paris) : heures creuses pour les sites visités.
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Nombre maximal de fiches par source (vide = tout)"
+        required: false
+
+concurrency:
+  group: scrape
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  migrations:
+    name: Migrations
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      configured: ${{ steps.config.outputs.configured }}
+    steps:
+      - id: config
+        name: Base configurée ?
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::warning::Secret DATABASE_URL absent : collecte ignorée (voir docs/deploiement.md)."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.config.outputs.configured == 'true'
+        uses: actions/checkout@v7
+      - if: steps.config.outputs.configured == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - if: steps.config.outputs.configured == 'true'
+        run: npm ci -w @aiguille/db --no-audit --no-fund
+      - if: steps.config.outputs.configured == 'true'
+        name: Appliquer les migrations
+        run: npm run db:migrate && npm run db:seed
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+  # Sites officiels d'abord : ils définissent le catalogue.
+  scrape:
+    name: Collecte ${{ matrix.source }}
+    needs: migrations
+    if: needs.migrations.outputs.configured == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      # Une source cassée ne doit pas empêcher la collecte des autres.
+      fail-fast: false
+      matrix:
+        source: [tissot, hamilton, longines]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci -w @aiguille/scraper -w @aiguille/db --no-audit --no-fund
+      - name: Collecter
+        run: npm run scraper -- ${{ matrix.source }} ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          SCRAPER_USER_AGENT: ${{ vars.SCRAPER_USER_AGENT }}
+
+  # Revendeurs ensuite : leurs offres sont rattachées aux montres du catalogue (une nouvelle
+  # référence du jour doit déjà exister). Lancés même si une source officielle a échoué.
+  retailers:
+    name: Collecte ${{ matrix.source }}
+    needs: [migrations, scrape]
+    if: ${{ always() && needs.migrations.outputs.configured == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [lepage, ocarat]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci -w @aiguille/scraper -w @aiguille/db --no-audit --no-fund
+      - name: Collecter
+        run: npm run scraper -- ${{ matrix.source }} ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          SCRAPER_USER_AGENT: ${{ vars.SCRAPER_USER_AGENT }}
