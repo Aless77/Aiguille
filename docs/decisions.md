@@ -3,6 +3,13 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-10-19 – Outillage du dépôt
+
+| Sujet        | Décision                                                                                                        | Raison                                                                                                                                             |
+| ------------ | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dépendances  | Dependabot version updates retiré ; alertes de sécurité gardées ; montées de version à la main (`npm outdated`) | Les PR automatiques visaient `main` et proposaient des majeures inadaptées (`@types/node` 25 pour Node 24). Les failles connues restent signalées. |
+| Vercel `dev` | Aucun déploiement de la branche `dev` (`git.deploymentEnabled`)                                                 | Seule `main` alimente le site ; les previews des PR de fonctionnalité suffisent.                                                                   |
+
 ## 2026-10-19 – Prix (lot 3)
 
 | Sujet                   | Décision                                                                                                                              | Raison                                                                                                                   |
