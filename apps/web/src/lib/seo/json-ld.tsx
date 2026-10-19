@@ -91,16 +91,29 @@ export interface ProductInput {
   description: string;
   path: string;
   imageUrls: string[];
-  priceCents: number | null;
-  inStock: boolean;
+  /** Offres en cours (marque et revendeurs), voir currentOffers(). */
+  offers: {
+    priceCents: number;
+    availability: "in_stock" | "out_of_stock" | "preorder" | "unknown";
+  }[];
 }
+
+const AVAILABILITY_ORDER = ["in_stock", "preorder", "out_of_stock"] as const;
+
+const SCHEMA_AVAILABILITY = {
+  in_stock: "https://schema.org/InStock",
+  out_of_stock: "https://schema.org/OutOfStock",
+  preorder: "https://schema.org/PreOrder",
+} as const;
 
 /**
  * Fiche montre (docs/seo/donnees-structurees.md) : AggregateOffer car nous ne vendons pas, et
  * aucun AggregateRating tant que les avis ne sont pas collectés sur le site (lot 5).
  */
 export function productJsonLd(p: ProductInput): WithContext<Product> {
-  const price = p.priceCents === null ? null : p.priceCents / 100;
+  const prices = p.offers.map((o) => o.priceCents / 100);
+  // Meilleure disponibilité parmi les offres ; inconnue partout : propriété omise.
+  const availability = AVAILABILITY_ORDER.find((a) => p.offers.some((o) => o.availability === a));
   return {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -111,17 +124,15 @@ export function productJsonLd(p: ProductInput): WithContext<Product> {
     description: p.description,
     url: absoluteUrl(p.path),
     ...(p.imageUrls.length ? { image: p.imageUrls } : {}),
-    ...(price !== null
+    ...(prices.length
       ? {
           offers: {
             "@type": "AggregateOffer",
             priceCurrency: "EUR",
-            lowPrice: price,
-            highPrice: price,
-            offerCount: 1,
-            availability: p.inStock
-              ? "https://schema.org/InStock"
-              : "https://schema.org/OutOfStock",
+            lowPrice: Math.min(...prices),
+            highPrice: Math.max(...prices),
+            offerCount: prices.length,
+            ...(availability ? { availability: SCHEMA_AVAILABILITY[availability] } : {}),
           },
         }
       : {}),

@@ -4,6 +4,7 @@ import { closeDb, getDb } from "@aiguille/db";
 
 import { USER_AGENT } from "./config.ts";
 import { runSource } from "./lib/crawl.ts";
+import { revalidateSite } from "./lib/revalidate.ts";
 import { sources } from "./sources/index.ts";
 
 /**
@@ -31,11 +32,13 @@ if (unknown.length) {
 console.log(`User-Agent : ${USER_AGENT}`);
 const db = getDb();
 let failed = false;
+let succeeded = false;
 
 for (const name of selected) {
   try {
     const stats = await runSource(db, sources[name]!, { limit });
     console.log(`[${stats.source}] terminé`, stats);
+    succeeded = true;
   } catch (error) {
     failed = true;
     console.error(`[${name}] échec :`, error instanceof Error ? error.message : error);
@@ -43,5 +46,6 @@ for (const name of selected) {
 }
 
 await closeDb();
+if (succeeded) await revalidateSite();
 // Code de sortie non nul : le workflow GitHub Actions signale la source cassée.
 process.exit(failed ? 1 : 0);

@@ -10,6 +10,9 @@ export default defineConfig([
   globalIgnores([
     "**/node_modules/**",
     "**/.next/**",
+    "**/.next-e2e/**",
+    "**/test-results/**",
+    "**/playwright-report/**",
     "**/out/**",
     "**/build/**",
     "**/next-env.d.ts",

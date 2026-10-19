@@ -4,7 +4,7 @@ import { findProduct, parseAvailability } from "../lib/jsonld.ts";
 import { fetchSitemapPages } from "../lib/sitemap.ts";
 import { parseMovement, parseWaterResistance, pick } from "../lib/specs.ts";
 import { cleanText, parseNumber, toCents } from "../lib/text.ts";
-import { type SourceAdapter } from "./types.ts";
+import { type OfficialAdapter } from "./types.ts";
 
 const PRODUCT_URL = /^https:\/\/www\.hamiltonwatch\.com\/fr-fr\/(h\d{8})-[a-z0-9-]+\.html$/i;
 
@@ -56,7 +56,8 @@ export function parseHamilton($: CheerioAPI, url: string) {
   };
 }
 
-export const hamilton: SourceAdapter = {
+export const hamilton: OfficialAdapter = {
+  kind: "official",
   id: "hamilton-officiel",
   brandSlug: "hamilton",
   async discover() {

@@ -3,3 +3,6 @@ node_modules
 out
 package-lock.json
 packages/db/drizzle
+test-results
+playwright-report
+.next-e2e

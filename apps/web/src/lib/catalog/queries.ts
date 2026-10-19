@@ -1,4 +1,4 @@
-import { brands, collections, getDb, watches } from "@aiguille/db";
+import { brands, collections, getDb, priceObservations, scrapeRuns, watches } from "@aiguille/db";
 import { and, asc, desc, eq, gte, inArray, isNull, lte, ne, type SQL, sql } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
 
@@ -308,4 +308,68 @@ export async function getAllWatchPaths(): Promise<
     .innerJoin(brands, eq(brands.id, watches.brandId))
     .leftJoin(collections, eq(collections.id, watches.collectionId))
     .orderBy(asc(brands.slug), asc(watches.slug));
+}
+
+/** Dernier relevé réussi par source officielle (page Méthodologie). */
+export async function getLastRuns(): Promise<{ brandSlug: string; finishedAt: Date }[]> {
+  "use cache";
+  cached();
+  const rows = await getDb()
+    .select({
+      source: scrapeRuns.source,
+      finishedAt: sql<Date>`max(${scrapeRuns.finishedAt})`,
+    })
+    .from(scrapeRuns)
+    .where(eq(scrapeRuns.status, "success"))
+    .groupBy(scrapeRuns.source);
+  // Identifiants de source : « <marque>-officiel ».
+  return rows
+    .filter((r) => r.source.endsWith("-officiel") && r.finishedAt)
+    .map((r) => ({
+      brandSlug: r.source.replace(/-officiel$/, ""),
+      finishedAt: new Date(r.finishedAt),
+    }));
+}
+
+/** Relevés de prix et de stock d'une montre, toutes sources (historique de la fiche). */
+export async function getPriceObservations(watchId: number) {
+  "use cache";
+  cached();
+  return getDb()
+    .select({
+      source: priceObservations.source,
+      priceCents: priceObservations.priceCents,
+      availability: priceObservations.availability,
+      observedAt: priceObservations.observedAt,
+      url: priceObservations.url,
+    })
+    .from(priceObservations)
+    .where(eq(priceObservations.watchId, watchId))
+    .orderBy(asc(priceObservations.observedAt));
+}
+
+/**
+ * Nouveautés : références apparues plus de 2 jours après la première montre de leur marque.
+ * L'import initial d'une marque (quelques heures) n'en fait donc pas partie, même découpé en
+ * plusieurs exécutions.
+ */
+export async function getNewWatches(
+  limit = 48,
+): Promise<{ items: (WatchCard & { firstSeenAt: Date })[]; trackedSince: Date | null }> {
+  "use cache";
+  cached();
+  const db = getDb();
+  const firstSeenByBrand = sql`(select min(w2.first_seen_at) from ${watches} w2 where w2.brand_id = ${watches.brandId})`;
+  const [items, [range]] = await Promise.all([
+    db
+      .select({ ...cardColumns, firstSeenAt: watches.firstSeenAt })
+      .from(watches)
+      .innerJoin(brands, eq(brands.id, watches.brandId))
+      .leftJoin(collections, eq(collections.id, watches.collectionId))
+      .where(sql`${watches.firstSeenAt} > ${firstSeenByBrand} + interval '2 days'`)
+      .orderBy(desc(watches.firstSeenAt), asc(watches.slug))
+      .limit(limit),
+    db.select({ since: sql<Date | null>`min(${watches.firstSeenAt})` }).from(watches),
+  ]);
+  return { items, trackedSince: range?.since ? new Date(range.since) : null };
 }
