@@ -40,13 +40,14 @@ pas d'étape de build intermédiaire.
 
 ## Scraper
 
-| Fichier               | Rôle                                                                                                    |
-| --------------------- | ------------------------------------------------------------------------------------------------------- |
-| `sources/<marque>.ts` | Adaptateur : `discover()` lit le sitemap, `parse()` extrait une fiche (fonction pure, testée)           |
-| `lib/listing.ts`      | Schéma Zod d'une fiche : tout ce qui n'est pas conforme est rejeté et compté en erreur                  |
-| `lib/robots.ts`       | robots.txt lu avec notre User-Agent ; URL interdites écartées avant la collecte                         |
-| `lib/crawl.ts`        | Crawlee : 1 requête à la fois, 4 s minimum entre deux requêtes (ou Crawl-delay), échec si zéro résultat |
-| `lib/persist.ts`      | Upsert des montres, relevé de prix seulement en cas de changement, statut « plus produite »             |
+| Fichier                  | Rôle                                                                                                          |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `sources/<revendeur>.ts` | Adaptateur revendeur (Lepage, Ocarat) : offre (prix, stock) rattachée à une montre existante par la référence |
+| `sources/<marque>.ts`    | Adaptateur : `discover()` lit le sitemap, `parse()` extrait une fiche (fonction pure, testée)                 |
+| `lib/listing.ts`         | Schéma Zod d'une fiche : tout ce qui n'est pas conforme est rejeté et compté en erreur                        |
+| `lib/robots.ts`          | robots.txt lu avec notre User-Agent ; URL interdites écartées avant la collecte                               |
+| `lib/crawl.ts`           | Crawlee : 1 requête à la fois, 4 s minimum entre deux requêtes (ou Crawl-delay), échec si zéro résultat       |
+| `lib/persist.ts`         | Upsert des montres, relevé de prix seulement en cas de changement, statut « plus produite »                   |
 
 Ajouter une source : écrire l'adaptateur et ses tests sur un extrait HTML réel, l'inscrire dans
 `sources/index.ts`, compléter le registre de [sources.md](sources.md).

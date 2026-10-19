@@ -35,6 +35,7 @@ committez `package.json` et `package-lock.json`. Les autres développeurs relanc
 ```bash
 docker compose run --rm scraper                      # toutes les sources (long : 4 s par fiche)
 docker compose run --rm scraper hamilton --limit 5   # essai sur 5 fiches
+docker compose run --rm scraper lepage ocarat        # revendeurs (après les sites officiels)
 ```
 
 En essai (`--limit`), les montres non revues ne sont jamais marquées « plus produites ».
@@ -57,8 +58,22 @@ Drizzle Studio : `docker compose run --rm -p 4983:4983 tools npm run db:studio`.
 | TypeScript | Types stricts sur chaque workspace           | `npm run typecheck`    |
 | Vitest     | Tests unitaires (`*.test.ts` à côté du code) | `npm test`             |
 
-`npm run check` enchaîne les quatre. Playwright (tests de bout en bout) arrivera avec les premières
-pages fonctionnelles (lot 2).
+`npm run check` enchaîne les quatre.
+
+### Tests de bout en bout (Playwright)
+
+`apps/web/e2e/` : parcours principaux et exigences SEO (titre, description, canonique, JSON-LD,
+vrais 404, robots.txt, sitemap), sur ordinateur et mobile. Ils visent un **build de production**
+(le serveur de dev compile à la demande : trop lent et instable sous des tests parallèles).
+
+```bash
+docker compose up -d                          # prérequis : dépendances installées, base migrée
+docker compose --profile e2e run --rm e2e     # build web-prod (quelques minutes) puis tests
+docker compose --profile e2e stop web-prod    # libère le serveur de production
+```
+
+En CI, le job « Build Next.js » rejoue ce scénario sur une base contenant seulement trois montres
+fictives (`npm run seed:e2e`, refusé hors base locale).
 
 ## Workflow Git
 
@@ -78,6 +93,9 @@ Docker Desktop ne transmet pas les événements fichiers de Windows/macOS au con
 Plus rapide et plus léger : cloner le dépôt **dans WSL 2** (pas sur `C:`) et lancer
 `docker compose up` depuis WSL. Les fichiers ne traversent plus la couche de partage et le
 sondage devient inutile (`NEXT_DEV_POLL_MS` vide).
+
+Le sondage ne détecte pas les **nouveaux dossiers de routes** (`src/app/…/page.tsx`) :
+redémarrer `docker compose restart web` après en avoir créé un.
 
 ## Éditeur
 

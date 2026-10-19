@@ -2,11 +2,11 @@
 
 ## Chaîne de déploiement
 
-| Événement                | GitHub Actions                                     | Vercel                                |
-| ------------------------ | -------------------------------------------------- | ------------------------------------- |
-| PR ouverte / mise à jour | CI : lint, format, types, tests, build, migrations | Preview (URL unique, **non indexée**) |
-| Fusion sur `main`        | CI sur `main`                                      | **Production** automatique            |
-| Cron quotidien (lot 3)   | Scraper → base de production                       | —                                     |
+| Événement                | GitHub Actions                                                       | Vercel                                |
+| ------------------------ | -------------------------------------------------------------------- | ------------------------------------- |
+| PR ouverte / mise à jour | CI : lint, format, types, tests, build, migrations                   | Preview (URL unique, **non indexée**) |
+| Fusion sur `main`        | CI sur `main`                                                        | **Production** automatique            |
+| Chaque nuit à 03:00 UTC  | Workflow « Collecte quotidienne » → Neon, puis invalidation du cache | Pages régénérées à la visite suivante |
 
 Le déploiement passe par l'**intégration Git de Vercel** (pas de workflow de déploiement à
 maintenir). Vercel ne rebuild que si `apps/web`, `packages/` ou les fichiers npm racine changent
@@ -43,15 +43,17 @@ sans `DATABASE_URL`, le déploiement échoue.
 2. Appliquer les migrations et le seed sur la base Neon depuis le poste :
    `docker compose run --rm -e DATABASE_URL="<url Neon>" tools sh -c "npm run db:migrate && npm run db:seed"`
 3. Lancer une première collecte vers Neon (même commande avec `npm run scraper`), puis redéployer.
-   La collecte quotidienne par GitHub Actions arrive au lot 3.
+   Ensuite, la collecte quotidienne tourne seule (voir « 7. Collecte quotidienne »).
 
 ### 4. Variables d'environnement
 
-| Variable               | Où                                                | Valeur                                          |
-| ---------------------- | ------------------------------------------------- | ----------------------------------------------- |
-| `DATABASE_URL`         | Vercel (Prod + Preview), GitHub Secrets (scraper) | URL Postgres poolée                             |
-| `NEXT_PUBLIC_SITE_URL` | Vercel **Production** seulement                   | `https://<domaine>` (sans barre finale)         |
-| `SCRAPER_USER_AGENT`   | GitHub Actions                                    | `AiguilleBot/0.1 (+https://<domaine>/a-propos)` |
+| Variable               | Où                                                 | Valeur                                            |
+| ---------------------- | -------------------------------------------------- | ------------------------------------------------- |
+| `DATABASE_URL`         | Vercel (Prod + Preview), GitHub Secrets (scraper)  | URL Postgres poolée                               |
+| `NEXT_PUBLIC_SITE_URL` | Vercel **Production** seulement                    | `https://<domaine>` (sans barre finale)           |
+| `SCRAPER_USER_AGENT`   | GitHub Actions (variable)                          | `AiguilleBot/0.1 (+https://<domaine>/a-propos)`   |
+| `REVALIDATE_SECRET`    | Vercel (Production) **et** GitHub Actions (secret) | Chaîne aléatoire longue, identique des deux côtés |
+| `SITE_URL`             | GitHub Actions (variable)                          | `https://<domaine>`                               |
 
 `NEXT_PUBLIC_SITE_URL` absent en preview : l'URL de la preview est alors déduite de `VERCEL_URL`,
 et `isIndexable()` renvoie `false` car `VERCEL_ENV` vaut `preview` (robots `Disallow: /` et
@@ -74,6 +76,24 @@ de staging) pour ne jamais écrire en production depuis une PR.
 
 Déclarer le site dans Google Search Console et Bing Webmaster Tools et soumettre
 `https://<domaine>/sitemap.xml` (voir [seo/strategie.md](seo/strategie.md#mesure-et-outils)).
+
+### 7. Collecte quotidienne (GitHub Actions)
+
+Workflow [.github/workflows/scrape.yml](../.github/workflows/scrape.yml) : chaque nuit à 03:00 UTC,
+une tâche par marque en parallèle (~1 h), puis une par revendeur (~1 h 45), après application
+des migrations. Sans le
+secret `DATABASE_URL`, le workflow s'arrête proprement avec un avertissement.
+
+1. GitHub → Settings → Secrets and variables → Actions :
+   - **Secrets** : `DATABASE_URL` (Neon), `REVALIDATE_SECRET` ;
+   - **Variables** : `SITE_URL`, `SCRAPER_USER_AGENT`.
+2. Vercel → Environment Variables (Production) : `REVALIDATE_SECRET`, même valeur.
+3. Premier essai : Actions → « Collecte quotidienne » → Run workflow, avec `limit` = 5.
+
+Générer un secret : `docker compose run --rm tools node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
+
+Une source cassée fait échouer sa tâche (zéro montre extraite) : GitHub envoie alors un e-mail. Le
+journal `scrape_runs` garde le détail de chaque exécution.
 
 ## Critères d'acceptation du lot 1
 

@@ -1,7 +1,10 @@
 import { ExternalLink } from "lucide-react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { OffersSection } from "@/components/offers-section";
+import { PriceHistorySection } from "@/components/price-history-section";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableRow } from "@/components/ui/table";
@@ -14,8 +17,10 @@ import {
   MOVEMENT_LABELS,
   watchSummary,
 } from "@/lib/catalog/format";
+import { AVAILABILITY_LABELS, buildPriceHistory, currentOffers } from "@/lib/catalog/price-history";
 import {
   getAllWatchPaths,
+  getPriceObservations,
   getSimilarWatches,
   getWatch,
   type WatchDetail,
@@ -27,8 +32,8 @@ import { pageMetadata } from "@/lib/seo/metadata";
 
 type Props = PageProps<"/montres/[marque]/[collection]/[reference]">;
 
-/** Toutes les fiches sont prérendues au build : HTML complet servi aux moteurs dès la première visite. */
 /**
+ * Toutes les fiches sont prérendues au build : HTML complet servi aux moteurs dès la première visite.
  * Rendu bloquant assumé : params est lu hors <Suspense> pour que notFound() renvoie un vrai 404
  * (avec streaming, la réponse partirait en 200 : « soft 404 » pour les moteurs). Les pages connues
  * sont prérendues au build, la navigation reste donc instantanée en pratique.
@@ -66,7 +71,22 @@ export default async function WatchPage({ params }: Props) {
 
   const name = displayName(w.brandName, w.name);
   const summary = watchSummary({ ...w, catalogPriceCents: w.priceCents });
-  const similar = await getSimilarWatches(w.id, w.brandSlug, w.collectionSlug, w.priceCents);
+  const [similar, observations] = await Promise.all([
+    getSimilarWatches(w.id, w.brandSlug, w.collectionSlug, w.priceCents),
+    getPriceObservations(w.id),
+  ]);
+  const history = buildPriceHistory(
+    observations,
+    w.brandName,
+    w.lastSeenAt,
+    `${w.brandSlug}-officiel`,
+  );
+  const offers = currentOffers(observations, w.brandName);
+  const bestRetailer = offers
+    .filter((o) => !o.official && o.availability !== "out_of_stock")
+    .sort((a, b) => a.priceCents - b.priceCents)[0];
+  // Statut de stock sur le site officiel (cahier des charges, lot 3 : « Disponibilité »).
+  const availability = w.discontinued ? null : (history.current?.availability ?? "unknown");
   const collectionName = w.collectionName ?? "Autres modèles";
 
   return (
@@ -105,8 +125,32 @@ export default async function WatchPage({ params }: Props) {
             <p className="text-3xl font-semibold">
               {formatPrice(w.priceCents) ?? "Non communiqué"}
             </p>
+            {availability && (
+              <p className="flex items-center gap-2 text-sm">
+                <span
+                  aria-hidden
+                  className={`size-2 rounded-full ${availability === "in_stock" ? "bg-emerald-500" : availability === "preorder" ? "bg-amber-500" : "bg-muted-foreground"}`}
+                />
+                {AVAILABILITY_LABELS[availability]} sur le site {w.brandName}
+              </p>
+            )}
+            {bestRetailer && (
+              <p className="text-sm">
+                {bestRetailer.priceCents < (w.priceCents ?? Infinity)
+                  ? "Meilleur prix relevé : "
+                  : "Aussi chez "}
+                <a href="#offres" className="font-medium underline underline-offset-4">
+                  {bestRetailer.priceCents < (w.priceCents ?? Infinity)
+                    ? `${formatPrice(bestRetailer.priceCents)} chez ${bestRetailer.label}`
+                    : bestRetailer.label}
+                </a>
+              </p>
+            )}
             <p className="text-sm text-muted-foreground">
-              Relevé sur le site {w.brandName} le {formatDate(w.lastSeenAt)}.
+              Relevé sur le site {w.brandName} le {formatDate(w.lastSeenAt)}.{" "}
+              <Link href="/methodologie" className="underline underline-offset-4">
+                Notre méthode
+              </Link>
             </p>
             {w.officialUrl && (
               <a
@@ -124,6 +168,10 @@ export default async function WatchPage({ params }: Props) {
           <p className="leading-relaxed">{summary}</p>
         </div>
       </div>
+
+      <OffersSection offers={offers} />
+
+      <PriceHistorySection history={history} />
 
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold tracking-tight">Caractéristiques</h2>
@@ -147,8 +195,7 @@ export default async function WatchPage({ params }: Props) {
           description: summary,
           path: watchPath(w),
           imageUrls: w.imageUrls,
-          priceCents: w.priceCents,
-          inStock: !w.discontinued,
+          offers,
         })}
       />
     </div>

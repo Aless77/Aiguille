@@ -9,6 +9,7 @@ import {
 import { and, desc, eq, lt, sql } from "drizzle-orm";
 
 import { type Listing } from "./listing.ts";
+import { type Offer } from "./offer.ts";
 import { referenceKey, slugify } from "./text.ts";
 
 type Observation = Pick<Listing, "priceCents" | "availability">;
@@ -116,30 +117,91 @@ export class Persister {
       .returning({ id: watches.id, created: sql<boolean>`(xmax = 0)` });
     if (!row) throw new Error(`Montre non enregistrée : ${listing.reference}`);
 
+    const priceChanged = await this.recordObservation(row.id, listing, seenAt);
+    return { created: row.created, priceChanged };
+  }
+
+  /** Ajoute un relevé pour (montre, source) si le prix ou la disponibilité a changé. */
+  private async recordObservation(
+    watchId: number,
+    observation: Observation & { url: string; currency: string },
+    seenAt: Date,
+  ): Promise<boolean> {
     const [last] = await this.db
       .select({
         priceCents: priceObservations.priceCents,
         availability: priceObservations.availability,
       })
       .from(priceObservations)
-      .where(and(eq(priceObservations.watchId, row.id), eq(priceObservations.source, this.source)))
+      .where(and(eq(priceObservations.watchId, watchId), eq(priceObservations.source, this.source)))
       .orderBy(desc(priceObservations.observedAt))
       .limit(1);
 
-    const priceChanged = hasChanged(last, listing);
-    if (priceChanged) {
+    if (!hasChanged(last, observation)) return false;
+    await this.db.insert(priceObservations).values({
+      watchId,
+      source: this.source,
+      priceCents: observation.priceCents ?? null,
+      currency: observation.currency,
+      availability: observation.availability,
+      url: observation.url,
+      observedAt: seenAt,
+    });
+    return true;
+  }
+
+  /**
+   * Rattache l'offre d'un revendeur à la montre de même marque et même référence. Aucune montre
+   * n'est créée : sans correspondance, l'offre est ignorée (`watchId` nul).
+   */
+  async saveOffer(
+    offer: Offer,
+    seenAt: Date,
+  ): Promise<{ watchId: number | null; priceChanged: boolean }> {
+    const brandId = await this.brandId(offer.brandSlug);
+    const [watch] = await this.db
+      .select({ id: watches.id })
+      .from(watches)
+      .where(
+        and(eq(watches.brandId, brandId), eq(watches.referenceKey, referenceKey(offer.reference))),
+      )
+      .limit(1);
+    if (!watch) return { watchId: null, priceChanged: false };
+    return {
+      watchId: watch.id,
+      priceChanged: await this.recordObservation(watch.id, offer, seenAt),
+    };
+  }
+
+  /** Montres pour lesquelles la source a une offre en cours (dernier relevé avec un prix). */
+  async currentOfferWatchIds(): Promise<number[]> {
+    const latest = await this.db
+      .selectDistinctOn([priceObservations.watchId], {
+        watchId: priceObservations.watchId,
+        priceCents: priceObservations.priceCents,
+      })
+      .from(priceObservations)
+      .where(eq(priceObservations.source, this.source))
+      .orderBy(priceObservations.watchId, desc(priceObservations.observedAt));
+    return latest.filter((o) => o.priceCents !== null).map((o) => o.watchId);
+  }
+
+  /**
+   * Après une exécution complète : une offre en cours qui n'a pas été revue a été retirée par le
+   * revendeur. On l'enregistre (prix nul, rupture) pour ne plus l'afficher comme disponible.
+   */
+  async withdrawUnseenOffers(seenWatchIds: Set<number>, seenAt: Date): Promise<number> {
+    const missing = (await this.currentOfferWatchIds()).filter((id) => !seenWatchIds.has(id));
+    for (const watchId of missing) {
       await this.db.insert(priceObservations).values({
-        watchId: row.id,
+        watchId,
         source: this.source,
-        priceCents: listing.priceCents ?? null,
-        currency: listing.currency,
-        availability: listing.availability,
-        url: listing.url,
+        priceCents: null,
+        availability: "out_of_stock",
         observedAt: seenAt,
       });
     }
-
-    return { created: row.created, priceChanged };
+    return missing.length;
   }
 
   /**
@@ -172,6 +234,13 @@ export class Persister {
   }
 
   async startRun(): Promise<number> {
+    // Une exécution précédente encore « running » a été tuée (arrêt de Docker, du runner…) sans
+    // pouvoir se clore : on la marque échouée pour garder un journal fidèle.
+    await this.db
+      .update(scrapeRuns)
+      .set({ status: "failed", message: "Interrompue avant la fin", finishedAt: new Date() })
+      .where(and(eq(scrapeRuns.source, this.source), eq(scrapeRuns.status, "running")));
+
     const [row] = await this.db
       .insert(scrapeRuns)
       .values({ source: this.source })

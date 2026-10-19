@@ -4,12 +4,16 @@ import { CheerioCrawler, Configuration } from "@crawlee/cheerio";
 import { DOMAIN_DELAY_SECS, USER_AGENT } from "../config.ts";
 import { type SourceAdapter } from "../sources/types.ts";
 import { listingSchema } from "./listing.ts";
+import { offerSchema } from "./offer.ts";
 import { Persister } from "./persist.ts";
 import { fetchRobots } from "./robots.ts";
 import { createThrottle } from "./throttle.ts";
 
 export interface RunOptions {
-  /** Nombre maximal de fiches visitées (essais en local). Désactive le marquage « plus produite ». */
+  /**
+   * Nombre maximal de fiches visitées (essais en local). Désactive le marquage « plus produite »
+   * (sources officielles) et le retrait des offres non revues (revendeurs).
+   */
   limit?: number;
 }
 
@@ -20,7 +24,12 @@ export interface RunStats {
   watchesCreated: number;
   priceChanges: number;
   errors: number;
+  /** Officiel : montres marquées « plus produite ». */
   discontinued: number;
+  /** Revendeur : fiches sans montre correspondante dans le catalogue. */
+  unmatched: number;
+  /** Revendeur : offres retirées depuis la dernière collecte. */
+  withdrawn: number;
 }
 
 /** Part minimale des montres actives à revoir pour considérer une exécution comme complète. */
@@ -42,7 +51,11 @@ export async function runSource(
     priceChanges: 0,
     errors: 0,
     discontinued: 0,
+    unmatched: 0,
+    withdrawn: 0,
   };
+  // Revendeur : montres dont l'offre a été vue pendant cette exécution.
+  const seenWatchIds = new Set<number>();
 
   try {
     const discovered = await adapter.discover();
@@ -77,17 +90,35 @@ export async function runSource(
         ],
         async requestHandler({ $, request }) {
           stats.pagesFetched++;
-          const raw = adapter.parse($, request.loadedUrl ?? request.url);
-          if (!raw) return;
-          const parsed = listingSchema.safeParse(raw);
-          if (!parsed.success) {
+          const url = request.loadedUrl ?? request.url;
+          const invalid = (issues: unknown) => {
             stats.errors++;
-            console.warn(`[${adapter.id}] fiche invalide ${request.url}`, parsed.error.issues);
+            console.warn(`[${adapter.id}] fiche invalide ${request.url}`, issues);
+          };
+
+          if (adapter.kind === "official") {
+            const raw = adapter.parse($, url);
+            if (!raw) return;
+            const parsed = listingSchema.safeParse(raw);
+            if (!parsed.success) return invalid(parsed.error.issues);
+            stats.watchesFound++;
+            const result = await persister.save(parsed.data, startedAt);
+            if (result.created) stats.watchesCreated++;
+            if (result.priceChanged) stats.priceChanges++;
+            return;
+          }
+
+          const raw = adapter.parse($, url);
+          if (!raw) return;
+          const parsed = offerSchema.safeParse(raw);
+          if (!parsed.success) return invalid(parsed.error.issues);
+          const result = await persister.saveOffer(parsed.data, startedAt);
+          if (result.watchId === null) {
+            stats.unmatched++;
             return;
           }
           stats.watchesFound++;
-          const result = await persister.save(parsed.data, startedAt);
-          if (result.created) stats.watchesCreated++;
+          seenWatchIds.add(result.watchId);
           if (result.priceChanged) stats.priceChanges++;
         },
         failedRequestHandler({ request }, error) {
@@ -104,15 +135,28 @@ export async function runSource(
       throw new Error("Zéro montre extraite : structure de la source changée ou accès bloqué.");
     }
 
-    if (!options.limit) {
+    // Garde-fou : une exécution partielle (blocage, panne) ne doit rien marquer comme disparu.
+    if (!options.limit && adapter.kind === "official") {
       const active = await persister.activeCount(adapter.brandSlug);
-      // Garde-fou : une exécution partielle (blocage, panne) ne doit pas tout marquer « plus produite ».
       if (stats.watchesFound >= active * COMPLETE_RUN_RATIO) {
         stats.discontinued = await persister.markUnseenAsDiscontinued(adapter.brandSlug, startedAt);
       }
     }
+    if (!options.limit && adapter.kind === "retailer") {
+      const current = (await persister.currentOfferWatchIds()).length;
+      if (seenWatchIds.size >= current * COMPLETE_RUN_RATIO) {
+        stats.withdrawn = await persister.withdrawUnseenOffers(seenWatchIds, startedAt);
+      }
+    }
 
-    await persister.finishRun(runId, { ...withoutExtra(stats), status: "success" });
+    await persister.finishRun(runId, {
+      ...withoutExtra(stats),
+      status: "success",
+      message:
+        adapter.kind === "retailer"
+          ? `${stats.unmatched} fiches sans montre correspondante, ${stats.withdrawn} offres retirées`
+          : null,
+    });
     return stats;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

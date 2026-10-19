@@ -34,6 +34,9 @@ export function jsonLdNodes($: CheerioAPI): JsonObject[] {
 export interface JsonLdProduct {
   name?: string;
   sku?: string;
+  mpn?: string;
+  brand?: string;
+  gtin13?: string;
   description?: string;
   images: string[];
   price?: string | number;
@@ -58,6 +61,9 @@ export function findProduct($: CheerioAPI): JsonLdProduct | undefined {
   return {
     name: str(product.name),
     sku: str(product.sku) ?? str(product.mpn),
+    mpn: str(product.mpn),
+    brand: isObject(product.brand) ? str(product.brand.name) : str(product.brand),
+    gtin13: str(product.gtin13) ?? (isObject(offer) ? str(offer.gtin13) : undefined),
     description: str(product.description),
     images,
     price: isObject(offer) ? (offer.price as string | number | undefined) : undefined,

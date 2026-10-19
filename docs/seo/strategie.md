@@ -125,19 +125,19 @@ d'achat.
 
 ### À mettre en place
 
-| Quand | Tâche                                                                                                                                   |
-| ----- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Lot 1 | Domaine définitif, redirection `www` → apex (Vercel), `NEXT_PUBLIC_SITE_URL` en production                                              |
-| Lot 1 | Search Console + Bing Webmaster Tools, soumission du sitemap                                                                            |
-| Lot 2 | Sitemap alimenté par la base (marques, collections, fiches indexables), `lastModified` = dernier changement réel (prix, stock, specs)   |
-| Lot 2 | `generateMetadata` + JSON-LD sur toutes les pages catalogue ; `opengraph-image.tsx` par fiche                                           |
-| Lot 2 | Pages `not-found` utiles (recherche, liens marques) avec un vrai statut 404                                                             |
-| Lot 2 | Images : `next/image`, formats AVIF/WebP, dimensions explicites (CLS), `alt` descriptif (« Tissot PRX 40 cadran bleu, bracelet acier ») |
-| Lot 2 | Tests Playwright SEO : `title`, canonique, JSON-LD valide et statut HTTP sur un échantillon de pages                                    |
-| Lot 3 | Invalidation du cache (`revalidateTag`) après chaque relevé pour que prix et `lastmod` restent frais                                    |
-| Lot 3 | IndexNow (Bing, Yandex) pour signaler les pages dont le prix a changé                                                                   |
-| Lot 6 | `generateSitemaps` (un sitemap par marque) si le volume dépasse quelques milliers d'URL                                                 |
-| Si EN | Structure `/en/…`, `hreflang` réciproques, `x-default`                                                                                  |
+| Quand    | Tâche                                                                                                                                   |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Lot 1    | Domaine définitif, redirection `www` → apex (Vercel), `NEXT_PUBLIC_SITE_URL` en production                                              |
+| Lot 1    | Search Console + Bing Webmaster Tools, soumission du sitemap                                                                            |
+| Lot 2    | Sitemap alimenté par la base (marques, collections, fiches indexables), `lastModified` = dernier changement réel (prix, stock, specs)   |
+| Lot 2    | `generateMetadata` + JSON-LD sur toutes les pages catalogue ; `opengraph-image.tsx` par fiche                                           |
+| Lot 2    | Pages `not-found` utiles (recherche, liens marques) avec un vrai statut 404                                                             |
+| Lot 2    | Images : `next/image`, formats AVIF/WebP, dimensions explicites (CLS), `alt` descriptif (« Tissot PRX 40 cadran bleu, bracelet acier ») |
+| Lot 2 ✅ | Tests Playwright SEO : `title`, canonique, JSON-LD valide et statut HTTP sur un échantillon de pages                                    |
+| Lot 3 ✅ | Invalidation du cache (`revalidateTag`) après chaque relevé pour que prix et `lastmod` restent frais                                    |
+| Lot 3    | IndexNow (Bing, Yandex) pour signaler les pages dont le prix a changé                                                                   |
+| Lot 6    | `generateSitemaps` (un sitemap par marque) si le volume dépasse quelques milliers d'URL                                                 |
+| Si EN    | Structure `/en/…`, `hreflang` réciproques, `x-default`                                                                                  |
 
 ### Performance (Core Web Vitals)
 

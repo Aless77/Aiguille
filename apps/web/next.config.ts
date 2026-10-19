@@ -2,13 +2,23 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
-  partialPrefetching: true,
+  // Pas de Partial Prefetching : il sert une « coquille » en 200 aux URL absentes du build, puis
+  // appelle notFound() trop tard (soft 404 pour les moteurs). Sans lui, une URL inconnue est
+  // rendue de façon bloquante et renvoie un vrai 404. Toutes nos pages étant prérendues, leurs
+  // liens restent préchargés normalement. Vérifié par e2e/catalogue.spec.ts.
+  partialPrefetching: false,
   // Docker Desktop (Windows/macOS) ne transmet pas les événements fichiers au conteneur : sans
   // sondage, le rechargement à chaud ne voit pas les modifications. Activé par compose.yaml
   // uniquement (coûteux en CPU, déconseillé ailleurs ; voir docs/developpement.md).
   ...(process.env.NEXT_DEV_POLL_MS
     ? { watchOptions: { pollIntervalMs: Number(process.env.NEXT_DEV_POLL_MS) } }
     : {}),
+  // Build de production des tests e2e locaux dans un dossier séparé, pour ne pas écraser celui du
+  // serveur de dev (service compose « web-prod »).
+  distDir: process.env.NEXT_DIST_DIR ?? ".next",
+  // Accès au serveur de dev par son nom d'hôte Docker (« web ») depuis un autre conteneur : sans
+  // cette entrée, Next bloque ses ressources de dev et la page ne s'hydrate pas.
+  allowedDevOrigins: ["web"],
   // Paquet interne du monorepo publié en sources TypeScript.
   transpilePackages: ["@aiguille/db"],
   images: {

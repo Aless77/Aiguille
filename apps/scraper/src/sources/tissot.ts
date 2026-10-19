@@ -4,7 +4,7 @@ import { findProduct, parseAvailability } from "../lib/jsonld.ts";
 import { fetchSitemapPages } from "../lib/sitemap.ts";
 import { parseMovement, parseWaterResistance, pick } from "../lib/specs.ts";
 import { cleanText, parseNumber, toCents } from "../lib/text.ts";
-import { type SourceAdapter } from "./types.ts";
+import { type OfficialAdapter } from "./types.ts";
 
 const PRODUCT_URL = /^https:\/\/www\.tissotwatches\.com\/fr-fr\/(T[0-9A-Z]{6,})\.html$/;
 
@@ -78,7 +78,8 @@ export function parseTissot($: CheerioAPI, url: string) {
   };
 }
 
-export const tissot: SourceAdapter = {
+export const tissot: OfficialAdapter = {
+  kind: "official",
   id: "tissot-officiel",
   brandSlug: "tissot",
   async discover() {
