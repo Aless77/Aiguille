@@ -6,6 +6,7 @@ import { listingSchema } from "./listing.ts";
 import { offerSchema } from "./offer.ts";
 import { Persister } from "./persist.ts";
 import { fetchRobots } from "./robots.ts";
+import { extractionFailure } from "./run-health.ts";
 import { createPoliteCrawler } from "./http.ts";
 
 export interface RunOptions {
@@ -110,9 +111,11 @@ export async function runSource(
 
     await crawler.run(urls);
 
-    if (stats.watchesFound === 0) {
-      throw new Error("Zéro montre extraite : structure de la source changée ou accès bloqué.");
-    }
+    const failure = extractionFailure(
+      { matched: stats.watchesFound, unmatched: stats.unmatched },
+      Boolean(options.limit),
+    );
+    if (failure) throw new Error(failure);
 
     // Garde-fou : une exécution partielle (blocage, panne) ne doit rien marquer comme disparu.
     if (!options.limit && adapter.kind === "official") {
