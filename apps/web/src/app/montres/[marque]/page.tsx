@@ -5,7 +5,13 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { buttonVariants } from "@/components/ui/button";
 import { WatchGrid } from "@/components/watch-card";
 import { formatPrice } from "@/lib/catalog/format";
-import { getBrand, getBrands, getCollections, getWatchCards } from "@/lib/catalog/queries";
+import {
+  getBrand,
+  getBrands,
+  getCollections,
+  getStoreCounts,
+  getWatchCards,
+} from "@/lib/catalog/queries";
 import { serializeCatalogParams } from "@/lib/catalog/search-params";
 import { PLACEHOLDER_SLUG, withPlaceholder } from "@/lib/catalog/static-params";
 import { JsonLd, itemListJsonLd } from "@/lib/seo/json-ld";
@@ -49,10 +55,12 @@ export default async function BrandPage({ params }: PageProps<"/montres/[marque]
   const brand = await getBrand(marque);
   if (!brand) notFound();
 
-  const [collections, top] = await Promise.all([
+  const [collections, top, storeCounts] = await Promise.all([
     getCollections(brand.slug),
     getWatchCards({ brandSlug: brand.slug, sort: "prix-asc", page: 1 }),
+    getStoreCounts(),
   ]);
+  const storeCount = storeCounts.find((c) => c.brandSlug === brand.slug)?.count ?? 0;
 
   return (
     <div className="space-y-10">
@@ -64,6 +72,15 @@ export default async function BrandPage({ params }: PageProps<"/montres/[marque]
             {brand.watchCount} références {brand.name} suivies, réparties en {collections.length}{" "}
             collections, avec des prix catalogue officiels de {formatPrice(brand.minPriceCents)} à{" "}
             {formatPrice(brand.maxPriceCents)}.
+            {storeCount > 0 && (
+              <>
+                {" "}
+                <Link href={`/boutiques/${brand.slug}`} className="underline underline-offset-4">
+                  Voir les {storeCount} boutiques agréées en Europe
+                </Link>
+                .
+              </>
+            )}
           </p>
         ) : (
           <p className="text-muted-foreground">

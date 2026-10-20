@@ -16,9 +16,11 @@ const nextConfig: NextConfig = {
   // Build de production des tests e2e locaux dans un dossier séparé, pour ne pas écraser celui du
   // serveur de dev (service compose « web-prod »).
   distDir: process.env.NEXT_DIST_DIR ?? ".next",
-  // Accès au serveur de dev par son nom d'hôte Docker (« web ») depuis un autre conteneur : sans
-  // cette entrée, Next bloque ses ressources de dev et la page ne s'hydrate pas.
-  allowedDevOrigins: ["web"],
+  // Next n'autorise par défaut que « localhost » pour ses ressources de dev. Sans ces entrées, la
+  // page ne s'hydrate pas (composants clients muets, cartes vides) quand on l'ouvre :
+  // - par 127.0.0.1 depuis le navigateur du poste ;
+  // - par le nom d'hôte Docker « web » depuis un autre conteneur (tests e2e).
+  allowedDevOrigins: ["127.0.0.1", "web"],
   // Paquet interne du monorepo publié en sources TypeScript.
   transpilePackages: ["@aiguille/db"],
   images: {

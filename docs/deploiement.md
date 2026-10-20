@@ -87,8 +87,9 @@ Déclarer le site dans Google Search Console et Bing Webmaster Tools et soumettr
 ### 7. Collecte quotidienne (GitHub Actions)
 
 Workflow [.github/workflows/scrape.yml](../.github/workflows/scrape.yml) : chaque nuit à 03:00 UTC,
-une tâche par marque en parallèle (~1 h), puis une par revendeur (~1 h 45), après application
-des migrations. Sans le
+une tâche par marque en parallèle, qui enchaîne France, 2 pays du jour et un lot de boutiques
+(Longines, la plus longue : ~3 h 15), puis une tâche par revendeur (~1 h 45), après application
+des migrations et récupération des taux BCE. Sans le
 secret `DATABASE_URL`, le workflow s'arrête proprement avec un avertissement.
 
 1. GitHub → Settings → Secrets and variables → Actions :

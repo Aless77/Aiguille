@@ -1,4 +1,13 @@
-import { brands, collections, getDb, priceObservations, scrapeRuns, watches } from "@aiguille/db";
+import {
+  brands,
+  collections,
+  exchangeRates,
+  getDb,
+  priceObservations,
+  scrapeRuns,
+  stores,
+  watches,
+} from "@aiguille/db";
 import { and, asc, desc, eq, gte, inArray, isNull, lte, ne, type SQL, sql } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
 
@@ -331,7 +340,10 @@ export async function getLastRuns(): Promise<{ brandSlug: string; finishedAt: Da
     }));
 }
 
-/** Relevés de prix et de stock d'une montre, toutes sources (historique de la fiche). */
+/**
+ * Relevés de prix et de stock d'une montre en France, toutes sources (historique et offres de la
+ * fiche). Les prix des autres pays, en devises locales, sont lus par getCountryPrices.
+ */
 export async function getPriceObservations(watchId: number) {
   "use cache";
   cached();
@@ -344,7 +356,7 @@ export async function getPriceObservations(watchId: number) {
       url: priceObservations.url,
     })
     .from(priceObservations)
-    .where(eq(priceObservations.watchId, watchId))
+    .where(and(eq(priceObservations.watchId, watchId), eq(priceObservations.country, "FR")))
     .orderBy(asc(priceObservations.observedAt));
 }
 
@@ -372,4 +384,139 @@ export async function getNewWatches(
     db.select({ since: sql<Date | null>`min(${watches.firstSeenAt})` }).from(watches),
   ]);
   return { items, trackedSince: range?.since ? new Date(range.since) : null };
+}
+
+/** Dernier prix officiel de la montre dans chaque pays couvert (lot 4), en devise locale. */
+export async function getCountryPrices(watchId: number, officialSource: string) {
+  "use cache";
+  cached();
+  return getDb()
+    .selectDistinctOn([priceObservations.country], {
+      country: priceObservations.country,
+      priceCents: priceObservations.priceCents,
+      currency: priceObservations.currency,
+      availability: priceObservations.availability,
+      observedAt: priceObservations.observedAt,
+      url: priceObservations.url,
+    })
+    .from(priceObservations)
+    .where(
+      and(eq(priceObservations.watchId, watchId), eq(priceObservations.source, officialSource)),
+    )
+    .orderBy(priceObservations.country, desc(priceObservations.observedAt));
+}
+
+/** Derniers taux BCE connus (unités de devise pour 1 €) et date de la plus récente publication. */
+export async function getLatestRates(): Promise<{
+  date: string | null;
+  unitsPerEur: Record<string, number>;
+}> {
+  "use cache";
+  cached();
+  const rows = await getDb()
+    .selectDistinctOn([exchangeRates.currency], {
+      currency: exchangeRates.currency,
+      unitsPerEur: exchangeRates.unitsPerEur,
+      date: exchangeRates.date,
+    })
+    .from(exchangeRates)
+    .orderBy(exchangeRates.currency, desc(exchangeRates.date));
+  return {
+    date:
+      rows
+        .map((r) => r.date)
+        .sort()
+        .at(-1) ?? null,
+    unitsPerEur: Object.fromEntries(rows.map((r) => [r.currency, r.unitsPerEur])),
+  };
+}
+
+export interface StorePoint {
+  name: string;
+  street: string | null;
+  postalCode: string | null;
+  city: string;
+  country: string;
+  latitude: number;
+  longitude: number;
+  brandSlug: string;
+  brandName: string;
+}
+
+/** Boutiques agréées actives (lot 4), d'une marque ou de toutes. */
+export async function getStores(brandSlug?: string): Promise<StorePoint[]> {
+  "use cache";
+  cached();
+  const rows = await getDb()
+    .select({
+      name: stores.name,
+      street: stores.street,
+      postalCode: stores.postalCode,
+      city: stores.city,
+      country: stores.country,
+      latitude: stores.latitude,
+      longitude: stores.longitude,
+      brandSlug: brands.slug,
+      brandName: brands.name,
+    })
+    .from(stores)
+    .innerJoin(brands, eq(brands.id, stores.brandId))
+    .where(and(eq(stores.status, "active"), brandSlug ? eq(brands.slug, brandSlug) : undefined))
+    .orderBy(asc(stores.country), asc(stores.city), asc(stores.name));
+  // Une même boutique peut figurer dans plusieurs sitemaps nationaux (URL différentes) :
+  // dédoublonnage par marque, nom, adresse et ville.
+  const seen = new Set<string>();
+  return rows.filter((r): r is StorePoint => {
+    if (r.name === null || r.city === null || r.country === null) return false;
+    if (r.latitude === null || r.longitude === null) return false;
+    const key = [r.brandSlug, r.name, r.street ?? "", r.city].join("|").toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+/** Nombre de boutiques agréées actives par marque (liens et sitemap). */
+export async function getStoreCounts(): Promise<
+  { brandSlug: string; brandName: string; count: number }[]
+> {
+  "use cache";
+  cached();
+  return getDb()
+    .select({ brandSlug: brands.slug, brandName: brands.name, count: sql<number>`count(*)::int` })
+    .from(stores)
+    .innerJoin(brands, eq(brands.id, stores.brandId))
+    .where(eq(stores.status, "active"))
+    .groupBy(brands.slug, brands.name)
+    .orderBy(sql`count(*) desc`);
+}
+
+/** Dernier prix officiel de chaque montre dans chaque pays (indice des prix européens). */
+export async function getOfficialCountryPrices() {
+  "use cache";
+  cached();
+  return getDb()
+    .selectDistinctOn([priceObservations.watchId, priceObservations.country], {
+      brandSlug: brands.slug,
+      brandName: brands.name,
+      watchId: priceObservations.watchId,
+      country: priceObservations.country,
+      priceCents: priceObservations.priceCents,
+      currency: priceObservations.currency,
+      availability: priceObservations.availability,
+    })
+    .from(priceObservations)
+    .innerJoin(watches, eq(watches.id, priceObservations.watchId))
+    .innerJoin(brands, eq(brands.id, watches.brandId))
+    .where(
+      and(
+        sql`${priceObservations.source} = ${brands.slug} || '-officiel'`,
+        eq(watches.status, "active"),
+      ),
+    )
+    .orderBy(
+      priceObservations.watchId,
+      priceObservations.country,
+      desc(priceObservations.observedAt),
+    );
 }

@@ -35,6 +35,8 @@ export class Persister {
   constructor(
     private readonly db: Database,
     private readonly source: string,
+    /** Nom de l'exécution dans le journal (« tissot-officiel@DE » pour un relevé par pays). */
+    private readonly runLabel: string = source,
   ) {}
 
   private async brandId(slug: string): Promise<number> {
@@ -121,11 +123,12 @@ export class Persister {
     return { created: row.created, priceChanged };
   }
 
-  /** Ajoute un relevé pour (montre, source) si le prix ou la disponibilité a changé. */
+  /** Ajoute un relevé pour (montre, source, pays) si le prix ou la disponibilité a changé. */
   private async recordObservation(
     watchId: number,
     observation: Observation & { url: string; currency: string },
     seenAt: Date,
+    country = "FR",
   ): Promise<boolean> {
     const [last] = await this.db
       .select({
@@ -133,7 +136,13 @@ export class Persister {
         availability: priceObservations.availability,
       })
       .from(priceObservations)
-      .where(and(eq(priceObservations.watchId, watchId), eq(priceObservations.source, this.source)))
+      .where(
+        and(
+          eq(priceObservations.watchId, watchId),
+          eq(priceObservations.source, this.source),
+          eq(priceObservations.country, country),
+        ),
+      )
       .orderBy(desc(priceObservations.observedAt))
       .limit(1);
 
@@ -141,6 +150,7 @@ export class Persister {
     await this.db.insert(priceObservations).values({
       watchId,
       source: this.source,
+      country,
       priceCents: observation.priceCents ?? null,
       currency: observation.currency,
       availability: observation.availability,
@@ -148,6 +158,27 @@ export class Persister {
       observedAt: seenAt,
     });
     return true;
+  }
+
+  /** Prix national d'une montre du catalogue (lot 4), dans la devise du pays. */
+  saveCountryPrice(
+    watchId: number,
+    country: string,
+    observation: Observation & { url: string; currency: string },
+    seenAt: Date,
+  ): Promise<boolean> {
+    return this.recordObservation(watchId, observation, seenAt, country);
+  }
+
+  /** Montres actives d'une marque ayant une fiche officielle (base des relevés par pays). */
+  async officialPages(brandSlug: string): Promise<{ id: number; url: string }[]> {
+    const brandId = await this.brandId(brandSlug);
+    const rows = await this.db
+      .select({ id: watches.id, url: watches.officialUrl })
+      .from(watches)
+      .where(and(eq(watches.brandId, brandId), eq(watches.status, "active")))
+      .orderBy(watches.id);
+    return rows.filter((r): r is { id: number; url: string } => r.url !== null);
   }
 
   /**
@@ -239,11 +270,11 @@ export class Persister {
     await this.db
       .update(scrapeRuns)
       .set({ status: "failed", message: "Interrompue avant la fin", finishedAt: new Date() })
-      .where(and(eq(scrapeRuns.source, this.source), eq(scrapeRuns.status, "running")));
+      .where(and(eq(scrapeRuns.source, this.runLabel), eq(scrapeRuns.status, "running")));
 
     const [row] = await this.db
       .insert(scrapeRuns)
-      .values({ source: this.source })
+      .values({ source: this.runLabel })
       .returning({ id: scrapeRuns.id });
     if (!row) throw new Error("Exécution non enregistrée");
     return row.id;

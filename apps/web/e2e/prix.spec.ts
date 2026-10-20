@@ -28,7 +28,9 @@ test.describe("historique des prix (lot 3)", () => {
     await expect(page.getByText(/le prix le plus bas relevé est\s*760/)).toBeVisible();
     await expect(page.getByText(/le plus haut\s*795/)).toBeVisible();
     await expect(page.getByRole("img", { name: /Graphique de l'évolution du prix/ })).toBeVisible();
-    await expect(page.locator('[role="img"] svg')).toBeVisible();
+    await expect(
+      page.getByRole("img", { name: /Graphique de l'évolution du prix/ }).locator("svg"),
+    ).toBeVisible();
 
     const product = (await jsonLd(page)).find((d) => d["@type"] === "Product");
     expect(product).toMatchObject({ offers: { availability: "https://schema.org/InStock" } });

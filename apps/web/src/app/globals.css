@@ -135,3 +135,55 @@
     @apply font-sans;
   }
 }
+
+/* Les bulles MapLibre utilisent sinon un fond blanc avec le texte hérité du thème sombre. */
+.store-popup .maplibregl-popup-content {
+  background: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 2rem 1rem 1rem;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  max-height: 20rem;
+  overflow-y: auto;
+}
+
+.store-popup.maplibregl-popup-anchor-top .maplibregl-popup-tip,
+.store-popup.maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+.store-popup.maplibregl-popup-anchor-top-right .maplibregl-popup-tip {
+  border-bottom-color: var(--popover);
+}
+
+.store-popup.maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+.store-popup.maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+.store-popup.maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+  border-top-color: var(--popover);
+}
+
+.store-popup.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: var(--popover);
+}
+
+.store-popup.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: var(--popover);
+}
+
+.store-popup .maplibregl-popup-close-button {
+  color: var(--popover-foreground);
+  padding: 0.25rem 0.5rem;
+  font-size: 1.25rem;
+}
+
+.store-popup-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.store-popup-details a {
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

@@ -36,6 +36,10 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image" },
   robots: isIndexable() ? { index: true, follow: true } : { index: false, follow: false },
+  // Le site a son propre thème sombre : demande à Dark Reader de ne pas réécrire la page (sinon
+  // ses attributs injectés provoquent des erreurs d'hydratation et faussent les couleurs).
+  // Une valeur vide est omise par Next.js : il faut une valeur non vide pour émettre la balise.
+  other: { "darkreader-lock": "true" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

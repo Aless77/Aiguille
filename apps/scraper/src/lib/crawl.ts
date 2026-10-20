@@ -1,13 +1,12 @@
 import { type Database } from "@aiguille/db";
-import { CheerioCrawler, Configuration } from "@crawlee/cheerio";
 
-import { DOMAIN_DELAY_SECS, USER_AGENT } from "../config.ts";
+import { DOMAIN_DELAY_SECS } from "../config.ts";
 import { type SourceAdapter } from "../sources/types.ts";
 import { listingSchema } from "./listing.ts";
 import { offerSchema } from "./offer.ts";
 import { Persister } from "./persist.ts";
 import { fetchRobots } from "./robots.ts";
-import { createThrottle } from "./throttle.ts";
+import { createPoliteCrawler } from "./http.ts";
 
 export interface RunOptions {
   /**
@@ -68,66 +67,46 @@ export async function runSource(
     );
     if (options.limit) urls = urls.slice(0, options.limit);
     const delaySecs = Math.max(DOMAIN_DELAY_SECS, robots.crawlDelaySecs ?? 0);
-    const throttle = createThrottle(delaySecs * 1000);
+    const crawler = createPoliteCrawler({
+      delaySecs,
+      async requestHandler({ $, request }) {
+        stats.pagesFetched++;
+        const url = request.loadedUrl ?? request.url;
+        const invalid = (issues: unknown) => {
+          stats.errors++;
+          console.warn(`[${adapter.id}] fiche invalide ${request.url}`, issues);
+        };
 
-    const crawler = new CheerioCrawler(
-      {
-        // Une exécution = un seul domaine, une requête à la fois. Le délai minimal entre deux
-        // requêtes est garanti par throttle() : maxRequestsPerMinute seul autorise des rafales, et
-        // sameDomainDelaySecs remet les requêtes en fin de file (~1 requête/minute).
-        maxConcurrency: 1,
-        maxRequestRetries: 2,
-        requestHandlerTimeoutSecs: 60,
-        // robots.txt est vérifié par fetchRobots (avec notre User-Agent), pas par Crawlee.
-        // Pas de session ni d'en-têtes imitant un navigateur : on se présente tel quel.
-        useSessionPool: false,
-        preNavigationHooks: [
-          async (_ctx, gotOptions) => {
-            await throttle();
-            gotOptions.useHeaderGenerator = false;
-            gotOptions.headers = { ...gotOptions.headers, "user-agent": USER_AGENT };
-          },
-        ],
-        async requestHandler({ $, request }) {
-          stats.pagesFetched++;
-          const url = request.loadedUrl ?? request.url;
-          const invalid = (issues: unknown) => {
-            stats.errors++;
-            console.warn(`[${adapter.id}] fiche invalide ${request.url}`, issues);
-          };
-
-          if (adapter.kind === "official") {
-            const raw = adapter.parse($, url);
-            if (!raw) return;
-            const parsed = listingSchema.safeParse(raw);
-            if (!parsed.success) return invalid(parsed.error.issues);
-            stats.watchesFound++;
-            const result = await persister.save(parsed.data, startedAt);
-            if (result.created) stats.watchesCreated++;
-            if (result.priceChanged) stats.priceChanges++;
-            return;
-          }
-
+        if (adapter.kind === "official") {
           const raw = adapter.parse($, url);
           if (!raw) return;
-          const parsed = offerSchema.safeParse(raw);
+          const parsed = listingSchema.safeParse(raw);
           if (!parsed.success) return invalid(parsed.error.issues);
-          const result = await persister.saveOffer(parsed.data, startedAt);
-          if (result.watchId === null) {
-            stats.unmatched++;
-            return;
-          }
           stats.watchesFound++;
-          seenWatchIds.add(result.watchId);
+          const result = await persister.save(parsed.data, startedAt);
+          if (result.created) stats.watchesCreated++;
           if (result.priceChanged) stats.priceChanges++;
-        },
-        failedRequestHandler({ request }, error) {
-          stats.errors++;
-          console.warn(`[${adapter.id}] échec ${request.url} : ${error.message}`);
-        },
+          return;
+        }
+
+        const raw = adapter.parse($, url);
+        if (!raw) return;
+        const parsed = offerSchema.safeParse(raw);
+        if (!parsed.success) return invalid(parsed.error.issues);
+        const result = await persister.saveOffer(parsed.data, startedAt);
+        if (result.watchId === null) {
+          stats.unmatched++;
+          return;
+        }
+        stats.watchesFound++;
+        seenWatchIds.add(result.watchId);
+        if (result.priceChanged) stats.priceChanges++;
       },
-      new Configuration({ persistStorage: false }),
-    );
+      failedRequestHandler({ request }, error) {
+        stats.errors++;
+        console.warn(`[${adapter.id}] échec ${request.url} : ${error.message}`);
+      },
+    });
 
     await crawler.run(urls);
 

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { EuropePricesSection } from "@/components/europe-prices-section";
 import { OffersSection } from "@/components/offers-section";
 import { PriceHistorySection } from "@/components/price-history-section";
 import { Badge } from "@/components/ui/badge";
@@ -18,8 +19,12 @@ import {
   watchSummary,
 } from "@/lib/catalog/format";
 import { AVAILABILITY_LABELS, buildPriceHistory, currentOffers } from "@/lib/catalog/price-history";
+import { buildEuropePrices } from "@/lib/catalog/europe-prices";
 import {
   getAllWatchPaths,
+  getCountryPrices,
+  getLatestRates,
+  getStoreCounts,
   getPriceObservations,
   getSimilarWatches,
   getWatch,
@@ -71,10 +76,15 @@ export default async function WatchPage({ params }: Props) {
 
   const name = displayName(w.brandName, w.name);
   const summary = watchSummary({ ...w, catalogPriceCents: w.priceCents });
-  const [similar, observations] = await Promise.all([
+  const [similar, observations, countryPrices, rates, storeCounts] = await Promise.all([
     getSimilarWatches(w.id, w.brandSlug, w.collectionSlug, w.priceCents),
     getPriceObservations(w.id),
+    getCountryPrices(w.id, `${w.brandSlug}-officiel`),
+    getLatestRates(),
+    getStoreCounts(),
   ]);
+  const storeCount = storeCounts.find((c) => c.brandSlug === w.brandSlug)?.count ?? 0;
+  const europePrices = buildEuropePrices(countryPrices, rates.unitsPerEur);
   const history = buildPriceHistory(
     observations,
     w.brandName,
@@ -170,6 +180,17 @@ export default async function WatchPage({ params }: Props) {
       </div>
 
       <OffersSection offers={offers} />
+      {storeCount > 0 && (
+        <p className="-mt-8 text-sm text-muted-foreground">
+          Pour la voir en vrai :{" "}
+          <Link href={`/boutiques/${w.brandSlug}`} className="underline underline-offset-4">
+            {storeCount} boutiques agréées {w.brandName} en Europe
+          </Link>{" "}
+          (stock non publié par la marque).
+        </p>
+      )}
+
+      <EuropePricesSection prices={europePrices} ratesDate={rates.date} />
 
       <PriceHistorySection history={history} />
 

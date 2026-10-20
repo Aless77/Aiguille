@@ -129,17 +129,77 @@ export const priceObservations = pgTable(
       .references(() => watches.id, { onDelete: "cascade" }),
     /** Identifiant de la source (ex. « tissot-officiel »). */
     source: text("source").notNull(),
+    /**
+     * Pays du prix (code ISO 3166-1 alpha-2) : la même source publie un prix par pays (lot 4).
+     * Les prix sont stockés dans la devise locale, convertis à l'affichage (exchange_rates).
+     */
+    country: text("country").notNull().default("FR"),
+    /** Prix en centimes de la devise `currency`. */
     priceCents: integer("price_cents"),
     currency: text("currency").notNull().default("EUR"),
     availability: availability("availability").notNull().default("unknown"),
     url: text("url"),
     observedAt: timestamp("observed_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("price_observations_watch_source_idx").on(t.watchId, t.source, t.observedAt)],
+  (t) => [
+    index("price_observations_watch_source_idx").on(t.watchId, t.source, t.country, t.observedAt),
+  ],
 );
 
 export type PriceObservation = typeof priceObservations.$inferSelect;
 export type NewPriceObservation = typeof priceObservations.$inferInsert;
+
+/**
+ * Taux de change de la BCE (via Frankfurter), un par jour et par devise : nombre d'unités de la
+ * devise pour 1 euro. Sert à convertir les prix nationaux en euros.
+ */
+export const exchangeRates = pgTable(
+  "exchange_rates",
+  {
+    date: text("date").notNull(),
+    currency: text("currency").notNull(),
+    unitsPerEur: numeric("units_per_eur", { precision: 14, scale: 6, mode: "number" }).notNull(),
+  },
+  (t) => [uniqueIndex("exchange_rates_date_currency_idx").on(t.date, t.currency)],
+);
+
+export type ExchangeRate = typeof exchangeRates.$inferSelect;
+
+export const storeStatus = pgEnum("store_status", ["pending", "active", "ignored", "closed"]);
+
+/**
+ * Points de vente agréés publiés par les marques (lot 4). Le stock par boutique n'est publié par
+ * aucune source : la carte présente des boutiques agréées, pas une disponibilité.
+ * `pending` : URL découverte, pas encore visitée ; `ignored` : hors des pays couverts.
+ */
+export const stores = pgTable(
+  "stores",
+  {
+    id: serial("id").primaryKey(),
+    brandId: integer("brand_id")
+      .notNull()
+      .references(() => brands.id),
+    source: text("source").notNull(),
+    url: text("url").notNull(),
+    status: storeStatus("status").notNull().default("pending"),
+    name: text("name"),
+    street: text("street"),
+    postalCode: text("postal_code"),
+    city: text("city"),
+    country: text("country"),
+    latitude: numeric("latitude", { precision: 9, scale: 6, mode: "number" }),
+    longitude: numeric("longitude", { precision: 9, scale: 6, mode: "number" }),
+    firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    /** Dernière visite de la page (rafraîchissement par lots, les plus anciennes d'abord). */
+    visitedAt: timestamp("visited_at", { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex("stores_source_url_idx").on(t.source, t.url),
+    index("stores_brand_country_idx").on(t.brandId, t.country, t.status),
+  ],
+);
+
+export type Store = typeof stores.$inferSelect;
 
 export const scrapeRunStatus = pgEnum("scrape_run_status", ["running", "success", "failed"]);
 
