@@ -145,4 +145,29 @@ export const longines: OfficialAdapter = {
     return pages.filter((url) => PRODUCT_URL.test(url));
   },
   parse: parseLongines,
+  // Pas de version irlandaise (renvoi vers le site britannique en livres) : pays non relevé.
+  locales: {
+    FR: "fr",
+    DE: "de",
+    IT: "it",
+    ES: "es",
+    NL: "nl",
+    BE: "fr-be",
+    AT: "de-at",
+    PT: "pt",
+    CH: "fr-ch",
+    GB: "en-gb",
+    SE: "en-se",
+    DK: "en-dk",
+    PL: "pl",
+  },
+  localizeUrl: (url, locale) => url.replace("/fr/p/", `/${locale}/p/`),
+  // Sitemap mondial (~4 000 boutiques) : les pays non couverts sont écartés à la lecture.
+  stores: {
+    id: "longines-boutiques",
+    async discover() {
+      const pages = await fetchSitemapPages("https://www.longines.com/fr/sitemap/stores.xml");
+      return pages.filter((url) => /\/fr\/store\/id\/[a-z0-9-]+$/.test(url));
+    },
+  },
 };

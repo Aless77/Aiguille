@@ -67,4 +67,53 @@ export const hamilton: OfficialAdapter = {
     return pages.filter((url) => PRODUCT_URL.test(url));
   },
   parse: parseHamilton,
+  // Pas de version portugaise ni polonaise (site « international » en CHF) : pays non relevés.
+  locales: {
+    FR: "fr-fr",
+    DE: "de-de",
+    IT: "it-it",
+    ES: "es-es",
+    NL: "nl-nl",
+    BE: "fr-be",
+    AT: "de-at",
+    IE: "en-ie",
+    CH: "fr-ch",
+    GB: "en-gb",
+    SE: "sv-se",
+    DK: "da-dk",
+  },
+  localizeUrl: (url, locale) => url.replace("/fr-fr/", `/${locale}/`),
+  // Chaque sitemap national liste les boutiques de son pays (store-locator/pays/région/ville/nom).
+  stores: {
+    id: "hamilton-boutiques",
+    async discover() {
+      const sitemaps = [
+        "fr_fr",
+        "de_de",
+        "it_it",
+        "es_es",
+        "nl_nl",
+        "fr_be",
+        "de_at",
+        "en_ie",
+        "fr_ch",
+        "en_gb",
+        "sv_se",
+        "da_dk",
+      ];
+      const pages: string[] = [];
+      for (const [i, locale] of sitemaps.entries()) {
+        // Même règle de rythme que pour les fiches : pas de rafale sur le domaine.
+        if (i > 0) await new Promise((resolve) => setTimeout(resolve, 2000));
+        pages.push(
+          ...(await fetchSitemapPages(
+            `https://www.hamiltonwatch.com/media/sitemap/sitemap_${locale}.xml`,
+          )),
+        );
+      }
+      return [...new Set(pages)].filter((url) =>
+        /\/store-locator\/[^/]+\/[^/]+\/[^/]+\/[^/]+$/.test(url),
+      );
+    },
+  },
 };

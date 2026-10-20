@@ -53,20 +53,30 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - if: steps.config.outputs.configured == 'true'
-        run: npm ci -w @aiguille/db --no-audit --no-fund
+        run: npm ci -w @aiguille/scraper -w @aiguille/db --no-audit --no-fund
       - if: steps.config.outputs.configured == 'true'
         name: Appliquer les migrations
         run: npm run db:migrate && npm run db:seed
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # Taux BCE du jour (conversion des prix nationaux, lot 4). Un échec ne bloque pas la collecte.
+      - if: steps.config.outputs.configured == 'true'
+        name: Taux de change
+        continue-on-error: true
+        run: npm run scraper -- taux
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SCRAPER_USER_AGENT: ${{ vars.SCRAPER_USER_AGENT }}
 
-  # Sites officiels d'abord : ils définissent le catalogue.
+  # Sites officiels d'abord : ils définissent le catalogue. Tout ce qui visite le site d'une marque
+  # (France, pays du jour, boutiques) s'enchaîne dans la même tâche : jamais deux tâches en
+  # parallèle sur un même domaine. Longines, la plus longue : ~3 h 15.
   scrape:
     name: Collecte ${{ matrix.source }}
     needs: migrations
     if: needs.migrations.outputs.configured == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 330
     strategy:
       # Une source cassée ne doit pas empêcher la collecte des autres.
       fail-fast: false
@@ -79,13 +89,23 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci -w @aiguille/scraper -w @aiguille/db --no-audit --no-fund
-      - name: Collecter
+      - name: Catalogue et prix France
         run: npm run scraper -- ${{ matrix.source }} ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
-        env:
+        env: &scraper-env
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
           SITE_URL: ${{ vars.SITE_URL }}
           SCRAPER_USER_AGENT: ${{ vars.SCRAPER_USER_AGENT }}
+      # Lot 4 : deux pays par nuit en rotation, chacun revu chaque semaine.
+      - name: Prix des pays du jour
+        if: ${{ !cancelled() }}
+        run: npm run scraper -- ${{ matrix.source }} --pays auto ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
+        env: *scraper-env
+      # Lot 4 : boutiques agréées, par lots de 400 (Tissot : non publiées, étape sans effet).
+      - name: Boutiques agréées
+        if: ${{ !cancelled() }}
+        run: npm run scraper -- ${{ matrix.source }} --boutiques ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
+        env: *scraper-env
 
   # Revendeurs ensuite : leurs offres sont rattachées aux montres du catalogue (une nouvelle
   # référence du jour doit déjà exister). Lancés même si une source officielle a échoué.

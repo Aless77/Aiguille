@@ -21,6 +21,12 @@ export async function SiteHeader() {
           <Link href="/nouveautes" className="text-muted-foreground hover:text-foreground">
             Nouveautés
           </Link>
+          <Link
+            href="/boutiques"
+            className="hidden text-muted-foreground hover:text-foreground md:inline"
+          >
+            Boutiques
+          </Link>
           {brands.map((b) => (
             <Link
               key={b.slug}

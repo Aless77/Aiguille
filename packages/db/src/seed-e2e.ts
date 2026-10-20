@@ -1,7 +1,14 @@
 import { eq } from "drizzle-orm";
 
 import { closeDb, getDb } from "./client.ts";
-import { brands, collections, priceObservations, watches } from "./schema.ts";
+import {
+  brands,
+  collections,
+  exchangeRates,
+  priceObservations,
+  stores,
+  watches,
+} from "./schema.ts";
 
 /**
  * Données fictives pour les tests de bout en bout en CI, où la base est vide. Références
@@ -96,6 +103,29 @@ for (const f of fixtures) {
       })),
     );
   }
+  // Lot 4 : prix suisse et allemand de TEST-0001 (moins chère en Suisse après conversion).
+  if (watch && f.reference === "TEST-0001") {
+    await db.insert(priceObservations).values([
+      {
+        watchId: watch.id,
+        source: "tissot-officiel",
+        country: "CH",
+        priceCents: 70000,
+        currency: "CHF",
+        availability: "in_stock" as const,
+        observedAt: daysAgo(3),
+      },
+      {
+        watchId: watch.id,
+        source: "tissot-officiel",
+        country: "DE",
+        priceCents: 77500,
+        currency: "EUR",
+        availability: "in_stock" as const,
+        observedAt: daysAgo(3),
+      },
+    ]);
+  }
   if (watch) {
     await db.insert(priceObservations).values(
       f.prices.map((p) => ({
@@ -109,5 +139,49 @@ for (const f of fixtures) {
   }
 }
 
-console.log(`Seed e2e : ${fixtures.length} montres de test.`);
+// Taux BCE fictif (1 € = 0,9261 CHF) et trois boutiques de test, pour les pages du lot 4.
+await db
+  .insert(exchangeRates)
+  .values({ date: daysAgo(1).toISOString().slice(0, 10), currency: "CHF", unitsPerEur: 0.9261 })
+  .onConflictDoNothing();
+await db
+  .insert(stores)
+  .values(
+    [
+      {
+        name: "Boutique de test Opéra",
+        street: "1 rue de Test",
+        postalCode: "75009",
+        city: "Paris",
+        latitude: 48.8708,
+        longitude: 2.3319,
+      },
+      {
+        name: "Boutique de test Marais",
+        street: "2 rue de Test",
+        postalCode: "75004",
+        city: "Paris",
+        latitude: 48.8566,
+        longitude: 2.3622,
+      },
+      {
+        name: "Boutique de test Bellecour",
+        street: "3 rue de Test",
+        postalCode: "69002",
+        city: "Lyon",
+        latitude: 45.7578,
+        longitude: 4.832,
+      },
+    ].map((s, i) => ({
+      ...s,
+      brandId: brand.id,
+      source: "e2e-boutiques",
+      url: `https://boutiques.example/${i}`,
+      status: "active" as const,
+      country: "FR",
+    })),
+  )
+  .onConflictDoNothing();
+
+console.log(`Seed e2e : ${fixtures.length} montres de test, 3 boutiques.`);
 await closeDb();

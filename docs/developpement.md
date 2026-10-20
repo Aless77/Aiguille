@@ -5,6 +5,12 @@
 Rien n'est installé sur le poste hors Docker et Git. Les dépendances npm vivent dans des volumes
 Docker (`node_modules`, `.next`) : binaires Linux, disque rapide, aucun `node_modules` sur l'hôte.
 
+Le serveur de développement utilise le volume `web_next` (`.next`). Les outils et le serveur des
+tests de production utilisent un autre volume, `web_check_next` (`.next-e2e`). Ainsi, un build ou
+une génération de types ne réécrit pas le cache du serveur ouvert sur le port 3000. Les sorties de
+build restent sur disque Linux : les milliers de fichiers générés ne transitent pas par le partage
+Windows. Ne pas lancer deux builds simultanément dans `.next-e2e`.
+
 | Service   | Rôle                                                      | Port |
 | --------- | --------------------------------------------------------- | ---- |
 | `setup`   | `npm ci`, migrations, seed ; se termine puis libère `web` | —    |
@@ -36,6 +42,9 @@ committez `package.json` et `package-lock.json`. Les autres développeurs relanc
 docker compose run --rm scraper                      # toutes les sources (long : 4 s par fiche)
 docker compose run --rm scraper hamilton --limit 5   # essai sur 5 fiches
 docker compose run --rm scraper lepage ocarat        # revendeurs (après les sites officiels)
+docker compose run --rm scraper taux                 # taux de change BCE du jour
+docker compose run --rm scraper tissot --pays CH,GB  # prix nationaux (--pays auto : pays du jour)
+docker compose run --rm scraper longines --boutiques # boutiques agréées, lot de 400
 ```
 
 En essai (`--limit`), les montres non revues ne sont jamais marquées « plus produites ».
@@ -94,10 +103,40 @@ Plus rapide et plus léger : cloner le dépôt **dans WSL 2** (pas sur `C:`) et 
 `docker compose up` depuis WSL. Les fichiers ne traversent plus la couche de partage et le
 sondage devient inutile (`NEXT_DEV_POLL_MS` vide).
 
+Après l'installation d'une dépendance, si la page se recharge en boucle (cache Turbopack pointant
+vers d'anciens chemins de `node_modules`) : `docker compose stop web`, puis
+`docker compose run --rm tools rm -rf apps/web/.next/dev apps/web/.next/cache`, puis
+`docker compose up -d --no-deps web`. Même procédure si toutes les pages restent en chargement avec
+des erreurs `watch error` sur des chemins de dépendances. `--no-deps` évite de relancer `setup`
+et son `npm ci` ; les dépendances doivent déjà être installées et la base démarrée.
+
 Le sondage ne détecte pas les **nouveaux dossiers de routes** (`src/app/…/page.tsx`) :
 redémarrer `docker compose restart web` après en avoir créé un.
 
 ## Éditeur
+
+### Messages de console du navigateur
+
+- `Download the React DevTools…` et `[HMR] connected` sont des messages informatifs en développement.
+- Une erreur d'hydratation montrant `data-darkreader-inline-stroke` et
+  `--darkreader-inline-stroke` sur les SVG vient de **Dark Reader**, qui modifie le HTML avant React.
+  Le site suit déjà le thème du système : le layout émet une balise
+  `<meta name="darkreader-lock" content="true">` pour demander à l'extension de ne pas le réécrire.
+  Dans `metadata.other`, garder une valeur non vide : la chaîne vide est omise par Next.js.
+  Recharger complètement la page après la correction ; si le problème persiste, désactiver Dark
+  Reader pour `localhost` et `127.0.0.1`, puis recharger. Ne pas masquer les avertissements sur tous
+  les composants : cela cacherait aussi les vrais défauts d'hydratation.
+- `Can't add file system: <illegal path>` : le serveur Next.js de développement publie
+  `/.well-known/appspecific/com.chrome.devtools.json` avec le dossier `/app/apps/web`. Ce chemin
+  existe dans Docker, mais pas sur Windows où Chrome cherche à ouvrir l'espace de travail.
+  Dans les outils de développement Chrome, retirer un éventuel dossier associé dans
+  **Settings → Workspace**, puis désactiver **DevTools Project Settings** dans
+  `chrome://flags/#devtools-project-settings` et relancer Chrome. Si le navigateur propose aussi
+  **DevTools Automatic Workspace Folders**, le désactiver également. L'éditeur peut continuer à
+  modifier les fichiers du dépôt normalement ; aucune installation sur l'hôte n'est nécessaire.
+
+Références : [verrou Dark Reader](https://github.com/darkreader/darkreader/blob/main/CONTRIBUTING.md#disabling-dark-reader-on-your-site),
+[espaces de travail automatiques Chrome](https://developer.chrome.com/docs/devtools/automatic-workspaces).
 
 Sans `node_modules` sur l'hôte, l'autocomplétion TypeScript de l'éditeur est limitée. Pour un
 confort complet, ouvrez le dossier dans un Dev Container (VS Code : « Reopen in Container » en

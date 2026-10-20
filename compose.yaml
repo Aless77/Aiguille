@@ -21,6 +21,8 @@ x-node: &node
     - scraper_node_modules:/app/apps/scraper/node_modules
     - db_node_modules:/app/packages/db/node_modules
     - web_next:/app/apps/web/.next
+    # Les builds de vérification restent aussi sur disque Linux, hors du partage Windows.
+    - web_check_next:/app/apps/web/.next-e2e
 
 services:
   # Installe les dépendances (npm ci) puis applique les migrations et le seed.
@@ -122,6 +124,10 @@ services:
   tools:
     <<: *node
     profiles: ["tools"]
+    environment:
+      DATABASE_URL: postgres://aiguille:aiguille@db:5432/aiguille
+      # Ne jamais laisser « npm run build » ou « next typegen » toucher au cache de « web ».
+      NEXT_DIST_DIR: .next-e2e
     command: sh
     depends_on:
       db:
@@ -134,3 +140,4 @@ volumes:
   scraper_node_modules:
   db_node_modules:
   web_next:
+  web_check_next:

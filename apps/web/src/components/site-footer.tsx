@@ -13,6 +13,12 @@ export function SiteFooter() {
           <Link href="/nouveautes" className="hover:text-foreground">
             Nouveautés
           </Link>
+          <Link href="/boutiques" className="hover:text-foreground">
+            Boutiques
+          </Link>
+          <Link href="/prix-en-europe" className="hover:text-foreground">
+            Prix en Europe
+          </Link>
           <Link href="/methodologie" className="hover:text-foreground">
             Méthodologie
           </Link>
