@@ -26,9 +26,14 @@ x-node: &node
 
 services:
   # Installe les dépendances (npm ci) puis applique les migrations et le seed.
+  # npm ci seulement si package-lock.json a changé depuis la dernière installation : sinon il
+  # viderait node_modules sous le serveur de dev déjà lancé (erreur « Could not find next »),
+  # par exemple à chaque « docker compose run scraper ».
   setup:
     <<: *node
-    command: sh -c "npm ci --no-audit --no-fund && npm run db:migrate && npm run db:seed"
+    command: >-
+      sh -c "{ [ node_modules/.package-lock.json -nt package-lock.json ] ||
+      npm ci --no-audit --no-fund; } && npm run db:migrate && npm run db:seed"
     depends_on:
       db:
         condition: service_healthy
