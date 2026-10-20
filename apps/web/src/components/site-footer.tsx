@@ -22,6 +22,9 @@ export function SiteFooter() {
           <Link href="/methodologie" className="hover:text-foreground">
             Méthodologie
           </Link>
+          <Link href="/confidentialite" className="hover:text-foreground">
+            Confidentialité
+          </Link>
           <Link href="/a-propos" className="hover:text-foreground">
             À propos
           </Link>

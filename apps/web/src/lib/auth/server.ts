@@ -19,6 +19,9 @@ function createAuth() {
     }),
     // Connexion Google et GitHub uniquement (docs/decisions.md) : ni mot de passe ni e-mail envoyé.
     socialProviders: configuredProviders(),
+    // Suppression du compte en libre-service (page /compte, droit à l'effacement du RGPD).
+    // Better Auth l'exige sur une session récente (moins d'un jour) ; sinon, se reconnecter.
+    user: { deleteUser: { enabled: true } },
     session: {
       expiresIn: 60 * 60 * 24 * 30,
       // Lecture de session sans requête en base pendant 5 minutes (cookie signé).

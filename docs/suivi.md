@@ -37,7 +37,8 @@ Reste pour boucler le lot 4 :
 
 ## Lot 5 en cours (20 octobre 2026)
 
-- **Comptes** faits dans le code : Better Auth, connexion Google et GitHub, page `/connexion`,
+- **Comptes** faits dans le code : Better Auth, connexion Google et GitHub (choix du compte forcé),
+  pages `/connexion`, `/compte` (suppression du compte) et `/confidentialite`,
   menu du compte dans l'en-tête, migration `0003`. Reste à créer les applications OAuth et les
   variables Vercel ([deploiement.md](deploiement.md#8-comptes--connexion-google-et-github-lot-5)).
 - À faire ensuite : dépôt d'avis par critère (un par compte et par montre, Turnstile), puis note

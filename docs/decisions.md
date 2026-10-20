@@ -11,6 +11,8 @@ par une nouvelle entrée qui la remplace explicitement.
 | Connexion         | Google et GitHub uniquement (OAuth), ni mot de passe ni lien magique              | Choix du propriétaire : aucun mot de passe à protéger, aucun service d'e-mail à configurer.                      |
 | Session dans l'UI | Lue côté navigateur (`useSession`) dans l'en-tête                                 | Les pages restent statiques et mises en cache ; la session n'entre jamais dans le HTML serveur ni dans le cache. |
 | Fournisseurs      | Masqués tant que leurs variables manquent                                         | Le site, la CI et le build fonctionnent sans compte OAuth.                                                       |
+| Choix du compte   | `prompt=select_account` chez GitHub et Google                                     | Après une déconnexion, pouvoir changer de compte au lieu d'être reconnecté d'office.                             |
+| Données (RGPD)    | Page `/confidentialite` ; suppression du compte en libre-service sur `/compte`    | Exigée par Google pour publier l'application OAuth ; droit à l'effacement sans e-mail de contact public.         |
 
 ## 2026-10-19 – Isolation des sorties Next.js dans Docker
 
