@@ -19,6 +19,30 @@ Les lots 1 à 4 sont annoncés réalisés dans le code ; leur validation en lign
 Les nombres de tests et de références évoluent : utiliser les résultats des vérifications et la
 base plutôt que figer ces chiffres comme critères.
 
+## Constat en ligne (20 octobre 2026)
+
+Site en production sur `aiguille.aless-villa.com`, avec la base locale copiée : catalogue complet
+(1 573 montres, images affichées), 1 560 boutiques actives (Hamilton 1 112, Longines 448).
+
+Reste pour boucler le lot 4 :
+
+- **Prix étrangers** : seuls 3 modèles Tissot ont un prix hors de France (7 pays, essai limité).
+  Hamilton et Longines n'apparaissent pas sur `/prix-en-europe`. La collecte quotidienne remplit
+  2 pays par nuit et par marque, soit environ 7 nuits pour couvrir les 14 pays.
+- **Boutiques en attente** : 2 776 Longines et 976 Hamilton pas encore visitées (400 par nuit et
+  par marque), soit environ 7 nuits pour Longines.
+- **Collecte quotidienne opérationnelle** depuis le 20 octobre 2026 : secrets et variables
+  renseignés dans GitHub Actions et Vercel, essai manuel (`limit` = 5) réussi sur les 6 tâches,
+  invalidation du cache du site confirmée. Première collecte complète la nuit suivante à 03:00 UTC.
+
+## Lot 5 en cours (20 octobre 2026)
+
+- **Comptes** faits dans le code : Better Auth, connexion Google et GitHub, page `/connexion`,
+  menu du compte dans l'en-tête, migration `0003`. Reste à créer les applications OAuth et les
+  variables Vercel ([deploiement.md](deploiement.md#8-comptes--connexion-google-et-github-lot-5)).
+- À faire ensuite : dépôt d'avis par critère (un par compte et par montre, Turnstile), puis note
+  sur 100 avec confiance et détail des piliers. Contenu des piliers et sources externes à trancher.
+
 ## Prochaine étape : mise en production
 
 Suivre [deploiement.md](deploiement.md) et les choix de [decisions.md](decisions.md).
