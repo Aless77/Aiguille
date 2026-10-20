@@ -33,21 +33,26 @@ export function UserMenu() {
   const { user } = data;
   return (
     <div className="flex items-center gap-2 text-sm">
-      {user.image ? (
-        // Avatar fourni par Google ou GitHub : petite image externe, sans optimisation.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={user.image}
-          alt=""
-          width={24}
-          height={24}
-          className="size-6 rounded-full"
-          referrerPolicy="no-referrer"
-        />
-      ) : null}
-      <span className="hidden max-w-32 truncate lg:inline" title={user.email}>
-        {user.name}
-      </span>
+      <Link
+        href="/compte"
+        className="flex items-center gap-2 hover:text-foreground"
+        aria-label={`Mon compte (${user.name})`}
+        title={user.email}
+      >
+        {user.image ? (
+          // Avatar fourni par Google ou GitHub : petite image externe, sans optimisation.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={user.image}
+            alt=""
+            width={24}
+            height={24}
+            className="size-6 rounded-full"
+            referrerPolicy="no-referrer"
+          />
+        ) : null}
+        <span className="hidden max-w-32 truncate lg:inline">{user.name}</span>
+      </Link>
       <Button
         variant="ghost"
         size="sm"

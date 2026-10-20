@@ -28,6 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absoluteUrl("/montres") },
     { url: absoluteUrl("/methodologie") },
     { url: absoluteUrl("/a-propos") },
+    { url: absoluteUrl("/confidentialite") },
     { url: absoluteUrl("/prix-en-europe") },
     ...(storeCounts.length > 0
       ? [

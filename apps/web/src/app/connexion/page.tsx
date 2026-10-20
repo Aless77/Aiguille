@@ -28,9 +28,9 @@ export default function SignInPage({ searchParams }: PageProps<"/connexion">) {
       </Suspense>
       <p className="text-sm text-muted-foreground">
         Nous conservons seulement votre nom, votre adresse e-mail et votre avatar, transmis par le
-        service choisi. Voir{" "}
-        <Link href="/a-propos" className="underline">
-          À propos
+        service choisi, et vous pouvez supprimer votre compte à tout moment. Voir les{" "}
+        <Link href="/confidentialite" className="underline">
+          règles de confidentialité
         </Link>
         .
       </p>
