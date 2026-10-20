@@ -10,6 +10,7 @@ export type AuthProviderId = keyof typeof AUTH_PROVIDERS;
 export interface ProviderCredentials {
   clientId: string;
   clientSecret: string;
+  prompt: "select_account";
 }
 
 /**
@@ -26,7 +27,9 @@ export function configuredProviders(
   ][]) {
     const clientId = env[p.idVar];
     const clientSecret = env[p.secretVar];
-    if (clientId && clientSecret) result[id] = { clientId, clientSecret };
+    // Choix du compte à chaque connexion : après une déconnexion, on peut changer de compte
+    // GitHub ou Google au lieu d'être reconnecté d'office au précédent.
+    if (clientId && clientSecret) result[id] = { clientId, clientSecret, prompt: "select_account" };
   }
   return result;
 }

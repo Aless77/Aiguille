@@ -10,7 +10,11 @@ describe("configuredProviders", () => {
       GITHUB_CLIENT_ID: "id-seul",
     });
     expect(Object.keys(providers)).toEqual(["google"]);
-    expect(providers.google).toEqual({ clientId: "id", clientSecret: "secret" });
+    expect(providers.google).toEqual({
+      clientId: "id",
+      clientSecret: "secret",
+      prompt: "select_account",
+    });
   });
 
   it("renvoie un objet vide sans configuration", () => {
