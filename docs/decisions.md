@@ -3,12 +3,35 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-10-19 – Isolation des sorties Next.js dans Docker
+
+Le serveur local conserve `.next` dans `web_next`. Les outils (`next typegen`, `npm run build`) et
+les tests de production utilisent `.next-e2e` dans un volume Linux distinct, `web_check_next`.
+Cela évite de modifier le cache du serveur de développement pendant les contrôles et de faire
+transiter les milliers de fichiers générés par le partage Windows, qui avait rendu les compilations
+et le chargement des pages extrêmement lents. Les builds de vérification restent séquentiels.
+
 ## 2026-10-19 – Outillage du dépôt
 
 | Sujet        | Décision                                                                                                        | Raison                                                                                                                                             |
 | ------------ | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Dépendances  | Dependabot version updates retiré ; alertes de sécurité gardées ; montées de version à la main (`npm outdated`) | Les PR automatiques visaient `main` et proposaient des majeures inadaptées (`@types/node` 25 pour Node 24). Les failles connues restent signalées. |
 | Vercel `dev` | Aucun déploiement de la branche `dev` (`git.deploymentEnabled`)                                                 | Seule `main` alimente le site ; les previews des PR de fonctionnalité suffisent.                                                                   |
+
+## 2026-10-19 – Carte (lot 4)
+
+| Sujet                      | Décision                                                                                                               | Raison                                                                                                                                                                                                    |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pays couverts              | 14 pays européens : FR, DE, IT, ES, NL, BE, AT, PT, IE, CH, GB, SE, DK, PL                                             | Public européen francophone d'abord (décision du propriétaire). Questions ouvertes du cahier des charges tranchées.                                                                                       |
+| Prix par pays              | Sites nationaux officiels (JSON-LD), devise locale stockée, conversion à l'affichage au dernier taux BCE (Frankfurter) | Même source que la France, chiffres vérifiables. Un prix dans une autre devise que celle du pays (site « international ») est rejeté.                                                                     |
+| Pays absents               | Hamilton : PT et PL ; Longines : IE                                                                                    | Pas de version nationale (redirection vers un autre marché) : pas de prix plutôt qu'un faux prix.                                                                                                         |
+| Rotation                   | France chaque jour, 2 autres pays par nuit et par marque : chaque pays revu chaque semaine                             | ~24 000 pages pour 14 pays : impossible chaque nuit au rythme de 4 s. Les prix nationaux bougent peu.                                                                                                     |
+| Indice par pays            | Écart **médian** avec la France sur les mêmes références (page /prix-en-europe)                                        | La médiane résiste aux références à prix atypique ; « prix moyen par pays » du cahier des charges.                                                                                                        |
+| Boutiques                  | **Écart au cahier des charges** : points de vente agréés publiés par Longines et Hamilton, **sans stock**              | Aucune source gratuite et autorisée ne publie le stock par boutique. Mention « stock non garanti » affichée. Accepté par le propriétaire.                                                                 |
+| Boutiques Tissot           | Non collectées                                                                                                         | Localisateur interdit par le robots.txt de Tissot.                                                                                                                                                        |
+| Géocodage                  | Inutile : coordonnées publiées dans le JSON-LD des pages boutique                                                      | Nominatim prévu au cahier des charges, remplacé par la source elle-même. Ni e-mail ni téléphone stockés.                                                                                                  |
+| Rafraîchissement boutiques | Lots de 400 par nuit et par marque, jamais visitées d'abord ; hors pays couverts revisitées tous les 90 jours          | Liste complète revue en quelques jours sans dépasser le temps d'une tâche.                                                                                                                                |
+| Cartes                     | Pays : ECharts + world-atlas (déjà utilisé pour les courbes) ; boutiques : MapLibre **5** + OpenFreeMap                | react-simple-maps non compatible React 19. MapLibre 6 charge son worker en module séparé, mal pris en charge par Turbopack : la v5 (worker intégré) fonctionne d'emblée. OpenFreeMap : gratuit, sans clé. |
 
 ## 2026-10-19 – Prix (lot 3)
 
@@ -68,6 +91,5 @@ par une nouvelle entrée qui la remplace explicitement.
 Reprises du cahier des charges, à trancher puis à consigner ici :
 
 - Nom de domaine (et extension `.fr` ou `.com`).
-- Pays couverts : France seule, Europe, monde ?
 - Site en français seul ou aussi en anglais ? (impact SEO : `hreflang`, structure `/en/`)
 - Droits sur les photos : demander l'autorisation aux services presse (liens directs en attendant).

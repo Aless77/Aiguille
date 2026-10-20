@@ -19,20 +19,32 @@
 
 ## Registre des sources
 
-| Source                   | Données                | Méthode                        | Fréquence          | robots.txt / CGU vérifiés        | Statut                                |
-| ------------------------ | ---------------------- | ------------------------------ | ------------------ | -------------------------------- | ------------------------------------- |
-| Tissot (site officiel)   | Catalogue, prix, specs | Cheerio, JSON-LD               | Quotidienne        | robots ✅ 2026-10-18, CGU à lire | Lot 2 ✅                              |
-| Hamilton (site officiel) | Catalogue, prix, specs | Cheerio, JSON-LD               | Quotidienne        | robots ✅ 2026-10-18, CGU à lire | Lot 2 ✅                              |
-| Longines (site officiel) | Catalogue, prix, specs | JSON-LD + **NEXT_DATA**        | Quotidienne        | robots ✅ 2026-10-18, CGU à lire | Lot 2 ✅                              |
-| Lepage (lepage.fr)       | Prix réel, stock       | JSON-LD (sku = référence)      | Quotidienne        | robots ✅ 2026-10-19, CGU à lire | Lot 3 – prioritaire                   |
-| Ocarat (ocarat.com)      | Prix réel, stock       | JSON-LD + référence dans l'URL | Quotidienne        | robots ✅ 2026-10-19, CGU à lire | Lot 3                                 |
-| Histoire d'Or            | —                      | —                              | —                  | robots ✅ 2026-10-19             | Écarté : ne vend aucune des 3 marques |
-| Seiko                    | Catalogue              | Playwright                     | Quotidienne        | à faire                          | Lot 6                                 |
-| WatchBase                | Calibres, specs        | Scraping lent                  | Mensuelle          | à faire                          | Lot 2                                 |
-| eBay Browse API          | Prix d'occasion        | API (5 000 appels/j)           | Quotidienne        | API officielle                   | Lot 3                                 |
-| Wayback Machine          | Prix catalogue passés  | API archive.org                | Une fois           | à valider                        | Lot 3                                 |
-| Frankfurter (BCE)        | Taux de change         | API                            | Quotidienne        | API ouverte                      | Lot 3                                 |
-| Nominatim (OSM)          | Géocodage boutiques    | API, cache permanent           | Une fois / adresse | politique d'usage OSM (1 req/s)  | Lot 4                                 |
+| Source                                                          | Données                | Méthode                        | Fréquence          | robots.txt / CGU vérifiés        | Statut                                |
+| --------------------------------------------------------------- | ---------------------- | ------------------------------ | ------------------ | -------------------------------- | ------------------------------------- |
+| Tissot (site officiel)                                          | Catalogue, prix, specs | Cheerio, JSON-LD               | Quotidienne        | robots ✅ 2026-10-18, CGU à lire | Lot 2 ✅                              |
+| Hamilton (site officiel)                                        | Catalogue, prix, specs | Cheerio, JSON-LD               | Quotidienne        | robots ✅ 2026-10-18, CGU à lire | Lot 2 ✅                              |
+| Longines (site officiel)                                        | Catalogue, prix, specs | JSON-LD + **NEXT_DATA**        | Quotidienne        | robots ✅ 2026-10-18, CGU à lire | Lot 2 ✅                              |
+| Lepage (lepage.fr)                                              | Prix réel, stock       | JSON-LD (sku = référence)      | Quotidienne        | robots ✅ 2026-10-19, CGU à lire | Lot 3 – prioritaire                   |
+| Ocarat (ocarat.com)                                             | Prix réel, stock       | JSON-LD + référence dans l'URL | Quotidienne        | robots ✅ 2026-10-19, CGU à lire | Lot 3                                 |
+| Histoire d'Or                                                   | —                      | —                              | —                  | robots ✅ 2026-10-19             | Écarté : ne vend aucune des 3 marques |
+| Seiko                                                           | Catalogue              | Playwright                     | Quotidienne        | à faire                          | Lot 6                                 |
+| WatchBase                                                       | Calibres, specs        | Scraping lent                  | Mensuelle          | à faire                          | Lot 2                                 |
+| eBay Browse API                                                 | Prix d'occasion        | API (5 000 appels/j)           | Quotidienne        | API officielle                   | Lot 3                                 |
+| Wayback Machine                                                 | Prix catalogue passés  | API archive.org                | Une fois           | à valider                        | Lot 3                                 |
+| Frankfurter (BCE)                                               | Taux de change         | API                            | Quotidienne        | API ouverte                      | Lot 3                                 |
+| Nominatim (OSM) — inutile, coordonnées publiées par les marques | Géocodage boutiques    | API, cache permanent           | Une fois / adresse | politique d'usage OSM (1 req/s)  | Lot 4                                 |
+
+## Prix nationaux et boutiques (lot 4, 2026-10-19)
+
+| Marque   | Versions nationales relevées                                                                               | Boutiques                                                                             |
+| -------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Tissot   | 14 pays (fr-fr, de-de, it-it, es-es, nl-nl, fr-be, de-at, pt-pt, en-ie, fr-ch, en-gb, en-se, en-dk, pl-pl) | ❌ localisateur interdit (robots.txt)                                                 |
+| Hamilton | 12 pays (pas de PT ni PL)                                                                                  | ✅ sitemaps nationaux, pages `store-locator`, JSON-LD JewelryStore (~2 100 en Europe) |
+| Longines | 13 pays (pas d'IE)                                                                                         | ✅ `/fr/sitemap/stores.xml` (~4 000 dans le monde), JSON-LD Store                     |
+
+- **Taux de change** : `api.frankfurter.dev/v1` (taux de référence BCE), une fois par jour.
+- **Rythme** : mêmes règles que les fiches (4 s, une requête à la fois, robots.txt lu avec notre
+  User-Agent). Un pays par exécution et par marque, journalisé `<marque>-officiel@<PAYS>`.
 
 ## Étude des revendeurs (2026-10-19)
 

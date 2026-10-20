@@ -91,4 +91,22 @@ export const tissot: OfficialAdapter = {
     return pages.filter((url) => PRODUCT_URL.test(url));
   },
   parse: parseTissot,
+  // Relevé du 2026-10-19 : une version nationale par pays couvert.
+  locales: {
+    FR: "fr-fr",
+    DE: "de-de",
+    IT: "it-it",
+    ES: "es-es",
+    NL: "nl-nl",
+    BE: "fr-be",
+    AT: "de-at",
+    PT: "pt-pt",
+    IE: "en-ie",
+    CH: "fr-ch",
+    GB: "en-gb",
+    SE: "en-se",
+    DK: "en-dk",
+    PL: "pl-pl",
+  },
+  localizeUrl: (url, locale) => url.replace("/fr-fr/", `/${locale}/`),
 };

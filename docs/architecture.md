@@ -47,6 +47,9 @@ pas d'étape de build intermédiaire.
 | `lib/listing.ts`         | Schéma Zod d'une fiche : tout ce qui n'est pas conforme est rejeté et compté en erreur                        |
 | `lib/robots.ts`          | robots.txt lu avec notre User-Agent ; URL interdites écartées avant la collecte                               |
 | `lib/crawl.ts`           | Crawlee : 1 requête à la fois, 4 s minimum entre deux requêtes (ou Crawl-delay), échec si zéro résultat       |
+| `lib/country-prices.ts`  | Prix d'un pays (lot 4) : URL nationale déduite de la fiche française, devise contrôlée                        |
+| `lib/stores.ts`          | Boutiques agréées par lots (lot 4) : en attente, actives, hors pays couverts, fermées                         |
+| `lib/rates.ts`           | Taux BCE du jour (Frankfurter)                                                                                |
 | `lib/persist.ts`         | Upsert des montres, relevé de prix seulement en cas de changement, statut « plus produite »                   |
 
 Ajouter une source : écrire l'adaptateur et ses tests sur un extrait HTML réel, l'inscrire dans

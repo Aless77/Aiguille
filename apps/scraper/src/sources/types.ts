@@ -1,5 +1,6 @@
 import { type CheerioAPI } from "cheerio";
 
+import { type Country } from "../lib/countries.ts";
 import { type Listing } from "../lib/listing.ts";
 import { type Offer } from "../lib/offer.ts";
 
@@ -20,6 +21,18 @@ export interface OfficialAdapter extends BaseAdapter {
   brandSlug: string;
   /** Fiche extraite (non encore validée), ou `null` si la page n'est pas une fiche montre. */
   parse($: CheerioAPI, url: string): Listing | null;
+  /**
+   * Versions nationales du site (lot 4, prix par pays). Un pays absent n'a pas de version
+   * nationale propre (redirection vers un site « international ») : il n'est pas relevé.
+   */
+  locales: Partial<Record<Country, string>>;
+  /** URL de la fiche française → URL de la même fiche dans une autre version nationale. */
+  localizeUrl(frenchUrl: string, locale: string): string;
+  /**
+   * Boutiques agréées publiées par la marque (lot 4), si son robots.txt l'autorise. Chaque page
+   * porte un JSON-LD de lieu (adresse et coordonnées), lu par parseStoreListing.
+   */
+  stores?: { id: string; discover(): Promise<string[]> };
 }
 
 /**
