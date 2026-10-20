@@ -22,6 +22,13 @@
       "when": 1792436558456,
       "tag": "0002_petite_captain_universe",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792520273745,
+      "tag": "0003_petite_karma",
+      "breakpoints": true
     }
   ]
 }

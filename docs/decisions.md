@@ -3,6 +3,15 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-10-20 – Comptes (lot 5)
+
+| Sujet             | Décision                                                                          | Raison                                                                                                           |
+| ----------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Authentification  | Better Auth 1.7 avec l'adaptateur Drizzle, tables `users`, `sessions`, `accounts` | Choix du cahier des charges ; données dans notre base Postgres, sans service tiers payant.                       |
+| Connexion         | Google et GitHub uniquement (OAuth), ni mot de passe ni lien magique              | Choix du propriétaire : aucun mot de passe à protéger, aucun service d'e-mail à configurer.                      |
+| Session dans l'UI | Lue côté navigateur (`useSession`) dans l'en-tête                                 | Les pages restent statiques et mises en cache ; la session n'entre jamais dans le HTML serveur ni dans le cache. |
+| Fournisseurs      | Masqués tant que leurs variables manquent                                         | Le site, la CI et le build fonctionnent sans compte OAuth.                                                       |
+
 ## 2026-10-19 – Isolation des sorties Next.js dans Docker
 
 Le serveur local conserve `.next` dans `web_next`. Les outils (`next typegen`, `npm run build`) et

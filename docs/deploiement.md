@@ -60,6 +60,9 @@ sans `DATABASE_URL`, le déploiement échoue.
 | `NEXT_PUBLIC_SITE_URL` | Vercel **Production** seulement                    | `https://<domaine>` (sans barre finale)           |
 | `SCRAPER_USER_AGENT`   | GitHub Actions (variable)                          | `AiguilleBot/0.1 (+https://<domaine>/a-propos)`   |
 | `REVALIDATE_SECRET`    | Vercel (Production) **et** GitHub Actions (secret) | Chaîne aléatoire longue, identique des deux côtés |
+| `BETTER_AUTH_SECRET`   | Vercel (Production)                                | Chaîne aléatoire longue (signature des sessions)  |
+| `GOOGLE_CLIENT_*`      | Vercel (Production)                                | Identifiant et secret OAuth Google (section 8)    |
+| `GITHUB_CLIENT_*`      | Vercel (Production)                                | Identifiant et secret OAuth GitHub (section 8)    |
 | `SITE_URL`             | GitHub Actions (variable)                          | `https://<domaine>`                               |
 
 `NEXT_PUBLIC_SITE_URL` absent en preview : l'URL de la preview est alors déduite de `VERCEL_URL`,
@@ -102,6 +105,36 @@ Générer un secret : `docker compose run --rm tools node -e "console.log(requir
 
 Une source cassée fait échouer sa tâche (zéro montre extraite) : GitHub envoie alors un e-mail. Le
 journal `scrape_runs` garde le détail de chaque exécution.
+
+### 8. Comptes : connexion Google et GitHub (lot 5)
+
+Créer une application OAuth par fournisseur et par environnement (production et local), puis
+renseigner les variables dans Vercel (Production) ou dans `.env` en local. Un fournisseur sans
+ses deux variables n'apparaît pas sur `/connexion`.
+
+1. **Secret de session** : `BETTER_AUTH_SECRET`, généré avec la même commande que
+   `REVALIDATE_SECRET` mais avec une **autre** valeur. Vercel → Environment Variables → Production.
+2. **GitHub** : github.com → Settings → Developer settings → OAuth Apps → New OAuth App.
+   - Homepage URL : `https://aiguille.aless-villa.com`
+   - Authorization callback URL : `https://aiguille.aless-villa.com/api/auth/callback/github`
+   - Puis Generate a new client secret → `GITHUB_CLIENT_ID` et `GITHUB_CLIENT_SECRET`.
+   - Une seule URL de rappel par application GitHub : créer une seconde application pour le
+     local (`http://localhost:3000/api/auth/callback/github`).
+3. **Google** : console.cloud.google.com → nouveau projet « Aiguille » → APIs & Services.
+   - OAuth consent screen (Google Auth Platform) : type External, nom « Aiguille », e-mail de
+     contact, domaine autorisé `aless-villa.com`, puis **Publish app** (sinon seuls les
+     utilisateurs de test peuvent se connecter).
+   - Credentials → Create credentials → OAuth client ID → Web application.
+   - Authorized JavaScript origins : `https://aiguille.aless-villa.com` (et
+     `http://localhost:3000` pour le local).
+   - Authorized redirect URIs : `https://aiguille.aless-villa.com/api/auth/callback/google` (et
+     `http://localhost:3000/api/auth/callback/google`).
+   - → `GOOGLE_CLIENT_ID` et `GOOGLE_CLIENT_SECRET`.
+4. Redéployer la production (les variables ne sont lues qu'au déploiement), puis tester
+   `/connexion`.
+
+En local, ouvrir le site par `http://localhost:3000` (pas `127.0.0.1`) : les fournisseurs
+n'acceptent que les URL de rappel déclarées.
 
 ## Critères d'acceptation du lot 1
 
