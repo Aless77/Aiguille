@@ -3,6 +3,16 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-10-20 – Thème clair par défaut
+
+Le site s'affiche en clair, quelle que soit la préférence du système ; un bouton de l'en-tête
+passe en sombre. Le choix est gardé un an dans le cookie `theme` (fonctionnel, exempté de
+consentement), lu par un script inline en tête de `<body>` qui pose la classe `dark` avant
+l'affichage : pas de flash, et le serveur ne lit jamais le cookie, donc les pages restent
+prérendues et en cache. Cartes et graphiques suivent ce thème (`useIsDarkTheme`). Le script n'est
+ni dans `next/script` (exécuté trop tard, flash blanc) ni dans `<head>` (recréé côté client par
+React 19, avertissement en console).
+
 ## 2026-10-20 – Comptes (lot 5)
 
 | Sujet             | Décision                                                                          | Raison                                                                                                           |

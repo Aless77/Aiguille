@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { PROVIDER_ICONS } from "@/components/provider-icons";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/client";
 import { AUTH_PROVIDERS, type AuthProviderId } from "@/lib/auth/providers";
@@ -43,18 +44,22 @@ export function SignInButtons({
 
   return (
     <div className="space-y-3">
-      {providers.map((id) => (
-        <Button
-          key={id}
-          variant="outline"
-          size="lg"
-          className="w-full"
-          disabled={pending !== null}
-          onClick={() => signIn(id)}
-        >
-          {pending === id ? "Redirection…" : `Continuer avec ${AUTH_PROVIDERS[id].name}`}
-        </Button>
-      ))}
+      {providers.map((id) => {
+        const Icon = PROVIDER_ICONS[id];
+        return (
+          <Button
+            key={id}
+            variant="outline"
+            size="lg"
+            className="h-11 w-full gap-3 text-base"
+            disabled={pending !== null}
+            onClick={() => signIn(id)}
+          >
+            <Icon className="size-5" />
+            {pending === id ? "Redirection…" : `Continuer avec ${AUTH_PROVIDERS[id].name}`}
+          </Button>
+        );
+      })}
       {failed && (
         <p role="alert" className="text-sm text-destructive">
           La connexion n&apos;a pas pu démarrer. Réessayez dans un instant.

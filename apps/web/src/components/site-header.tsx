@@ -1,6 +1,7 @@
 import { Watch } from "lucide-react";
 import Link from "next/link";
 
+import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { getBrands } from "@/lib/catalog/queries";
 import { siteConfig } from "@/lib/site";
@@ -38,7 +39,8 @@ export async function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-3">
+          <ThemeToggle />
           <UserMenu />
         </div>
       </div>

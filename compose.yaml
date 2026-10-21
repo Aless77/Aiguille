@@ -12,6 +12,9 @@ x-node: &node
     DATABASE_URL: postgres://aiguille:aiguille@db:5432/aiguille
     # Rechargement à chaud : sondage des fichiers (événements non transmis par Docker Desktop)
     NEXT_DEV_POLL_MS: "1000"
+    # Le conteneur n'a pas d'IPv6 : Node essaie d'abord l'IPv6, puis abandonne l'IPv4 après 250 ms
+    # (ETIMEDOUT). La connexion Google échouait ainsi à valider le code OAuth. Délai porté à 2 s.
+    NODE_OPTIONS: --network-family-autoselection-attempt-timeout=2000
   volumes:
     - .:/app
     # Les dépendances restent dans des volumes Docker : binaires Linux, I/O rapides,
