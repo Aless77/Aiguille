@@ -5,6 +5,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { type GeoJSONSource, type Map as MapLibreMap, type Popup } from "maplibre-gl";
 import { useEffect, useRef } from "react";
 
+import { useIsDarkTheme } from "@/components/use-theme";
 import { type StoreBounds, storeMapsUrl } from "@/lib/catalog/stores";
 
 export interface StoreMapPoint {
@@ -19,6 +20,9 @@ const STYLES = {
   light: "https://tiles.openfreemap.org/styles/positron",
   dark: "https://tiles.openfreemap.org/styles/dark",
 };
+
+/** Nos calques, à reporter sur le nouveau fond de carte quand le thème change. */
+const STORE_LAYERS = ["clusters", "cluster-count", "store"];
 
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
@@ -41,6 +45,30 @@ export function StoresMap({
   const popupRef = useRef<Popup | null>(null);
   const pointsRef = useRef(points);
   const boundsCallback = useRef(onBoundsChange);
+  const dark = useIsDarkTheme();
+  const darkRef = useRef(dark);
+
+  // Changement de thème : nouveau fond de carte, en reprenant nos points et nos calques.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) {
+      // Carte pas encore créée : elle prendra directement le bon fond.
+      darkRef.current = dark;
+      return;
+    }
+    if (darkRef.current === dark) return;
+    darkRef.current = dark;
+    map.setStyle(dark ? STYLES.dark : STYLES.light, {
+      transformStyle: (previous, next) => ({
+        ...next,
+        sources: { ...next.sources, ...(previous ? { stores: previous.sources.stores! } : {}) },
+        layers: [
+          ...next.layers,
+          ...(previous?.layers.filter((layer) => STORE_LAYERS.includes(layer.id)) ?? []),
+        ],
+      }),
+    });
+  }, [dark]);
 
   useEffect(() => {
     boundsCallback.current = onBoundsChange;
@@ -62,11 +90,10 @@ export function StoresMap({
     (async () => {
       const maplibre = await import("maplibre-gl");
       if (disposed) return;
-      const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
       const map = new maplibre.Map({
         container: element,
-        style: dark ? STYLES.dark : STYLES.light,
+        style: darkRef.current ? STYLES.dark : STYLES.light,
         // Europe par défaut, puis cadrage sur les boutiques affichées.
         center: [8, 49],
         zoom: 3.4,

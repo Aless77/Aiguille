@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { JsonLd, organizationJsonLd, websiteJsonLd } from "@/lib/seo/json-ld";
 import { getSiteUrl, isIndexable, siteConfig } from "@/lib/site";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 import "./globals.css";
 
@@ -47,10 +48,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang={siteConfig.language}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-      // Des extensions (Dark Reader…) modifient <html> avant l'hydratation ; ne concerne que cette balise.
+      // Le script de thème (classe « dark ») et certaines extensions modifient <html> avant
+      // l'hydratation ; ne concerne que cette balise.
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col">
+        {/* Thème sombre choisi par le visiteur : appliqué avant l'affichage du contenu (pas de
+            flash blanc). Script inline bloquant en tête de <body>, volontairement hors de
+            next/script (exécuté trop tard) et de <head> (recréé côté client par React 19). */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <NuqsAdapter>
           <SiteHeader />
           <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
+import { useIsDarkTheme } from "@/components/use-theme";
 import { type PriceSeries } from "@/lib/catalog/price-history";
 
 const COLORS = ["#2563eb", "#d97706", "#059669", "#db2777", "#7c3aed"];
@@ -20,6 +21,7 @@ const euros = (cents: number) =>
  */
 export function PriceChart({ series }: { series: PriceSeries[] }) {
   const container = useRef<HTMLDivElement>(null);
+  const dark = useIsDarkTheme();
 
   useEffect(() => {
     const element = container.current;
@@ -44,7 +46,6 @@ export function PriceChart({ series }: { series: PriceSeries[] }) {
       ]);
 
       const style = getComputedStyle(document.documentElement);
-      const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       const text = dark ? "#a3a3a3" : "#525252";
       const grid = dark ? "#262626" : "#e5e5e5";
 
@@ -99,7 +100,7 @@ export function PriceChart({ series }: { series: PriceSeries[] }) {
       disposed = true;
       cleanup?.();
     };
-  }, [series]);
+  }, [series, dark]);
 
   return (
     <div

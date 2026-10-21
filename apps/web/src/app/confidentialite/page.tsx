@@ -79,10 +79,18 @@ export default function PrivacyPage() {
 
       <section className={sectionClass}>
         <h2 className={titleClass}>Cookies</h2>
+        <p>Deux cookies au plus, tous deux nécessaires au service que vous demandez :</p>
+        <ul className="list-disc space-y-1 pl-6">
+          <li>le cookie de session, déposé uniquement quand vous vous connectez ;</li>
+          <li>
+            le cookie « theme », déposé uniquement si vous choisissez le thème sombre ou clair, pour
+            retenir ce choix pendant un an. Il ne contient que ce choix et n&apos;est jamais lu par
+            nos serveurs.
+          </li>
+        </ul>
         <p>
-          Un seul type de cookie, strictement nécessaire : le cookie de session, déposé uniquement
-          quand vous vous connectez. Aucun cookie publicitaire, aucune mesure d&apos;audience, aucun
-          bouton de réseau social : aucun bandeau de consentement n&apos;est donc nécessaire.
+          Aucun cookie publicitaire, aucune mesure d&apos;audience, aucun bouton de réseau social :
+          aucun bandeau de consentement n&apos;est donc nécessaire.
         </p>
       </section>
 
