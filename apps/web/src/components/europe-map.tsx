@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 
+import { useIsDarkTheme } from "@/components/use-theme";
+
 export interface EuropeMapDatum {
   /** Identifiant ISO 3166 numérique du pays (« 250 » pour la France). */
   isoNumeric: string;
@@ -18,6 +20,7 @@ export interface EuropeMapDatum {
  */
 export function EuropeMap({ data }: { data: EuropeMapDatum[] }) {
   const container = useRef<HTMLDivElement>(null);
+  const dark = useIsDarkTheme();
 
   useEffect(() => {
     const element = container.current;
@@ -58,7 +61,6 @@ export function EuropeMap({ data }: { data: EuropeMapDatum[] }) {
       };
       echarts.registerMap("europe", geo as never);
 
-      const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       const byIso = new Map(data.map((d) => [d.isoNumeric, d]));
       const maxDelta = Math.max(5, ...data.map((d) => Math.abs(d.deltaPercent)));
 
@@ -115,7 +117,7 @@ export function EuropeMap({ data }: { data: EuropeMapDatum[] }) {
       disposed = true;
       cleanup?.();
     };
-  }, [data]);
+  }, [data, dark]);
 
   return (
     <div
