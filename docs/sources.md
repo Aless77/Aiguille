@@ -16,6 +16,17 @@
    zéro résultat (structure de page changée ou blocage).
 7. **Images** : ne pas republier les photos des marques et revendeurs sans droit. À trancher avant
    le lot 2 (voir les questions ouvertes ci-dessous).
+8. **Disjoncteur** : ne jamais insister auprès d'un site en panne, en maintenance ou qui demande de
+   ralentir (`lib/availability.ts`).
+   - robots.txt ou sitemap en 5xx, 429 ou injoignable : source indisponible d'emblée. Pour
+     robots.txt, c'est la règle de la RFC 9309 (tout est alors interdit).
+   - Pendant la visite : 10 erreurs serveur d'affilée (5xx, 429, réseau ; tentatives comprises)
+     arrêtent le crawler. Une réponse valide remet le compteur à zéro.
+   - Effet : exécution `failed` dans `scrape_runs` avec le message « Source indisponible : … »,
+     avertissement dans GitHub Actions, étapes suivantes de la même source sautées (autres
+     pays). La tâche ne passe pas en échec (pas d'e-mail) : nouvel essai la nuit suivante.
+   - Une source cassée (zéro résultat, pages illisibles) reste, elle, une erreur qui fait
+     échouer la tâche.
 
 ## Registre des sources
 

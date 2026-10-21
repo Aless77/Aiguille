@@ -1,6 +1,7 @@
 import robotsParser from "robots-parser";
 
 import { ROBOTS_USER_AGENT, USER_AGENT } from "../config.ts";
+import { fetchFromSource } from "./availability.ts";
 
 export interface RobotsRules {
   isAllowed(url: string): boolean;
@@ -24,7 +25,11 @@ export function parseRobots(robotsUrl: string, content: string): RobotsRules {
  */
 export async function fetchRobots(siteUrl: string): Promise<RobotsRules> {
   const robotsUrl = new URL("/robots.txt", siteUrl).toString();
-  const response = await fetch(robotsUrl, { headers: { "user-agent": USER_AGENT } });
+  // Erreur serveur : le site est considéré comme entièrement interdit (RFC 9309), donc
+  // indisponible pour cette collecte.
+  const response = await fetchFromSource(robotsUrl, `robots.txt (${robotsUrl})`, {
+    headers: { "user-agent": USER_AGENT },
+  });
   if (response.status === 404) return parseRobots(robotsUrl, "");
   if (!response.ok)
     throw new Error(`robots.txt illisible (${robotsUrl} : HTTP ${response.status})`);

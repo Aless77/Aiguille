@@ -3,6 +3,15 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-10-21 – Disjoncteur de collecte
+
+Le 21 octobre, le site de Longines est passé en maintenance (503 pour tout le monde) au milieu de
+la collecte : le robot a envoyé environ 3 000 requêtes à un site en panne, puis la tâche a
+échoué. Désormais, une source qui ne répond plus est mise de côté pour la nuit et journalisée
+comme indisponible, sans faire échouer la tâche (règle 8 de [sources.md](sources.md)). Seuil :
+10 erreurs serveur d'affilée, soit 3 à 4 pages avec les nouveaux essais. Ce seuil reste assez
+haut pour ignorer une panne passagère, et assez bas pour couper vite une maintenance.
+
 ## 2026-10-20 – Thème clair par défaut
 
 Le site s'affiche en clair, quelle que soit la préférence du système ; un bouton de l'en-tête
