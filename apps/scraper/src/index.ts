@@ -3,6 +3,7 @@ import { parseArgs } from "node:util";
 import { closeDb, getDb } from "@aiguille/db";
 
 import { USER_AGENT } from "./config.ts";
+import { SourceUnavailableError } from "./lib/availability.ts";
 import { type Country, countriesForDay, isCountry } from "./lib/countries.ts";
 import { runCountryPrices } from "./lib/country-prices.ts";
 import { runSource } from "./lib/crawl.ts";
@@ -59,11 +60,28 @@ const db = getDb();
 let failed = false;
 let succeeded = false;
 
-const attempt = async (label: string, job: () => Promise<unknown>) => {
+/** Sources indisponibles pendant cette exécution : on ne les sollicite plus (autres pays…). */
+const unavailable = new Set<string>();
+
+const attempt = async (label: string, job: () => Promise<unknown>, sourceId = label) => {
+  if (unavailable.has(sourceId)) {
+    console.log(`[${label}] ignoré : source indisponible plus tôt dans cette exécution`);
+    return;
+  }
   try {
     console.log(`[${label}] terminé`, await job());
     succeeded = true;
   } catch (error) {
+    if (error instanceof SourceUnavailableError) {
+      // Panne ou maintenance du site : journalisée (scrape_runs + avertissement GitHub), sans
+      // faire échouer la collecte ni envoyer d'alerte ; nouvel essai à la prochaine exécution.
+      unavailable.add(sourceId);
+      console.warn(`[${label}] ${error.message}`);
+      if (process.env.GITHUB_ACTIONS) {
+        console.log(`::warning title=${label} indisponible::${error.message}`);
+      }
+      return;
+    }
     failed = true;
     console.error(`[${label}] échec :`, error instanceof Error ? error.message : error);
   }
@@ -88,8 +106,10 @@ for (const name of selected) {
       console.error(error instanceof Error ? error.message : error);
     }
     for (const country of countries) {
-      await attempt(`${adapter.id}@${country}`, () =>
-        runCountryPrices(db, adapter, country, { limit }),
+      await attempt(
+        `${adapter.id}@${country}`,
+        () => runCountryPrices(db, adapter, country, { limit }),
+        adapter.id,
       );
     }
   } else {

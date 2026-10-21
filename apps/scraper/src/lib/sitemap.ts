@@ -1,6 +1,7 @@
 import { load } from "cheerio";
 
 import { USER_AGENT } from "../config.ts";
+import { fetchFromSource } from "./availability.ts";
 
 /** Toutes les balises <loc> d'un sitemap ou d'un index de sitemaps. */
 export function parseSitemapLocs(xml: string): { pages: string[]; sitemaps: string[] } {
@@ -25,7 +26,9 @@ export async function fetchSitemapPages(
   followSitemap: (url: string) => boolean = () => true,
   delayMs = 2000,
 ): Promise<string[]> {
-  const response = await fetch(url, { headers: { "user-agent": USER_AGENT } });
+  const response = await fetchFromSource(url, `Sitemap ${url}`, {
+    headers: { "user-agent": USER_AGENT },
+  });
   if (!response.ok) throw new Error(`Sitemap ${url} : HTTP ${response.status}`);
   const { pages, sitemaps } = parseSitemapLocs(await response.text());
 
