@@ -142,6 +142,37 @@ for (const f of fixtures) {
   }
 }
 
+// Les tests de garantie et d'entretien parcourent une fiche de chaque marque prise en charge.
+// Conserver les scénarios de prix et d'avis Tissot ci-dessus avec leurs références stables.
+for (const slug of ["hamilton", "longines"]) {
+  const [fixtureBrand] = await db.select().from(brands).where(eq(brands.slug, slug));
+  if (!fixtureBrand) throw new Error(`Marque ${slug} absente : lancez d'abord npm run db:seed`);
+  const [fixtureCollection] = await db
+    .insert(collections)
+    .values({ brandId: fixtureBrand.id, slug: "collection-test", name: "Collection Test" })
+    .onConflictDoUpdate({
+      target: [collections.brandId, collections.slug],
+      set: { name: "Collection Test" },
+    })
+    .returning();
+  await db
+    .insert(watches)
+    .values({
+      brandId: fixtureBrand.id,
+      collectionId: fixtureCollection!.id,
+      referenceKey: `TEST${slug.toUpperCase()}0001`,
+      reference: `TEST-${slug.toUpperCase()}-0001`,
+      slug: `test-${slug}-0001`,
+      name: `${fixtureBrand.name} Montre de test 40 mm`,
+      movement: "automatique",
+      diameterMm: 40,
+      waterResistanceM: 100,
+      catalogPriceCents: slug === "hamilton" ? 120000 : 200000,
+      firstSeenAt: daysAgo(30),
+    })
+    .onConflictDoNothing();
+}
+
 // Taux BCE fictif (1 € = 0,9261 CHF) et trois boutiques de test, pour les pages du lot 4.
 await db
   .insert(exchangeRates)
@@ -227,5 +258,7 @@ await db
   .onConflictDoNothing();
 const scored = await refreshScores(db);
 
-console.log(`Seed e2e : ${fixtures.length} montres de test, 3 boutiques, 3 avis, ${scored} notes.`);
+process.stdout.write(
+  `Seed e2e : ${fixtures.length + 2} montres de test, 3 boutiques, 3 avis, ${scored} notes.`,
+);
 await closeDb();
