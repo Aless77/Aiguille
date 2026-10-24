@@ -97,17 +97,35 @@ export default async function MethodologyPage() {
         <p>
           Nous ne disons pas si une montre est « bonne » : le design, la finition ou le plaisir au
           poignet sont subjectifs. Nous présentons ce qui se vérifie, tel que chaque marque le
-          publie sur sa fiche officielle : mouvement (type, calibre, réserve de marche, fréquence,
-          spiral, certification chronomètre, fonctions), construction (verre, étanchéité, boîtier,
-          lunette, fond, couronne, luminescence, bracelet), garantie, pays de fabrication, pile des
-          montres à quartz et nombre de points de vente agréés.
+          publie sur sa fiche officielle, dans une{" "}
+          <strong>fiche technique identique pour toutes les marques</strong> : mêmes rubriques
+          (mouvement, boîtier, cadran, bracelet, garantie et entretien, historique des pièces
+          vintage), mêmes lignes, même ordre. Chaque marque nomme ses caractéristiques à sa façon :
+          nous les rapprochons ligne par ligne, et gardons le reste de sa fiche dans « Autres
+          informations ».
         </p>
         <p>
           Quand une marque ne publie pas une information, la fiche l&apos;indique : « non communiqué
           par la marque ». Les informations qui ne figurent pas sur les fiches (garantie standard,
           fabricant d&apos;un mouvement) ne sont affichées que si une page publique de la marque les
-          établit ; nous gardons sa référence et la date de vérification. Les tarifs et délais de
-          révision ne sont publiés par aucune des marques suivies.
+          établit ; nous gardons sa référence et la date de vérification.
+        </p>
+        <h3 className="text-lg font-semibold">Garantie et entretien</h3>
+        <p>
+          La rubrique « Garantie et entretien » reprend ce que chaque marque publie sur ses pages de
+          garantie, de conditions de vente et de service client : durée de la garantie et lien vers
+          son détail, principales exclusions, prix conseillés de révision complète et partielle
+          selon le mouvement (mécanique ou quartz, avec ou sans chronographe), fréquences
+          d&apos;entretien recommandées, contrôle d&apos;étanchéité, durée de vie de la pile et
+          disponibilité des pièces de rechange. Les tarifs sont des prix conseillés en France, datés
+          : ils peuvent avoir changé depuis notre relevé. Les marques qui ne publient pas ces
+          informations apparaissent avec « non communiqué ».
+        </p>
+        <p>
+          Les conseils d&apos;entretien sont choisis selon la montre (couronne vissée, chronographe,
+          pile…) et reformulés par nos soins. « Recommandé par la marque » renvoie à sa page ; «
+          conseil général » signale un conseil d&apos;usage courant que la marque ne publie pas
+          elle-même.
         </p>
         <h3 className="text-lg font-semibold">Aussi bien équipées, pour moins cher</h3>
         <p>

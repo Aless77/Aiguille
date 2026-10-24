@@ -8,21 +8,14 @@ import { EuropePricesSection } from "@/components/europe-prices-section";
 import { OffersSection } from "@/components/offers-section";
 import { AlternativesSection } from "@/components/alternatives-section";
 import { PriceHistorySection } from "@/components/price-history-section";
-import { TechnicalSection } from "@/components/technical-section";
+import { SpecSheetSection } from "@/components/spec-sheet-section";
 import { CONFIDENCE_LABELS, RatingSection } from "@/components/rating-section";
 import { ScoreBadge } from "@/components/score-badge";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableRow } from "@/components/ui/table";
 import { WatchGrid } from "@/components/watch-card";
 import { WatchImage } from "@/components/watch-image";
-import {
-  displayName,
-  formatDate,
-  formatPrice,
-  MOVEMENT_LABELS,
-  watchSummary,
-} from "@/lib/catalog/format";
+import { displayName, formatDate, formatPrice, watchSummary } from "@/lib/catalog/format";
 import { AVAILABILITY_LABELS, buildPriceHistory, currentOffers } from "@/lib/catalog/price-history";
 import { buildEuropePrices } from "@/lib/catalog/europe-prices";
 import {
@@ -35,7 +28,6 @@ import {
   getWatch,
   getWatchRating,
   getWatchAlternatives,
-  type WatchDetail,
 } from "@/lib/catalog/queries";
 import { PLACEHOLDER_SLUG, withPlaceholder } from "@/lib/catalog/static-params";
 import { isWatchIndexable, watchPath } from "@/lib/catalog/types";
@@ -226,7 +218,7 @@ export default async function WatchPage({ params }: Props) {
         </p>
       )}
 
-      <TechnicalSection watch={w} storeCount={storeCount} />
+      <SpecSheetSection watch={w} storeCount={storeCount} />
 
       <AlternativesSection alternatives={alternatives} priceCents={w.priceCents} />
 
@@ -244,11 +236,6 @@ export default async function WatchPage({ params }: Props) {
       <EuropePricesSection prices={europePrices} ratesDate={rates.date} />
 
       <PriceHistorySection history={history} />
-
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold tracking-tight">Toutes les caractéristiques</h2>
-        <SpecsTable watch={w} />
-      </section>
 
       {similar.length > 0 && (
         <section className="space-y-4">
@@ -283,41 +270,5 @@ export default async function WatchPage({ params }: Props) {
         })}
       />
     </div>
-  );
-}
-
-function SpecsTable({ watch: w }: { watch: WatchDetail }) {
-  const mm = (v: number | null) => (v === null ? null : `${String(v).replace(".", ",")} mm`);
-  const rows: [string, string | null][] = [
-    ["Référence", w.reference],
-    ["Collection", w.collectionName],
-    ["Mouvement", w.movement ? MOVEMENT_LABELS[w.movement] : null],
-    ["Calibre", w.caliber],
-    ["Réserve de marche", w.powerReserveH ? `${w.powerReserveH} heures` : null],
-    ["Diamètre", mm(w.diameterMm)],
-    ["Épaisseur", mm(w.thicknessMm)],
-    ["Entre-cornes", mm(w.lugWidthMm)],
-    ["Étanchéité", w.waterResistanceM ? `${w.waterResistanceM} m` : null],
-    ["Boîtier", w.caseMaterial],
-    ["Verre", w.crystal],
-    ["Cadran", w.dialColor],
-    ["Bracelet", w.strapMaterial],
-  ];
-
-  return (
-    <Table>
-      <TableBody>
-        {rows
-          .filter((r): r is [string, string] => r[1] !== null && r[1] !== "")
-          .map(([label, value]) => (
-            <TableRow key={label}>
-              <TableHead scope="row" className="w-1/3 font-medium">
-                {label}
-              </TableHead>
-              <TableCell className="whitespace-normal">{value}</TableCell>
-            </TableRow>
-          ))}
-      </TableBody>
-    </Table>
   );
 }

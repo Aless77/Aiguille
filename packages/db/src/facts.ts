@@ -66,16 +66,34 @@ export interface ConstructionFacts {
 const yes = (v: string | undefined) => v !== undefined && /^(oui|yes)\b/i.test(v.trim());
 
 /** Tout le texte de la fiche, « libellé : valeur », pour les recherches de mots-clés. */
+const normalized = new WeakMap<Record<string, string>, Record<string, string>>();
+
+/**
+ * Fiche normalisée en Unicode NFC : certaines marques (Tissot) écrivent des accents décomposés
+ * (« e » + accent), invisibles à l'écran mais qui font échouer toute comparaison de libellé.
+ */
+export function specs(w: Pick<WatchSource, "rawSpecs">): Record<string, string> {
+  let result = normalized.get(w.rawSpecs);
+  if (!result) {
+    result = Object.fromEntries(
+      Object.entries(w.rawSpecs).map(([k, v]) => [k.normalize("NFC"), v.normalize("NFC")]),
+    );
+    normalized.set(w.rawSpecs, result);
+  }
+  return result;
+}
+
 function specText(w: WatchSource): string {
-  return [w.name, ...Object.entries(w.rawSpecs).map(([k, v]) => `${k} : ${v}`)].join(" | ");
+  return [w.name.normalize("NFC"), ...Object.entries(specs(w)).map(([k, v]) => `${k} : ${v}`)].join(
+    " | ",
+  );
 }
 
 export function extractMovementFacts(w: WatchSource): MovementFacts {
   const text = specText(w);
   const frequency = /(\d{2})[\s .]?(\d{3})\s*(?:vibrations|alternances)/i.exec(text);
   const silicon = /(spiral|ressort)[^|]{0,40}silicium|silicon hairspring|si14/i.test(text);
-  const nivachron =
-    yes(w.rawSpecs["Nivachron"]) || /(spiral|ressort)[^|]{0,40}nivachron/i.test(text);
+  const nivachron = yes(specs(w)["Nivachron"]) || /(spiral|ressort)[^|]{0,40}nivachron/i.test(text);
   const complications = (Object.keys(COMPLICATIONS) as Complication[]).filter((c) =>
     COMPLICATION_PATTERNS[c].test(text),
   );
@@ -89,10 +107,10 @@ export function extractMovementFacts(w: WatchSource): MovementFacts {
     antimagnetic:
       silicon ||
       nivachron ||
-      yes(w.rawSpecs["Général · Résistance magnétique"]) ||
+      yes(specs(w)["Général · Résistance magnétique"]) ||
       /antimagn[ée]tique/i.test(text),
     chronometer:
-      yes(w.rawSpecs["Général · Chronometer Officially Certified"]) ||
+      yes(specs(w)["Général · Chronometer Officially Certified"]) ||
       /\bCOSC\b|chronom[eè]tre certifi|certification chronom[eè]tre|certified chronometer/i.test(
         text,
       ),
@@ -121,17 +139,17 @@ export function extractConstructionFacts(w: WatchSource): ConstructionFacts {
     crystalKnown: Boolean(w.crystal?.trim()),
     materialKnown: Boolean(material.trim()),
     antiReflective:
-      /anti-?reflet|antireflet/i.test(w.crystal ?? "") || yes(w.rawSpecs["Anti-reflet"]),
+      /anti-?reflet|antireflet/i.test(w.crystal ?? "") || yes(specs(w)["Anti-reflet"]),
     waterResistanceM: w.waterResistanceM,
     nobleMaterial: noble ? material : null,
     exhibitionCaseback:
-      yes(w.rawSpecs["Fond transparent"]) ||
-      /transparent/i.test(w.rawSpecs["Boîtier · Fond"] ?? "") ||
+      yes(specs(w)["Fond transparent"]) ||
+      /transparent/i.test(specs(w)["Boîtier · Fond"] ?? "") ||
       // Tissot : « Fond de boîte transparent ».
       /fond[^|]{0,20}(saphir|transparent)/i.test(text),
     // Tissot : « Couronne et fond de boîte vissés ».
     screwDownCrown:
-      yes(w.rawSpecs["Couronne vissée"]) || /couronne( et fond de bo[iî]te)? viss[ée]/i.test(text),
+      yes(specs(w)["Couronne vissée"]) || /couronne( et fond de bo[iî]te)? viss[ée]/i.test(text),
     luminescent: /luminova|luminescent/i.test(text),
     gemSet: /diamant/i.test(text),
     ceramicBezel: /lunette[^|]{0,40}c[ée]ramique|c[ée]ramique[^|]{0,20}lunette/i.test(text),
@@ -161,26 +179,26 @@ export interface OwnershipFacts {
 export function extractOwnershipFacts(w: WatchSource): OwnershipFacts {
   const text = specText(w);
   const warranty = /(\d+)\s*ans? de garantie|garantie[^|]{0,20}?(\d+)\s*ans/i.exec(
-    w.rawSpecs["Garantie"] ?? "",
+    specs(w)["Garantie"] ?? "",
   );
   // Référence normalisée (CEI) : « RENATA 321 - SR716SW - 1.55V » → SR716SW.
   const battery = /\b(SR\s?\d{3,4}\s?[A-Z]{0,2}|CR\s?\d{4})\b/.exec(
-    w.rawSpecs["Mouvement · Pile"] ?? "",
+    specs(w)["Mouvement · Pile"] ?? "",
   );
-  const chrono = w.rawSpecs["Mouvement · Chronographe"] ?? "";
-  const year = Number(w.rawSpecs["Date de production"]);
+  const chrono = specs(w)["Mouvement · Chronographe"] ?? "";
+  const year = Number(specs(w)["Date de production"]);
   return {
     warrantyMonths: warranty ? Number(warranty[1] ?? warranty[2]) * 12 : null,
-    madeIn: w.rawSpecs["Pays de fabrication"]?.trim() || null,
+    madeIn: specs(w)["Pays de fabrication"]?.trim() || null,
     battery: battery ? battery[1]!.replace(/\s+/g, "") : null,
     endOfLifeIndicator: /\bE\.?O\.?L\.?\b|fin de vie de la pile/i.test(text),
     interchangeableStrap:
-      yes(w.rawSpecs["Easy Click"]) ||
+      yes(specs(w)["Easy Click"]) ||
       /interchangeab|ouverture facile|easy ?click/i.test(
-        `${w.rawSpecs["Bracelet · Interchangeabilité"] ?? ""} ${w.rawSpecs["Option du bracelet"] ?? ""} ${w.rawSpecs["Easy Click"] ?? ""}`,
+        `${specs(w)["Bracelet · Interchangeabilité"] ?? ""} ${specs(w)["Option du bracelet"] ?? ""} ${specs(w)["Easy Click"] ?? ""}`,
       ),
     deployantClasp: /d[ée]ployante|papillon/i.test(
-      `${w.rawSpecs["Type de boucle"] ?? ""} ${w.rawSpecs["Bracelet · Boucle"] ?? ""}`,
+      `${specs(w)["Type de boucle"] ?? ""} ${specs(w)["Bracelet · Boucle"] ?? ""}`,
     ),
     chronographMechanism: [
       /roue [àa] colonnes?/i.test(chrono) && "Roue à colonnes",

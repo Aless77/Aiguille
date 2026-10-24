@@ -3,6 +3,53 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-10-24 – Complément entretien Tissot et périmètre des forfaits
+
+Cette vérification complète le relevé ci-dessous : les pages Tissot sont désormais lisibles.
+[Tarifs France](https://www.tissotwatches.com/fr-fr/service-prices) : révision complète
+quartz 120 / 185 € (simple / chronographe), mécanique 195 / 290 €, écran tactile 295 € ;
+partielle respectivement 55 / 65 €, 55 / 70 € et 70 €. Tarifs indicatifs, diagnostic préalable.
+La pile est incluse dans le service partiel des modèles à pile, sans tarif isolé publié.
+
+Le lien de détail pointe vers la [page garantie et entretien Tissot](https://www.tissotwatches.com/fr-fr/customer-service-warranty.html),
+avec exclusions et conseils. La FAQ confirme 3 ans pour COSC et Lightmaster, sans étendre cette
+durée à tous les solaires. Les recommandations contradictoires sont affichées avec leurs sources :
+[FAQ](https://www.tissotwatches.com/fr-fr/faq), révision tous les 4 à 5 ans ; page garantie,
+contrôle tous les 3 à 4 ans. Le manuel du modèle et le diagnostic du centre agréé priment.
+
+Les forfaits courants ne sont pas appliqués aux pièces vintage ni extrapolés aux solaires.
+Les T-Touch utilisent leur grille tactile. Les pièces vintage reçoivent un conseil d'évitement
+de l'eau et une indication de devis. Le tarif Longines de 35 € inclut contrôle d'étanchéité et
+pile, uniquement dans les boutiques de Sèvres et Saint-Honoré
+([source officielle](https://www.longines.com/fr/customer-service/services/maintenance-prices)).
+Les liens complémentaires distinguent la source du tarif de celle des recommandations.
+
+## 2026-10-24 – Garantie, révision et conseils d'entretien par marque
+
+Relevé sur les sites des marques (pages garantie, conditions de vente, service client, FAQ,
+conseils d'entretien), enregistré dans `brand-info.ts` avec source et date, et affiché dans la
+rubrique « Garantie et entretien » de chaque fiche (mêmes lignes pour toutes les marques) :
+
+| Marque   | Garantie                                                     | Révision (prix conseillés, France)                     | Autres informations                                                                                                                                                                                   |
+| -------- | ------------------------------------------------------------ | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Longines | 2 ans, 5 ans automatiques ; exclusions ; page de détail      | Complète 255 à 510 €, partielle 100 à 125 €, pile 35 € | Révision complète tous les 6 à 8 ans, étanchéité une fois par an, révision garantie 24 mois, conseils d'entretien                                                                                     |
+| Hamilton | 2 ans ; exclusions ; page de détail                          | Complète 170 à 340 €, partielle 60 à 75 €              | Pas de fréquence fixe, partielle tous les 1 à 2 ans, étanchéité une fois par an, pile 2 à 5 ans, pièces 10 ans après l'arrêt du modèle, Swiss Made, mouvements ETA développés avec Hamilton, conseils |
+| Tissot   | 2 ans, 3 ans Lightmaster Solar et COSC ; conditions de vente | Non publiés (pages vides)                              | —                                                                                                                                                                                                     |
+
+Conseils d'utilisation : liste commune reformulée par Aiguille (`CARE_TIPS`), choisie selon la
+montre ; « recommandé par la marque » quand la marque le publie, « conseil général » sinon.
+
+## 2026-10-24 – Fiche technique commune à toutes les marques
+
+Une seule fiche technique pour toutes les marques (`packages/db/src/spec-sheet.ts`) : rubriques
+Mouvement, Boîtier, Cadran, Bracelet, Garantie et entretien (et Historique pour les pièces
+vintage), **mêmes lignes dans le même ordre**, raccourcis vers chaque rubrique. Les libellés de
+chaque marque sont reliés aux lignes communes ; une ligne sans donnée affiche « Non communiqué » ;
+les libellés non reliés restent visibles dans « Autres informations ». Elle remplace l'ancien
+tableau de 13 lignes et la section technique. Raison : retrouver une information au même endroit
+d'une fiche à l'autre, quelle que soit la marque. Libellés et valeurs normalisés en Unicode NFC
+(Tissot écrit certains accents décomposés, ce qui faisait échouer la lecture de ces libellés).
+
 ## 2026-10-24 – Notation masquée, comparaison technique à la place (lot 5)
 
 Choix du propriétaire : noter une montre reste subjectif, et le recul manque pour publier une note.
@@ -12,15 +59,16 @@ défaut, affichée seulement avec `true`). Les avis de la communauté et la conn
 Les builds de test e2e activent les deux.
 Le site met en avant ce qui se vérifie, sans juger le goût :
 
-| Sujet              | Décision                                                                                                                                                                                             | Raison                                                                             |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Fiche              | Section « Technique, garantie et entretien » : faits publiés, « non communiqué par la marque » sinon                                                                                                 | Montrer la technique et l'entretien sans dire « bonne » ou « mauvaise » montre.    |
-| Comparaison        | « Aussi bien équipées, pour moins cher » : même usage, ±3 mm, ≥ 10 % moins chère, au moins aussi bien sur chaque point                                                                               | « Celle-ci, à 300 €, est automatique et plus étanche » : un fait, pas une note.    |
-| Preuve             | Une donnée connue pour la montre regardée doit l'être pour l'alternative                                                                                                                             | Ne rien promettre sans source.                                                     |
-| Infos de marque    | `brand-info.ts` : garantie et fabricant de mouvement **sourcés et datés**, sinon null                                                                                                                | Garantie et origine sont rarement sur les fiches ; jamais remplies de mémoire.     |
-| Pièces vintage     | Détectées (année de production), ni comparées ni proposées                                                                                                                                           | 47 pièces Longines Heritage de 1916 à 1970 n'ont pas d'équivalent neuf.            |
-| Nouvelles marques  | Procédure [integrer-une-marque.md](integrer-une-marque.md) + rapport `npm run db:couverture`                                                                                                         | Les mêmes informations pour chaque marque, et ce qui manque visible tout de suite. |
-| Audit (24 octobre) | Tissot : garantie 24 mois, 36 pour Lightmaster Solar et COSC (conditions de vente) ; aucun tarif de révision publié (pages vides) ; Hamilton filtré (403) et Longines en maintenance lors de l'audit | Base factuelle du registre ; Hamilton et Longines à revérifier.                    |
+| Sujet                                      | Décision                                                                                                                                                                                                                                                                             | Raison                                                                             |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| Fiche                                      | Section « Technique, garantie et entretien » : faits publiés, « non communiqué par la marque » sinon                                                                                                                                                                                 | Montrer la technique et l'entretien sans dire « bonne » ou « mauvaise » montre.    |
+| Comparaison                                | « Aussi bien équipées, pour moins cher » : même usage, ±3 mm, ≥ 10 % moins chère, au moins aussi bien sur chaque point                                                                                                                                                               | « Celle-ci, à 300 €, est automatique et plus étanche » : un fait, pas une note.    |
+| Preuve                                     | Une donnée connue pour la montre regardée doit l'être pour l'alternative                                                                                                                                                                                                             | Ne rien promettre sans source.                                                     |
+| Infos de marque                            | `brand-info.ts` : garantie et fabricant de mouvement **sourcés et datés**, sinon null                                                                                                                                                                                                | Garantie et origine sont rarement sur les fiches ; jamais remplies de mémoire.     |
+| Pièces vintage                             | Détectées (année de production), ni comparées ni proposées                                                                                                                                                                                                                           | 47 pièces Longines Heritage de 1916 à 1970 n'ont pas d'équivalent neuf.            |
+| Nouvelles marques                          | Procédure [integrer-une-marque.md](integrer-une-marque.md) + rapport `npm run db:couverture`                                                                                                                                                                                         | Les mêmes informations pour chaque marque, et ce qui manque visible tout de suite. |
+| Audit (24 octobre)                         | Tissot : garantie 24 mois, 36 pour Lightmaster Solar et COSC (conditions de vente) ; aucun tarif de révision publié (pages vides) ; Hamilton filtré (403) et Longines en maintenance lors de l'audit                                                                                 | Base factuelle du registre ; Hamilton et Longines à revérifier.                    |
+| Longines (24 octobre, de nouveau en ligne) | Garantie lue sur chaque fiche (« Garantie LONGINES de 5 ans ») ; règle de marque : 24 mois, 5 ans pour les automatiques ; tarifs de révision publiés (complète 255 à 510 €, partielle 100 à 125 €, pile 35 €), entretien conseillé tous les 6 à 8 ans, intervention garantie 24 mois | Sources : fiches produit, pages garantie et « Tarifs des services ».               |
 
 ## 2026-10-21 – Note Aiguille dans son registre et avis séparés (lot 5, remplace l'entrée suivante)
 

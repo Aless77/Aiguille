@@ -32,10 +32,16 @@ describe("coverage", () => {
   });
 
   it("signale les informations de marque à sourcer", () => {
-    expect(missingBrandInfo(["longines", "inconnue"])).toEqual([
-      "longines : garantie de la marque non sourcée",
+    expect(missingBrandInfo(["longines", "inconnue"], new Date("2026-11-01"))).toEqual([
       "longines : aucun fabricant de mouvement sourcé",
       "inconnue : aucune entrée dans brand-info.ts",
     ]);
+  });
+});
+
+describe("missingBrandInfo (fraîcheur)", () => {
+  it("signale une information vérifiée il y a plus de six mois", () => {
+    const later = missingBrandInfo(["longines"], new Date("2027-06-01"));
+    expect(later.some((m) => m.startsWith("longines : à revérifier"))).toBe(true);
   });
 });

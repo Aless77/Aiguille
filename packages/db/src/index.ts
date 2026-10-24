@@ -5,3 +5,4 @@ export * from "./facts.ts";
 export * from "./rating.ts";
 export * from "./schema.ts";
 export { buildScores, type ComputedScore, refreshScores, type ScoreInput } from "./scores.ts";
+export * from "./spec-sheet.ts";

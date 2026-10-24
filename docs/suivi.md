@@ -53,11 +53,21 @@ Reste pour boucler le lot 4 :
   cher » (685 montres avec au moins une alternative). Registre sourcé `brand-info.ts`, rapport
   `npm run db:couverture`, procédure [integrer-une-marque.md](integrer-une-marque.md).
   Migration `0006`.
-- Reste à sourcer : garanties Hamilton et Longines (sites inaccessibles lors de l'audit),
-  fabricants de mouvements (aucune page publique trouvée), calibres Tissot (absents des fiches).
+- **Fiche technique commune** : mêmes rubriques et lignes pour toutes les marques, « Autres
+  informations » pour le reste ; remplissage ligne par ligne dans `npm run db:couverture`.
+- Garantie, tarifs et conseils d'entretien relevés pour Longines et Hamilton (24 octobre).
+- Tarifs et conseils Tissot complétés le 24 octobre : grilles mécanique/quartz/chronographe et
+  tactile, liens officiels, exclusions, fréquences divergentes signalées. Forfaits vintage exclus ;
+  solaire non extrapolé ; restriction du forfait pile Longines affichée.
+- Reste à sourcer : fabricants de mouvements, calibres Tissot (absents des fiches). Longines : garantie
+  (sur chaque fiche) et tarifs de révision relevés le 24 octobre.
 - Hamilton refuse nos requêtes depuis le poste local (403, Akamai) et ses images s'y affichent
   « Photo indisponible » ; la collecte GitHub passait encore le 21 octobre. À surveiller.
 - Plus tard : clés Turnstile si les avis sont réactivés, notes externes, cote en occasion (eBay).
+- Vérification locale entretien (24 octobre) : contrôle qualité et build de production réussis ;
+  10 parcours Playwright réussis (ordinateur/mobile, trois marques, liens et navigation vers la
+  garantie). Captures Tissot relues. Léger débordement horizontal de l'en-tête à 393 px, hors du
+  bloc entretien, à corriger séparément. Aucun déploiement effectué.
 
 ## Prochaine étape : mise en production
 

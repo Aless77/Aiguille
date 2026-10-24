@@ -99,7 +99,8 @@ const nextData = (item: Record<string, unknown>) => ({
 
 const html = (item: Record<string, unknown>) => `<html><head>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","name":"LONGINES SPIRIT PILOT","image":{"@type":"ImageObject","url":"https://api.ecom.longines.com/media/catalog/product/w/a/l3-809-4-93-9-hero.png"},"sku":"L3.809.4.93.9","brand":{"@type":"Brand","name":"Longines"},"offers":{"@type":"Offer","priceCurrency":"EUR","price":2900,"availability":"https://schema.org/InStock"}}</script>
-  </head><body><script id="__NEXT_DATA__" type="application/json">${JSON.stringify(nextData(item))}</script></body></html>`;
+  </head><body><ul><li><button><span>Garantie LONGINES de 5 ans</span></button></li></ul>
+  <script id="__NEXT_DATA__" type="application/json">${JSON.stringify(nextData(item))}</script></body></html>`;
 
 describe("parseLongines", () => {
   it("extrait une fiche complète en résolvant les codes d'attributs", () => {
@@ -128,6 +129,7 @@ describe("parseLongines", () => {
       "Boîtier · Matière": "Acier",
       "Bracelet · Matière": "Caoutchouc",
       "Boîtier · Spécificités": "Couronne vissée, Fond saphir",
+      Garantie: "Garantie Longines de 5 ans",
     });
     // Valeurs « 0 » (drapeaux d'affichage) ignorées.
     expect(listing?.rawSpecs["Boîtier · Boîtier"]).toBeUndefined();

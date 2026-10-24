@@ -97,6 +97,11 @@ export function parseLongines($: CheerioAPI, url: string) {
     ] = value;
   }
 
+  // Garantie affichée sous la disponibilité (« Garantie LONGINES de 5 ans ») : propre à la montre
+  // (24 mois en général, 5 ans pour les automatiques selon les conditions de la marque).
+  const warranty = /Garantie LONGINES de (\d+) ans/i.exec($("body").text());
+  if (warranty) rawSpecs["Garantie"] = `Garantie Longines de ${warranty[1]} ans`;
+
   // Une montre a toujours un type de mouvement (filtre bracelets et accessoires).
   if (!values.mvt_fct_type) return null;
 
