@@ -62,7 +62,7 @@ jobs:
       # Même installation que Vercel : seulement apps/web et ses workspaces (+ db pour les
       # migrations). Échoue si une dépendance du site n'est déclarée qu'à la racine.
       - run: npm ci -w @aiguille/web -w @aiguille/db --no-audit --no-fund
-      # Marques de référence + 3 montres fictives (TEST-…) pour que les tests e2e aient une fiche.
+      # Marques de référence + 5 montres fictives (TEST-…) couvrant Tissot, Hamilton et Longines.
       - run: npm run migrate -w @aiguille/db && npm run seed -w @aiguille/db && npm run seed:e2e -w @aiguille/db
       - run: npm run build
         env:
