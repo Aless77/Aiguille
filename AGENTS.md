@@ -7,7 +7,8 @@ prix dans le temps, disponibilité, note calculée. Le besoin complet est dans
 Langue du projet : **français** (interface, docs, commentaires, messages de commit, PR).
 Les identifiants de code restent en anglais (`getPriceHistory`, `brands`).
 
-Point de reprise : [docs/suivi.md](docs/suivi.md) (état déclaré des lots, prochaine étape et
+Nouvelle marque : suivre [docs/integrer-une-marque.md](docs/integrer-une-marque.md) (faits
+techniques, garantie, couverture des données). Point de reprise : [docs/suivi.md](docs/suivi.md) (état déclaré des lots, prochaine étape et
 vérifications restantes). Les règles communes restent ici ; `CLAUDE.md` les référence pour Claude
 Code. Conserver les fichiers et les modifications des autres agents.
 

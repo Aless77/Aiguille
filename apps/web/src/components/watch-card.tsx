@@ -4,6 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { displayName, formatPrice, MOVEMENT_LABELS } from "@/lib/catalog/format";
 import { type WatchCard as WatchCardData, watchPath } from "@/lib/catalog/types";
 
+import { features } from "@/lib/features";
+
+import { ScoreBadge } from "./score-badge";
 import { WatchImage } from "./watch-image";
 
 export function WatchCard({ watch, priority }: { watch: WatchCardData; priority?: boolean }) {
@@ -34,6 +37,9 @@ export function WatchCard({ watch, priority }: { watch: WatchCardData; priority?
             {formatPrice(watch.priceCents) ?? "Prix non communiqué"}
           </span>
           {watch.discontinued && <Badge variant="secondary">Plus produite</Badge>}
+          {watch.score !== null && features.score() && (
+            <ScoreBadge score={watch.score} className="ml-auto" />
+          )}
         </div>
       </div>
     </Link>

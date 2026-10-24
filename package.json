@@ -25,6 +25,8 @@
     "db:migrate": "npm run migrate -w @aiguille/db",
     "db:seed": "npm run seed -w @aiguille/db",
     "db:studio": "npm run studio -w @aiguille/db",
+    "db:scores": "npm run scores -w @aiguille/db",
+    "db:couverture": "npm run couverture -w @aiguille/db",
     "scraper": "npm run start -w @aiguille/scraper --"
   },
   "devDependencies": {

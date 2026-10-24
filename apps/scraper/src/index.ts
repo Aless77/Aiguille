@@ -1,6 +1,6 @@
 import { parseArgs } from "node:util";
 
-import { closeDb, getDb } from "@aiguille/db";
+import { closeDb, getDb, refreshScores } from "@aiguille/db";
 
 import { USER_AGENT } from "./config.ts";
 import { SourceUnavailableError } from "./lib/availability.ts";
@@ -117,6 +117,10 @@ for (const name of selected) {
   }
 }
 
+// Prix et stock ont pu changer : note sur 100 recalculée (lot 5) avant d'invalider le cache.
+if (succeeded) {
+  await attempt("notes", async () => `${await refreshScores(db)} notes recalculées`);
+}
 await closeDb();
 if (succeeded) await revalidateSite();
 // Code de sortie non nul : le workflow GitHub Actions signale la source cassée.

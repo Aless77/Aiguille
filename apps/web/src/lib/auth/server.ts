@@ -1,6 +1,7 @@
-import { accounts, getDb, sessions, users, verifications } from "@aiguille/db";
+import { accounts, getDb, refreshScores, sessions, users, verifications } from "@aiguille/db";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { revalidateTag } from "next/cache";
 
 import { getSiteUrl } from "@/lib/site";
 
@@ -21,7 +22,16 @@ function createAuth() {
     socialProviders: configuredProviders(),
     // Suppression du compte en libre-service (page /compte, droit à l'effacement du RGPD).
     // Better Auth l'exige sur une session récente (moins d'un jour) ; sinon, se reconnecter.
-    user: { deleteUser: { enabled: true } },
+    // Ses avis partent avec le compte (suppression en cascade) : notes recalculées.
+    user: {
+      deleteUser: {
+        enabled: true,
+        afterDelete: async () => {
+          await refreshScores(getDb());
+          revalidateTag("catalog", "max");
+        },
+      },
+    },
     session: {
       expiresIn: 60 * 60 * 24 * 30,
       // Lecture de session sans requête en base pendant 5 minutes (cookie signé).

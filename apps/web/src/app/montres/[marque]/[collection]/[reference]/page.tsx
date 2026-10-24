@@ -1,3 +1,4 @@
+import { reviewMean } from "@aiguille/db/rating";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -5,7 +6,11 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { EuropePricesSection } from "@/components/europe-prices-section";
 import { OffersSection } from "@/components/offers-section";
+import { AlternativesSection } from "@/components/alternatives-section";
 import { PriceHistorySection } from "@/components/price-history-section";
+import { TechnicalSection } from "@/components/technical-section";
+import { CONFIDENCE_LABELS, RatingSection } from "@/components/rating-section";
+import { ScoreBadge } from "@/components/score-badge";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableRow } from "@/components/ui/table";
@@ -28,12 +33,16 @@ import {
   getPriceObservations,
   getSimilarWatches,
   getWatch,
+  getWatchRating,
+  getWatchAlternatives,
   type WatchDetail,
 } from "@/lib/catalog/queries";
 import { PLACEHOLDER_SLUG, withPlaceholder } from "@/lib/catalog/static-params";
 import { isWatchIndexable, watchPath } from "@/lib/catalog/types";
 import { JsonLd, productJsonLd } from "@/lib/seo/json-ld";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { turnstileSiteKey } from "@/lib/reviews/turnstile";
+import { features } from "@/lib/features";
 
 type Props = PageProps<"/montres/[marque]/[collection]/[reference]">;
 
@@ -75,14 +84,19 @@ export default async function WatchPage({ params }: Props) {
   if (!w) notFound();
 
   const name = displayName(w.brandName, w.name);
+  const showScore = features.score();
+  const showReviews = features.reviews();
   const summary = watchSummary({ ...w, catalogPriceCents: w.priceCents });
-  const [similar, observations, countryPrices, rates, storeCounts] = await Promise.all([
-    getSimilarWatches(w.id, w.brandSlug, w.collectionSlug, w.priceCents),
-    getPriceObservations(w.id),
-    getCountryPrices(w.id, `${w.brandSlug}-officiel`),
-    getLatestRates(),
-    getStoreCounts(),
-  ]);
+  const [similar, observations, countryPrices, rates, storeCounts, rating, alternatives] =
+    await Promise.all([
+      getSimilarWatches(w.id, w.brandSlug, w.collectionSlug, w.priceCents),
+      getPriceObservations(w.id),
+      getCountryPrices(w.id, `${w.brandSlug}-officiel`),
+      getLatestRates(),
+      getStoreCounts(),
+      getWatchRating(w.id),
+      getWatchAlternatives(w.id),
+    ]);
   const storeCount = storeCounts.find((c) => c.brandSlug === w.brandSlug)?.count ?? 0;
   const europePrices = buildEuropePrices(countryPrices, rates.unitsPerEur);
   const history = buildPriceHistory(
@@ -129,6 +143,28 @@ export default async function WatchPage({ params }: Props) {
             <h1 className="text-3xl font-semibold tracking-tight">{name}</h1>
             {w.discontinued && <Badge variant="secondary">Plus produite</Badge>}
           </div>
+
+          {showScore && rating.score && (
+            <a
+              href="#note"
+              className="flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-muted/60"
+            >
+              <ScoreBadge score={rating.score.score} />
+              <span className="text-sm">
+                <span className="block font-medium">
+                  Note Aiguille ·{" "}
+                  {rating.score.categoryRank > 0 && rating.score.categorySize > 1
+                    ? `${rating.score.categoryRank === 1 ? "1re" : `${rating.score.categoryRank}e`} sur ${rating.score.categorySize}`
+                    : CONFIDENCE_LABELS[rating.score.confidence].toLowerCase()}
+                </span>
+                <span className="block text-muted-foreground">
+                  {rating.score.reviewAverage != null && rating.reviews.length
+                    ? `Communauté : ${rating.score.reviewAverage.toLocaleString("fr-FR", { maximumFractionDigits: 1 })}/5 (${rating.reviews.length} avis)`
+                    : "Pas encore d'avis de la communauté"}
+                </span>
+              </span>
+            </a>
+          )}
 
           <div className="space-y-1 rounded-xl border p-4">
             <p className="text-sm text-muted-foreground">Prix catalogue officiel</p>
@@ -190,12 +226,27 @@ export default async function WatchPage({ params }: Props) {
         </p>
       )}
 
+      <TechnicalSection watch={w} storeCount={storeCount} />
+
+      <AlternativesSection alternatives={alternatives} priceCents={w.priceCents} />
+
+      {(showScore || showReviews) && (
+        <RatingSection
+          watchId={w.id}
+          rating={rating}
+          path={watchPath(w)}
+          turnstileSiteKey={turnstileSiteKey()}
+          showScore={showScore}
+          showReviews={showReviews}
+        />
+      )}
+
       <EuropePricesSection prices={europePrices} ratesDate={rates.date} />
 
       <PriceHistorySection history={history} />
 
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold tracking-tight">Caractéristiques</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">Toutes les caractéristiques</h2>
         <SpecsTable watch={w} />
       </section>
 
@@ -217,6 +268,18 @@ export default async function WatchPage({ params }: Props) {
           path: watchPath(w),
           imageUrls: w.imageUrls,
           offers,
+          reviews: showReviews
+            ? {
+                average: rating.score?.reviewAverage ?? 0,
+                count: rating.reviews.length,
+                items: rating.reviews.map((r) => ({
+                  author: r.authorName,
+                  date: r.updatedAt,
+                  rating: reviewMean(r.ratings),
+                  body: r.comment,
+                })),
+              }
+            : undefined,
         })}
       />
     </div>
