@@ -9,6 +9,24 @@ export const NO_COLLECTION_SLUG = "autres";
 
 export const PAGE_SIZE = 24;
 
+export const TECHNICAL_FILTER_LABELS = {
+  collection: "Collection",
+  boitier: "Matière du boîtier",
+  bracelet: "Matière du bracelet",
+  couleur: "Couleur du cadran",
+  verre: "Verre",
+  calibre: "Calibre",
+  fonction: "Fonctions et complications",
+  equipement: "Équipement et certifications",
+} as const;
+export type TechnicalFilterKey = keyof typeof TECHNICAL_FILTER_LABELS;
+export const TECHNICAL_FILTER_KEYS = Object.keys(TECHNICAL_FILTER_LABELS) as TechnicalFilterKey[];
+export interface FacetOption {
+  value: string;
+  label: string;
+  count: number;
+}
+
 export interface WatchCard {
   slug: string;
   reference: string;
@@ -27,6 +45,7 @@ export interface WatchCard {
 }
 
 export interface CatalogFilter {
+  search?: string;
   brands?: string[];
   brandSlug?: string;
   collectionSlug?: string;
@@ -35,6 +54,14 @@ export interface CatalogFilter {
   priceMax?: number | null;
   diameterMin?: number | null;
   diameterMax?: number | null;
+  technical?: Partial<Record<TechnicalFilterKey, string[]>>;
+  waterMin?: number | null;
+  reserveMin?: number | null;
+  thicknessMax?: number | null;
+  lugWidth?: number | null;
+  warrantyMin?: number | null;
+  status?: "active" | "discontinued" | null;
+  inStock?: boolean;
   sort?: Sort;
   page?: number;
 }

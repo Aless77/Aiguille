@@ -9,13 +9,15 @@ export function CatalogPagination({
   params,
   page,
   pageCount,
+  basePath = "/montres",
 }: {
   params: CatalogParams;
   page: number;
   pageCount: number;
+  basePath?: string;
 }) {
   if (pageCount <= 1) return null;
-  const href = (p: number) => serializeCatalogParams("/montres", { ...params, page: p });
+  const href = (p: number) => serializeCatalogParams(basePath, { ...params, page: p });
   const pages = Array.from({ length: pageCount }, (_, i) => i + 1).filter(
     (p) => p === 1 || p === pageCount || Math.abs(p - page) <= 2,
   );

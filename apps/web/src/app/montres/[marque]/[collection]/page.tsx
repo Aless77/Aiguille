@@ -1,12 +1,11 @@
 import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { WatchGrid } from "@/components/watch-card";
+import { CatalogBrowser } from "@/components/catalog-browser";
 import { displayName, formatPrice, MOVEMENT_LABELS } from "@/lib/catalog/format";
-import { getCollection, getCollections, getWatchCards } from "@/lib/catalog/queries";
+import { getCollection, getCollections, getFacets } from "@/lib/catalog/queries";
+import { hasCatalogFilters, loadCatalogParams } from "@/lib/catalog/search-params";
 import { PLACEHOLDER_SLUG, withPlaceholder } from "@/lib/catalog/static-params";
-import { watchPath } from "@/lib/catalog/types";
-import { JsonLd, itemListJsonLd } from "@/lib/seo/json-ld";
 import { pageMetadata } from "@/lib/seo/metadata";
 
 /**
@@ -24,7 +23,10 @@ export async function generateStaticParams() {
   );
 }
 
-export async function generateMetadata({ params }: PageProps<"/montres/[marque]/[collection]">) {
+export async function generateMetadata({
+  params,
+  searchParams,
+}: PageProps<"/montres/[marque]/[collection]">) {
   const { marque, collection } = await params;
   const c = await getCollection(marque, collection);
   if (!c) return {};
@@ -39,28 +41,23 @@ export async function generateMetadata({ params }: PageProps<"/montres/[marque]/
     title: `${name} : tous les modèles et leurs prix`,
     description: `${c.watchCount} références ${name}${range} (prix catalogue officiels). Comparez mouvements, diamètres et caractéristiques.`,
     path: `/montres/${c.brandSlug}/${c.slug}`,
+    index: !hasCatalogFilters(loadCatalogParams(await searchParams)),
   });
 }
 
 export default async function CollectionPage({
   params,
+  searchParams,
 }: PageProps<"/montres/[marque]/[collection]">) {
   const { marque, collection } = await params;
   const c = await getCollection(marque, collection);
   if (!c) notFound();
 
-  // Une collection compte rarement plus de quelques dizaines de références : tout sur une page.
-  const pages = Math.ceil(c.watchCount / 24);
-  const results = await Promise.all(
-    Array.from({ length: pages }, (_, i) =>
-      getWatchCards({ brandSlug: c.brandSlug, collectionSlug: c.slug, page: i + 1 }),
-    ),
-  );
-  const watches = results.flatMap((r) => r.items);
+  const scope = { brandSlug: c.brandSlug, collectionSlug: c.slug };
+  const facets = await getFacets(scope);
   const name = displayName(c.brandName, c.name);
 
-  const movements = [...new Set(watches.map((w) => w.movement).filter((m) => m !== null))];
-  const diameters = watches.map((w) => w.diameterMm).filter((d): d is number => d !== null);
+  const movements = facets.movements.map((m) => m.value);
 
   return (
     <div className="space-y-8">
@@ -79,16 +76,15 @@ export default async function CollectionPage({
             `, de ${formatPrice(c.minPriceCents)} à ${formatPrice(c.maxPriceCents)}`}
           {movements.length > 0 &&
             `. Mouvements : ${movements.map((m) => MOVEMENT_LABELS[m].toLowerCase()).join(", ")}`}
-          {diameters.length > 0 &&
-            `. Diamètres de ${Math.min(...diameters)} à ${Math.max(...diameters)} mm`}
+          {facets.diameterMinMm !== null &&
+            `. Diamètres de ${facets.diameterMinMm.toLocaleString("fr-FR")} à ${facets.diameterMaxMm?.toLocaleString("fr-FR")} mm`}
           .
         </p>
       </div>
-      <WatchGrid watches={watches} />
-      <JsonLd
-        data={itemListJsonLd(
-          watches.map((w) => ({ name: displayName(w.brandName, w.name), path: watchPath(w) })),
-        )}
+      <CatalogBrowser
+        searchParams={searchParams}
+        scope={scope}
+        basePath={`/montres/${c.brandSlug}/${c.slug}`}
       />
     </div>
   );
