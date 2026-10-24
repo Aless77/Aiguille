@@ -6,6 +6,8 @@ import { CatalogPagination } from "@/components/catalog-pagination";
 import { WatchGrid } from "@/components/watch-card";
 import { getFacets, getWatchCards } from "@/lib/catalog/queries";
 import { loadCatalogParams, toFilter } from "@/lib/catalog/search-params";
+import { type Sort } from "@/lib/catalog/types";
+import { features } from "@/lib/features";
 import { pageMetadata } from "@/lib/seo/metadata";
 
 // Canonique sans paramètres : les combinaisons de filtres ne sont pas des pages à indexer
@@ -28,7 +30,7 @@ export default async function CatalogPage({ searchParams }: PageProps<"/montres"
         <aside>
           {/* useQueryStates lit l'URL côté client : frontière Suspense requise au prérendu. */}
           <Suspense>
-            <CatalogFilters facets={facets} />
+            <CatalogFilters facets={facets} hiddenSorts={hiddenSorts()} />
           </Suspense>
         </aside>
         <Suspense fallback={<ResultsSkeleton />}>
@@ -41,7 +43,10 @@ export default async function CatalogPage({ searchParams }: PageProps<"/montres"
 
 async function CatalogResults({ searchParams }: Pick<PageProps<"/montres">, "searchParams">) {
   const params = loadCatalogParams(await searchParams);
-  const { items, total, page, pageCount } = await getWatchCards(toFilter(params));
+  const filter = toFilter(params);
+  // Tri par une note masquée : retour au tri par défaut.
+  if (filter.sort && hiddenSorts().includes(filter.sort)) filter.sort = "prix-asc";
+  const { items, total, page, pageCount } = await getWatchCards(filter);
 
   return (
     <section className="space-y-6" aria-label="Résultats">
@@ -69,4 +74,12 @@ function ResultsSkeleton() {
       ))}
     </ul>
   );
+}
+
+/** Tris masqués tant que la note ou les avis sont désactivés (lib/features.ts). */
+function hiddenSorts(): Sort[] {
+  return [
+    ...(features.score() ? [] : (["note"] as const)),
+    ...(features.reviews() ? [] : (["avis"] as const)),
+  ];
 }

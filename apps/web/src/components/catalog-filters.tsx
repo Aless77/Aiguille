@@ -14,6 +14,8 @@ import { type Sort } from "@/lib/catalog/types";
 const SORT_LABELS: Record<Sort, string> = {
   "prix-asc": "Prix croissant",
   "prix-desc": "Prix décroissant",
+  note: "Meilleure Note Aiguille",
+  avis: "Mieux notées par la communauté",
   nom: "Nom",
   recents: "Plus récents",
 };
@@ -25,7 +27,14 @@ const inputClass =
  * Filtres du catalogue, synchronisés avec l'URL (nuqs). `shallow: false` relance le rendu serveur
  * de la page : la liste est toujours calculée côté serveur, donc indexable et partageable.
  */
-export function CatalogFilters({ facets }: { facets: Facets }) {
+export function CatalogFilters({
+  facets,
+  hiddenSorts = [],
+}: {
+  facets: Facets;
+  /** Tris liés à une fonctionnalité masquée (lib/features.ts). */
+  hiddenSorts?: Sort[];
+}) {
   const [isPending, startTransition] = useTransition();
   // Mobile : repliés par défaut pour laisser voir les résultats. Ordinateur : toujours visibles.
   const [open, setOpen] = useState(false);
@@ -68,11 +77,13 @@ export function CatalogFilters({ facets }: { facets: Facets }) {
             value={params.tri}
             onChange={(e) => update({ tri: e.target.value as Sort })}
           >
-            {Object.entries(SORT_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
+            {(Object.entries(SORT_LABELS) as [Sort, string][])
+              .filter(([value]) => !hiddenSorts.includes(value))
+              .map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
           </select>
         </label>
 

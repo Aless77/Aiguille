@@ -136,6 +136,23 @@ ses deux variables n'apparaît pas sur `/connexion`.
 En local, ouvrir le site par `http://localhost:3000` (pas `127.0.0.1`) : les fournisseurs
 n'acceptent que les URL de rappel déclarées.
 
+### 9. Avis : anti-spam Cloudflare Turnstile (lot 5)
+
+Facultatif mais recommandé avant d'ouvrir les avis au public. Sans ces deux variables, le
+formulaire fonctionne sans vérification anti-robot (la connexion reste obligatoire).
+
+1. dash.cloudflare.com → **Turnstile** → **Add widget**.
+   - Nom : `Aiguille` ; Hostname : `aiguille.aless-villa.com` (et `localhost` pour tester en local).
+   - Mode : **Managed** (invisible pour la plupart des visiteurs).
+2. Copier les deux clés dans Vercel (Production) :
+   - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (type Config : elle est publique, affichée dans la page) ;
+   - `TURNSTILE_SECRET_KEY` (type Secret).
+3. Redéployer : les fiches sont prérendues au build, la clé du site y est inscrite à ce moment.
+
+Après le premier déploiement du lot 5, lancer une fois la « Collecte quotidienne » (`limit` = 1) :
+sa tâche « Migrations » crée les tables `reviews` et `watch_scores`, et le scraper calcule les
+notes. Manuellement : `docker compose run --rm -e DATABASE_URL="<url Neon>" tools npm run db:scores`.
+
 ## Critères d'acceptation du lot 1
 
 - [ ] `docker compose up` lance le site et la base sans rien installer d'autre

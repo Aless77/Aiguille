@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
+import { features } from "@/lib/features";
 import { getBrands } from "@/lib/catalog/queries";
 import { siteConfig } from "@/lib/site";
 
@@ -41,7 +42,8 @@ export async function SiteHeader() {
         </nav>
         <div className="ml-auto flex items-center gap-3">
           <ThemeToggle />
-          <UserMenu />
+          {/* Un compte ne sert qu'à donner son avis : lien masqué tant que les avis le sont. */}
+          {features.reviews() && <UserMenu />}
         </div>
       </div>
     </header>

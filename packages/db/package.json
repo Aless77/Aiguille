@@ -5,13 +5,19 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./schema": "./src/schema.ts"
+    "./schema": "./src/schema.ts",
+    "./rating": "./src/rating.ts",
+    "./facts": "./src/facts.ts",
+    "./brand-info": "./src/brand-info.ts",
+    "./compare": "./src/compare.ts"
   },
   "scripts": {
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
     "seed": "tsx src/seed.ts",
     "seed:e2e": "tsx src/seed-e2e.ts",
+    "scores": "tsx src/refresh-scores.ts",
+    "couverture": "tsx src/coverage-report.ts",
     "studio": "drizzle-kit studio --host 0.0.0.0",
     "typecheck": "tsc --noEmit"
   },

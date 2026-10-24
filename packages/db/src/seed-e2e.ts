@@ -1,12 +1,15 @@
 import { eq } from "drizzle-orm";
 
 import { closeDb, getDb } from "./client.ts";
+import { refreshScores } from "./scores.ts";
 import {
   brands,
   collections,
   exchangeRates,
   priceObservations,
+  reviews,
   stores,
+  users,
   watches,
 } from "./schema.ts";
 
@@ -183,5 +186,46 @@ await db
   )
   .onConflictDoNothing();
 
-console.log(`Seed e2e : ${fixtures.length} montres de test, 3 boutiques.`);
+// Lot 5 : trois avis fictifs sur TEST-0001 (confiance « moyenne »), puis calcul des notes.
+const [reviewed] = await db
+  .select({ id: watches.id })
+  .from(watches)
+  .where(eq(watches.referenceKey, "TEST0001"));
+if (!reviewed) throw new Error("TEST-0001 absente après le seed");
+const reviewers = [
+  { n: 1, stars: 5, comment: "Très belle finition, confortable au quotidien." },
+  { n: 2, stars: 4, comment: "Bonne montre, la lisibilité de nuit pourrait être meilleure." },
+  { n: 3, stars: 4, comment: null },
+];
+await db
+  .insert(users)
+  .values(
+    reviewers.map(({ n }) => ({
+      id: `e2e-user-${n}`,
+      name: `Testeur ${n}`,
+      email: `e2e-${n}@example.test`,
+      emailVerified: true,
+    })),
+  )
+  .onConflictDoNothing();
+await db
+  .insert(reviews)
+  .values(
+    reviewers.map(({ n, stars, comment }) => ({
+      watchId: reviewed.id,
+      userId: `e2e-user-${n}`,
+      finishing: stars,
+      design: n === 3 ? null : stars,
+      comfort: stars,
+      legibility: n === 2 ? 3 : stars,
+      accuracy: stars,
+      value: stars,
+      ownership: n === 3 ? ("tried" as const) : ("owner" as const),
+      comment,
+    })),
+  )
+  .onConflictDoNothing();
+const scored = await refreshScores(db);
+
+console.log(`Seed e2e : ${fixtures.length} montres de test, 3 boutiques, 3 avis, ${scored} notes.`);
 await closeDb();

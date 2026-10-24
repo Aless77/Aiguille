@@ -3,6 +3,66 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-10-24 – Notation masquée, comparaison technique à la place (lot 5)
+
+Choix du propriétaire : noter une montre reste subjectif, et le recul manque pour publier une note.
+**La Note Aiguille reste dans le code mais ne s'affiche plus** (`FEATURE_SCORE` : masquée par
+défaut, affichée seulement avec `true`). Les avis de la communauté et la connexion restent affichés
+(`FEATURE_REVIEWS` : affichés par défaut, même sans réglage ; masqués seulement avec `false`).
+Les builds de test e2e activent les deux.
+Le site met en avant ce qui se vérifie, sans juger le goût :
+
+| Sujet              | Décision                                                                                                                                                                                             | Raison                                                                             |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Fiche              | Section « Technique, garantie et entretien » : faits publiés, « non communiqué par la marque » sinon                                                                                                 | Montrer la technique et l'entretien sans dire « bonne » ou « mauvaise » montre.    |
+| Comparaison        | « Aussi bien équipées, pour moins cher » : même usage, ±3 mm, ≥ 10 % moins chère, au moins aussi bien sur chaque point                                                                               | « Celle-ci, à 300 €, est automatique et plus étanche » : un fait, pas une note.    |
+| Preuve             | Une donnée connue pour la montre regardée doit l'être pour l'alternative                                                                                                                             | Ne rien promettre sans source.                                                     |
+| Infos de marque    | `brand-info.ts` : garantie et fabricant de mouvement **sourcés et datés**, sinon null                                                                                                                | Garantie et origine sont rarement sur les fiches ; jamais remplies de mémoire.     |
+| Pièces vintage     | Détectées (année de production), ni comparées ni proposées                                                                                                                                           | 47 pièces Longines Heritage de 1916 à 1970 n'ont pas d'équivalent neuf.            |
+| Nouvelles marques  | Procédure [integrer-une-marque.md](integrer-une-marque.md) + rapport `npm run db:couverture`                                                                                                         | Les mêmes informations pour chaque marque, et ce qui manque visible tout de suite. |
+| Audit (24 octobre) | Tissot : garantie 24 mois, 36 pour Lightmaster Solar et COSC (conditions de vente) ; aucun tarif de révision publié (pages vides) ; Hamilton filtré (403) et Longines en maintenance lors de l'audit | Base factuelle du registre ; Hamilton et Longines à revérifier.                    |
+
+## 2026-10-21 – Note Aiguille dans son registre et avis séparés (lot 5, remplace l'entrée suivante)
+
+Choix du propriétaire, après revue du premier modèle : celui-ci jugeait un profil de « montre-outil »
+(mécanique, étanche, saphir) sur tout le catalogue et dévalorisait les petites montres. Désormais :
+
+| Sujet             | Décision                                                                                                      | Raison                                                                               |
+| ----------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Deux notes        | **Note Aiguille** /100 (notre évaluation factuelle) et **avis de la communauté** /5, affichés séparément      | « Nous, le site, on dit ça ; voici ce que pense la communauté. »                     |
+| Registre          | Chaque montre comparée à sa catégorie : 6 gammes de prix × 7 familles d'usage, élargie si moins de 10 montres | Comparer le comparable : une excellente montre à 500 € peut obtenir 90/100.          |
+| Piliers Aiguille  | Mouvement 45 %, construction 30 %, rapport qualité-prix 25 % ; barème 25 % + rang dans la catégorie 75 %      | La qualité vient d'abord du mouvement ; le rang évite de juger dans l'absolu.        |
+| Faits             | Extraits des fiches officielles (fréquence, spiral silicium, COSC, complications, fond, couronne…)            | Sourcés, vérifiables ; une donnée non publiée compte pour une valeur moyenne.        |
+| Base des calibres | Table `calibers` reconstruite à chaque recalcul à partir des fiches (101 calibres au départ)                  | Aucun fait inventé ; une fiche officielle d'exemple sert de source.                  |
+| Étanchéité        | Attendue selon la famille (plongée 200 m et plus, habillée 50 m suffisent)                                    | Ne plus pénaliser les montres habillées.                                             |
+| Non noté par nous | Design, finition réelle, histoire, rareté                                                                     | Affaire de goût et d'expérience : rôle des avis. La rareté est signalée, sans bonus. |
+| Avis              | 6 critères (design ajouté), notés « par rapport à ce qu'on peut attendre à son prix »                         | Le propriétaire d'une montre à 300 € ne la compare pas à une Rolex.                  |
+| Tri communauté    | Moyenne bayésienne ; la fiche affiche la moyenne brute et le nombre d'avis                                    | Un avis isolé à 5/5 ne passe pas devant cent avis à 4,6.                             |
+
+Restent valables de l'entrée suivante : stockage dans `watch_scores`, anti-spam, `AggregateRating`
+(moyenne des avis), formulaire sans React Hook Form.
+
+## 2026-10-21 – Avis et note sur 100 (lot 5, remplacé par l'entrée précédente)
+
+Le cahier des charges fixe les poids (50 / 30 / 20, « à valider après les premiers tests ») mais
+pas le contenu des piliers. Choix par défaut, ajustables dans `packages/db/src/rating.ts` :
+
+| Sujet           | Décision                                                                                                 | Raison                                                                                      |
+| --------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Pilier 50 %     | Avis des propriétaires : moyenne bayésienne (a priori 3,5/5 pesant 5 avis, puis moyenne du site)         | Cahier des charges (« moyenne bayésienne + confiance ») ; aucune source externe validée.    |
+| Pilier 30 %     | Fiche technique pour le prix : équipement sur 100 (40 %) + rang parmi les montres à ±30 % du prix (60 %) | Calculable pour toutes les montres dès aujourd'hui, explicable (« mieux équipée que X % »). |
+| Pilier 20 %     | Prix et disponibilité : remise revendeur (60 %, plafond 20 %) + stock (40 %)                             | Exploite les relevés du lot 3 ; absent pour une montre plus produite.                       |
+| Pilier absent   | Poids ramenés à 100 % ; sans avis, note « provisoire », confiance faible                                 | Une note pour chaque fiche, sans masquer qu'elle repose sur les données objectives.         |
+| Confiance       | Faible < 3 avis ≤ moyenne < 10 avis ≤ élevée                                                             | Simple à expliquer sur la fiche.                                                            |
+| Critères d'avis | Finition, confort, lisibilité, précision, rapport qualité-prix (1 à 5) ; propriétaire ou essayée         | Couvre l'usage réel ; la moyenne des 5 critères alimente le pilier.                         |
+| Stockage        | Table `watch_scores`, recalculée après chaque collecte (scraper) et chaque avis (API)                    | Tri du catalogue par note en SQL ; quelques requêtes pour ~1 500 montres.                   |
+| Anti-spam       | Connexion obligatoire, Turnstile (si clés définies), pas de lien, 20 avis / 24 h, pas de copier-coller   | Exigences de sécurité du cahier des charges, sans service payant.                           |
+| Formulaire      | État React + schéma Zod partagé client / serveur, sans React Hook Form                                   | Un seul formulaire simple : une dépendance de moins.                                        |
+| Données Google  | `AggregateRating` = moyenne des avis sur 5, jamais la note sur 100                                       | Règles des extraits enrichis : une note agrégée doit refléter des avis.                     |
+
+Les notes d'autres sites rejoindront le premier pilier quand leurs sources seront validées
+(robots.txt, CGU), sous forme de note agrégée et de lien.
+
 ## 2026-10-21 – Disjoncteur de collecte
 
 Le 21 octobre, le site de Longines est passé en maintenance (503 pour tout le monde) au milieu de

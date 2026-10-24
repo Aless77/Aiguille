@@ -1,5 +1,7 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   index,
   integer,
   jsonb,
@@ -7,10 +9,14 @@ import {
   pgEnum,
   pgTable,
   serial,
+  smallint,
   text,
   timestamp,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
+
+import { type Alternative } from "./compare.ts";
+import { type Pillars } from "./rating.ts";
 
 /** Segment de marché d'une marque (voir le cahier des charges, section Périmètre). */
 export const brandSegment = pgEnum("brand_segment", ["coeur", "milieu_haut"]);
@@ -297,3 +303,126 @@ export const verifications = pgTable(
   },
   (t) => [index("verifications_identifier_idx").on(t.identifier)],
 );
+
+// ── Avis et note (lot 5) ────────────────────────────────────────────────────────────────────
+
+/** Le déposant possède la montre ou l'a seulement essayée (en boutique, chez un proche…). */
+export const reviewOwnership = pgEnum("review_ownership", ["owner", "tried"]);
+/** Un avis masqué (modération) ne compte plus dans la note ni n'est affiché. */
+export const reviewStatus = pgEnum("review_status", ["published", "hidden"]);
+
+const rating = (name: string) => smallint(name).notNull();
+
+/**
+ * Avis déposé sur le site : un seul par compte et par montre (modifiable). Supprimé avec le
+ * compte. Critères notés de 1 à 5 (REVIEW_CRITERIA dans rating.ts).
+ */
+export const reviews = pgTable(
+  "reviews",
+  {
+    id: serial("id").primaryKey(),
+    watchId: integer("watch_id")
+      .notNull()
+      .references(() => watches.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    finishing: rating("finishing"),
+    /** Ajouté après les premiers avis : null sur un avis plus ancien. */
+    design: smallint("design"),
+    comfort: rating("comfort"),
+    legibility: rating("legibility"),
+    accuracy: rating("accuracy"),
+    value: rating("value"),
+    ownership: reviewOwnership("ownership").notNull(),
+    comment: text("comment"),
+    status: reviewStatus("status").notNull().default("published"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("reviews_watch_user_idx").on(t.watchId, t.userId),
+    index("reviews_watch_status_idx").on(t.watchId, t.status),
+    index("reviews_user_idx").on(t.userId, t.createdAt),
+    ...(["finishing", "comfort", "legibility", "accuracy", "value"] as const).map((c) =>
+      check(`reviews_${c}_range`, sql`${t[c]} between 1 and 5`),
+    ),
+    check("reviews_design_range", sql`${t.design} is null or ${t.design} between 1 and 5`),
+  ],
+);
+
+export type Review = typeof reviews.$inferSelect;
+
+export const scoreConfidence = pgEnum("score_confidence", ["low", "medium", "high"]);
+
+/**
+ * Note sur 100 de chaque montre, recalculée par scores.ts après chaque collecte et chaque avis.
+ * Stockée (et non calculée à l'affichage) pour trier le catalogue par note.
+ */
+export const watchScores = pgTable(
+  "watch_scores",
+  {
+    watchId: integer("watch_id")
+      .primaryKey()
+      .references(() => watches.id, { onDelete: "cascade" }),
+    /** Note Aiguille sur 100, calculée dans la catégorie de la montre (rating.ts). */
+    score: smallint("score").notNull(),
+    /** Confiance de la Note Aiguille : données publiées par la marque, taille de la catégorie. */
+    confidence: scoreConfidence("confidence").notNull(),
+    pillars: jsonb("pillars").$type<Pillars>().notNull(),
+    /** Catégorie de comparaison : « Milieu de gamme · plongée (1 000 à 2 000 €) ». */
+    categoryLabel: text("category_label").notNull().default(""),
+    family: text("family").notNull().default("quotidien"),
+    priceBand: text("price_band"),
+    categorySize: integer("category_size").notNull().default(0),
+    /** Rang de la montre dans sa catégorie (1 = meilleure Note Aiguille). */
+    categoryRank: integer("category_rank").notNull().default(0),
+    // Avis de la communauté, séparé de la Note Aiguille.
+    reviewCount: integer("review_count").notNull().default(0),
+    /** Moyenne brute des avis sur 5 (null sans avis), affichée et pour AggregateRating. */
+    reviewAverage: numeric("review_average", { precision: 3, scale: 2, mode: "number" }),
+    /** Moyenne bayésienne sur 5 : tri « mieux notées par la communauté ». */
+    communityScore: numeric("community_score", { precision: 3, scale: 2, mode: "number" }),
+    communityConfidence: scoreConfidence("community_confidence"),
+    /** Comparaison technique : montres au moins aussi bien équipées et moins chères. */
+    alternatives: jsonb("alternatives").$type<Alternative[]>().notNull().default([]),
+    computedAt: timestamp("computed_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("watch_scores_score_idx").on(t.score),
+    index("watch_scores_community_idx").on(t.communityScore),
+  ],
+);
+
+/**
+ * Base des calibres : faits publiés par les marques sur leurs fiches officielles, regroupés par
+ * calibre (scores.ts, à chaque recalcul). Une même référence de calibre peut exister en plusieurs
+ * versions (avec ou sans spiral silicium…) : on compte les fiches qui annoncent chaque atout.
+ */
+export const calibers = pgTable(
+  "calibers",
+  {
+    id: serial("id").primaryKey(),
+    brandId: integer("brand_id")
+      .notNull()
+      .references(() => brands.id),
+    name: text("name").notNull(),
+    type: movementType("type"),
+    /** Valeur la plus fréquente sur les fiches (null si jamais publiée). */
+    frequencyVph: integer("frequency_vph"),
+    powerReserveH: integer("power_reserve_h"),
+    watchCount: integer("watch_count").notNull(),
+    siliconCount: integer("silicon_count").notNull().default(0),
+    antimagneticCount: integer("antimagnetic_count").notNull().default(0),
+    chronometerCount: integer("chronometer_count").notNull().default(0),
+    complications: jsonb("complications").$type<string[]>().notNull().default([]),
+    /** Fiche officielle d'exemple : la source des faits. */
+    sourceUrl: text("source_url"),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("calibers_brand_name_idx").on(t.brandId, t.name)],
+);
+
+export type Caliber = typeof calibers.$inferSelect;
+
+export type WatchScoreRow = typeof watchScores.$inferSelect;

@@ -95,6 +95,9 @@ services:
       # Surchargeable pour rejouer la CI sur une base de test : E2E_DATABASE_URL=… docker compose …
       DATABASE_URL: ${E2E_DATABASE_URL:-postgres://aiguille:aiguille@db:5432/aiguille}
       NEXT_DIST_DIR: .next-e2e
+      # Notation masquée en production mais testée : les e2e la voient (lib/features.ts).
+      FEATURE_SCORE: "true"
+      FEATURE_REVIEWS: "true"
     command: sh -c "npm run build -w @aiguille/web && npm run start -w @aiguille/web -- --hostname 0.0.0.0"
     healthcheck:
       # 127.0.0.1 et non localhost : sous Alpine, localhost se résout en IPv6, où Next n'écoute pas.

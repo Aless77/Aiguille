@@ -1,7 +1,7 @@
 export const MOVEMENTS = ["automatique", "manuel", "quartz", "solaire", "autre"] as const;
 export type Movement = (typeof MOVEMENTS)[number];
 
-export const SORTS = ["prix-asc", "prix-desc", "nom", "recents"] as const;
+export const SORTS = ["prix-asc", "prix-desc", "note", "avis", "nom", "recents"] as const;
 export type Sort = (typeof SORTS)[number];
 
 /** Segment d'URL des montres sans collection connue. */
@@ -22,6 +22,8 @@ export interface WatchCard {
   priceCents: number | null;
   imageUrl: string | null;
   discontinued: boolean;
+  /** Note sur 100 (lot 5), null tant qu'elle n'est pas calculée. */
+  score: number | null;
 }
 
 export interface CatalogFilter {
