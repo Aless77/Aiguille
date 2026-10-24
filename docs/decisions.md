@@ -3,6 +3,18 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-10-24 – Appliquer les migrations avant le build Vercel de production
+
+Le déploiement de `ad8ea95` (PR #20) échoue pendant le prérendu : PostgreSQL signale
+`relation "watch_scores" does not exist`. La migration `0004` crée cette table, puis `0005`
+et `0006` la complètent. La base locale est migrée, contrairement à la base lue par ce build.
+
+La commande Vercel de production exécute désormais les migrations commitées avant le build,
+et s'arrête immédiatement en cas d'échec. Cette décision complète le déclenchement nocturne :
+un déploiement n'attend plus la collecte suivante pour disposer du schéma nécessaire.
+Ni seed ni recalcul des notes pendant le build. Les previews ne migrent pas automatiquement :
+elles doivent utiliser une base dédiée déjà préparée. Aucune migration existante n'est modifiée.
+
 ## 2026-10-24 – Complément entretien Tissot et périmètre des forfaits
 
 Cette vérification complète le relevé ci-dessous : les pages Tissot sont désormais lisibles.
