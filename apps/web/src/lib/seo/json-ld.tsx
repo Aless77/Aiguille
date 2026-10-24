@@ -96,6 +96,15 @@ export interface ProductInput {
     priceCents: number;
     availability: "in_stock" | "out_of_stock" | "preorder" | "unknown";
   }[];
+  /**
+   * Avis déposés sur le site (lot 5) : AggregateRating sur 5 et les avis les plus récents. Notre
+   * note sur 100 n'y figure pas : ce n'est pas une moyenne d'avis (règles Google).
+   */
+  reviews?: {
+    average: number;
+    count: number;
+    items: { author: string; date: Date; rating: number; body: string | null }[];
+  };
 }
 
 const AVAILABILITY_ORDER = ["in_stock", "preorder", "out_of_stock"] as const;
@@ -134,6 +143,29 @@ export function productJsonLd(p: ProductInput): WithContext<Product> {
             offerCount: prices.length,
             ...(availability ? { availability: SCHEMA_AVAILABILITY[availability] } : {}),
           },
+        }
+      : {}),
+    ...(p.reviews && p.reviews.count > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: Math.round(p.reviews.average * 10) / 10,
+            bestRating: 5,
+            worstRating: 1,
+            ratingCount: p.reviews.count,
+          },
+          review: p.reviews.items.slice(0, 5).map((r) => ({
+            "@type": "Review",
+            author: { "@type": "Person", name: r.author },
+            datePublished: r.date.toISOString().slice(0, 10),
+            reviewRating: {
+              "@type": "Rating",
+              ratingValue: Math.round(r.rating * 10) / 10,
+              bestRating: 5,
+              worstRating: 1,
+            },
+            ...(r.body ? { reviewBody: r.body } : {}),
+          })),
         }
       : {}),
   };

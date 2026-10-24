@@ -29,6 +29,27 @@
       "when": 1792520273745,
       "tag": "0003_petite_karma",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792602720100,
+      "tag": "0004_graceful_shiva",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792606046158,
+      "tag": "0005_acoustic_miek",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792844183839,
+      "tag": "0006_condemned_jimmy_woo",
+      "breakpoints": true
     }
   ]
 }

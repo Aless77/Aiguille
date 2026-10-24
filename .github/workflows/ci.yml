@@ -64,6 +64,9 @@ jobs:
       - run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: 1
+          # Notation masquée en production mais testée par les e2e (lib/features.ts).
+          FEATURE_SCORE: "true"
+          FEATURE_REVIEWS: "true"
 
       # Tests de bout en bout (Playwright) sur le build de production.
       - name: Navigateur Playwright

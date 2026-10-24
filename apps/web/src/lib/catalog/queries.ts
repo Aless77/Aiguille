@@ -4,9 +4,14 @@ import {
   exchangeRates,
   getDb,
   priceObservations,
+  type ReviewRatings,
+  reviews,
   scrapeRuns,
   stores,
+  users,
   watches,
+  watchScores,
+  type WatchScoreRow,
 } from "@aiguille/db";
 import { and, asc, desc, eq, gte, inArray, isNull, lte, ne, type SQL, sql } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
@@ -42,6 +47,7 @@ const cardColumns = {
   priceCents: watches.catalogPriceCents,
   imageUrl: sql<string | null>`${watches.imageUrls}->>0`,
   discontinued: sql<boolean>`${watches.status} = 'discontinued'`,
+  score: sql<number | null>`(select score from watch_scores ws where ws.watch_id = ${watches.id})`,
 };
 
 function collectionCondition(slug: string): SQL | undefined {
@@ -68,6 +74,20 @@ function orderBy(sort: CatalogFilter["sort"]) {
   switch (sort) {
     case "prix-desc":
       return [status, sql`${watches.catalogPriceCents} desc nulls last`, asc(watches.slug)];
+    case "note":
+      return [
+        status,
+        sql`(select score from watch_scores ws where ws.watch_id = ${watches.id}) desc nulls last`,
+        asc(watches.slug),
+      ];
+    case "avis":
+      // Moyenne bayésienne : une montre à un seul avis 5/5 ne passe pas devant cent avis à 4,6.
+      return [
+        status,
+        sql`(select community_score from watch_scores ws where ws.watch_id = ${watches.id}) desc nulls last`,
+        sql`(select score from watch_scores ws where ws.watch_id = ${watches.id}) desc nulls last`,
+        asc(watches.slug),
+      ];
     case "nom":
       return [status, asc(watches.name), asc(watches.slug)];
     case "recents":
@@ -519,4 +539,97 @@ export async function getOfficialCountryPrices() {
       priceObservations.country,
       desc(priceObservations.observedAt),
     );
+}
+
+export interface PublicReview {
+  id: number;
+  authorName: string;
+  authorImage: string | null;
+  ratings: ReviewRatings;
+  ownership: "owner" | "tried";
+  comment: string | null;
+  updatedAt: Date;
+}
+
+export interface WatchRating {
+  score: WatchScoreRow | null;
+  reviews: PublicReview[];
+}
+
+/** Note sur 100 d'une montre et ses avis publiés, du plus récent au plus ancien (lot 5). */
+export async function getWatchRating(watchId: number): Promise<WatchRating> {
+  "use cache";
+  cached();
+  const db = getDb();
+  const [[score], rows] = await Promise.all([
+    db.select().from(watchScores).where(eq(watchScores.watchId, watchId)),
+    db
+      .select({
+        id: reviews.id,
+        authorName: users.name,
+        authorImage: users.image,
+        finishing: reviews.finishing,
+        design: reviews.design,
+        comfort: reviews.comfort,
+        legibility: reviews.legibility,
+        accuracy: reviews.accuracy,
+        value: reviews.value,
+        ownership: reviews.ownership,
+        comment: reviews.comment,
+        updatedAt: reviews.updatedAt,
+      })
+      .from(reviews)
+      .innerJoin(users, eq(users.id, reviews.userId))
+      .where(and(eq(reviews.watchId, watchId), eq(reviews.status, "published")))
+      .orderBy(desc(reviews.updatedAt))
+      .limit(100),
+  ]);
+  return {
+    score: score ?? null,
+    reviews: rows.map(({ finishing, design, comfort, legibility, accuracy, value, ...r }) => ({
+      ...r,
+      ratings: { finishing, design, comfort, legibility, accuracy, value },
+    })),
+  };
+}
+
+export interface WatchAlternative {
+  watch: WatchCard;
+  savingCents: number;
+  advantages: string[];
+}
+
+/**
+ * Montres au moins aussi bien équipées et moins chères (comparaison technique, sans note),
+ * calculées chaque nuit par refreshScores (packages/db/src/compare.ts).
+ */
+export async function getWatchAlternatives(watchId: number): Promise<WatchAlternative[]> {
+  "use cache";
+  cached();
+  const db = getDb();
+  const [row] = await db
+    .select({ alternatives: watchScores.alternatives })
+    .from(watchScores)
+    .where(eq(watchScores.watchId, watchId));
+  const list = row?.alternatives ?? [];
+  if (list.length === 0) return [];
+  const cards = await db
+    .select({ id: watches.id, ...cardColumns })
+    .from(watches)
+    .innerJoin(brands, eq(brands.id, watches.brandId))
+    .leftJoin(collections, eq(collections.id, watches.collectionId))
+    .where(
+      inArray(
+        watches.id,
+        list.map((a) => a.watchId),
+      ),
+    );
+  const byId = new Map(cards.map(({ id, ...card }) => [id, card]));
+  return list
+    .filter((a) => byId.has(a.watchId))
+    .map((a) => ({
+      watch: byId.get(a.watchId)!,
+      savingCents: a.savingCents,
+      advantages: a.advantages,
+    }));
 }

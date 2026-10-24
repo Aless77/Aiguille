@@ -1,0 +1,1 @@
+ALTER TABLE "watch_scores" ADD COLUMN "alternatives" jsonb DEFAULT '[]'::jsonb NOT NULL;

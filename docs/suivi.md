@@ -35,14 +35,29 @@ Reste pour boucler le lot 4 :
   renseignés dans GitHub Actions et Vercel, essai manuel (`limit` = 5) réussi sur les 6 tâches,
   invalidation du cache du site confirmée. Première collecte complète la nuit suivante à 03:00 UTC.
 
-## Lot 5 en cours (20 octobre 2026)
+## Lot 5 (21 octobre 2026)
 
-- **Comptes** faits dans le code : Better Auth, connexion Google et GitHub (choix du compte forcé),
-  pages `/connexion`, `/compte` (suppression du compte) et `/confidentialite`,
-  menu du compte dans l'en-tête, migration `0003`. Reste à créer les applications OAuth et les
-  variables Vercel ([deploiement.md](deploiement.md#8-comptes--connexion-google-et-github-lot-5)).
-- À faire ensuite : dépôt d'avis par critère (un par compte et par montre, Turnstile), puis note
-  sur 100 avec confiance et détail des piliers. Contenu des piliers et sources externes à trancher.
+- **Comptes** : Better Auth, connexion GitHub et Google (choix du compte forcé), pages
+  `/connexion`, `/compte` (suppression du compte) et `/confidentialite`. GitHub actif en ligne ;
+  Google à activer dans Vercel.
+- **Note Aiguille** faite dans le code : sur 100, calculée dans la catégorie de la montre (gamme
+  de prix × famille d'usage), à partir des faits des fiches officielles et de la base des calibres.
+  Piliers mouvement 45 %, construction 30 %, rapport qualité-prix 25 %. Rang et catégorie affichés.
+- **Avis de la communauté** fait dans le code : sur 5, affiché à part, un avis par compte et par
+  montre (6 critères, design compris, notés par rapport au prix). Tri du catalogue par l'une ou
+  l'autre note, `AggregateRating`, méthodologie. Migrations `0004` et `0005`. Modèle validé par le
+  propriétaire ([decisions.md](decisions.md)).
+- **24 octobre : Note Aiguille masquée** (`FEATURE_SCORE` absent ou autre que true), code conservé ;
+  avis et connexion toujours affichés (masqués seulement si `FEATURE_REVIEWS=false`).
+  À la place : section « Technique, garantie et entretien » et « Aussi bien équipées, pour moins
+  cher » (685 montres avec au moins une alternative). Registre sourcé `brand-info.ts`, rapport
+  `npm run db:couverture`, procédure [integrer-une-marque.md](integrer-une-marque.md).
+  Migration `0006`.
+- Reste à sourcer : garanties Hamilton et Longines (sites inaccessibles lors de l'audit),
+  fabricants de mouvements (aucune page publique trouvée), calibres Tissot (absents des fiches).
+- Hamilton refuse nos requêtes depuis le poste local (403, Akamai) et ses images s'y affichent
+  « Photo indisponible » ; la collecte GitHub passait encore le 21 octobre. À surveiller.
+- Plus tard : clés Turnstile si les avis sont réactivés, notes externes, cote en occasion (eBay).
 
 ## Prochaine étape : mise en production
 

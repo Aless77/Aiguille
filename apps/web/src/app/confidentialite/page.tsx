@@ -19,7 +19,7 @@ export default function PrivacyPage() {
     <article className="max-w-3xl space-y-8">
       <Breadcrumbs crumbs={[{ name: "Confidentialité" }]} />
       <h1 className="text-3xl font-semibold tracking-tight">Règles de confidentialité</h1>
-      <p className="text-muted-foreground">Dernière mise à jour : 20 octobre 2026.</p>
+      <p className="text-muted-foreground">Dernière mise à jour : 21 octobre 2026.</p>
 
       <section className={sectionClass}>
         <h2 className={titleClass}>En bref</h2>
@@ -46,8 +46,9 @@ export default function PrivacyPage() {
         </ul>
         <p>
           Pour chaque session ouverte, nous enregistrons aussi l&apos;adresse IP et le type de
-          navigateur, afin de détecter les abus (faux avis, comptes multiples). Les avis que vous
-          déposerez seront rattachés à votre compte et affichés publiquement avec votre nom.
+          navigateur, afin de détecter les abus (faux avis, comptes multiples). Vos avis (notes,
+          commentaire, propriétaire ou non) sont rattachés à votre compte et affichés publiquement
+          avec votre nom et votre photo de profil, sur la fiche de la montre.
         </p>
         <p>
           Nous n&apos;envoyons aucun e-mail et ne demandons aucun accès à vos dépôts GitHub ni à vos
@@ -71,8 +72,8 @@ export default function PrivacyPage() {
           <li>Session : 30 jours au plus, effacée à la déconnexion.</li>
           <li>Compte : tant que vous ne le supprimez pas.</li>
           <li>
-            À la suppression du compte, vos données de profil et vos sessions sont effacées
-            immédiatement.
+            À la suppression du compte, vos données de profil, vos sessions et vos avis sont effacés
+            immédiatement. Vous pouvez aussi supprimer un seul avis depuis la fiche.
           </li>
         </ul>
       </section>
