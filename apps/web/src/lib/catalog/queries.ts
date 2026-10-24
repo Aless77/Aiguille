@@ -22,7 +22,12 @@ import {
   NO_COLLECTION_SLUG,
   PAGE_SIZE,
   type WatchCard,
+  type FacetOption,
+  type TechnicalFilterKey,
+  TECHNICAL_FILTER_KEYS,
 } from "./types";
+import { catalogSearch } from "./search";
+import { filterFacts, matchesTechnical, technicalFacets } from "./technical-filters";
 
 /**
  * Lectures du catalogue, mises en cache (Cache Components). Les données changent au plus une
@@ -56,14 +61,29 @@ function collectionCondition(slug: string): SQL | undefined {
 
 function filterConditions(f: CatalogFilter): SQL[] {
   const conditions: (SQL | undefined)[] = [
+    f.search ? catalogSearch(f.search) : undefined,
     f.brandSlug ? eq(brands.slug, f.brandSlug) : undefined,
     f.brands?.length ? inArray(brands.slug, f.brands) : undefined,
     f.collectionSlug ? collectionCondition(f.collectionSlug) : undefined,
     f.movements?.length ? inArray(watches.movement, f.movements) : undefined,
-    f.priceMin ? gte(watches.catalogPriceCents, f.priceMin * 100) : undefined,
-    f.priceMax ? lte(watches.catalogPriceCents, f.priceMax * 100) : undefined,
-    f.diameterMin ? gte(watches.diameterMm, f.diameterMin) : undefined,
-    f.diameterMax ? lte(watches.diameterMm, f.diameterMax) : undefined,
+    f.priceMin != null ? gte(watches.catalogPriceCents, Math.round(f.priceMin * 100)) : undefined,
+    f.priceMax != null ? lte(watches.catalogPriceCents, Math.round(f.priceMax * 100)) : undefined,
+    f.diameterMin != null ? gte(watches.diameterMm, f.diameterMin) : undefined,
+    f.diameterMax != null ? lte(watches.diameterMm, f.diameterMax) : undefined,
+    f.waterMin != null ? gte(watches.waterResistanceM, f.waterMin) : undefined,
+    f.reserveMin != null ? gte(watches.powerReserveH, f.reserveMin) : undefined,
+    f.thicknessMax != null ? lte(watches.thicknessMm, f.thicknessMax) : undefined,
+    f.lugWidth != null ? eq(watches.lugWidthMm, f.lugWidth) : undefined,
+    f.status ? eq(watches.status, f.status) : undefined,
+    f.inStock
+      ? sql`exists (
+      select 1 from (
+        select distinct on (source) availability from price_observations
+        where watch_id = ${watches.id} and country = 'FR'
+        order by source, observed_at desc, id desc
+      ) latest where latest.availability = 'in_stock'
+    )`
+      : undefined,
   ];
   return conditions.filter((c): c is SQL => c !== undefined);
 }
@@ -103,7 +123,18 @@ export async function getWatchCards(
   "use cache";
   cached();
   const db = getDb();
-  const where = and(...filterConditions(filter));
+  const technical =
+    filter.warrantyMin != null ||
+    TECHNICAL_FILTER_KEYS.some((key) => filter.technical?.[key]?.length);
+  const ids = technical
+    ? (await getFilterIndex({ brandSlug: filter.brandSlug, collectionSlug: filter.collectionSlug }))
+        .filter((row) => matchesTechnical(row, filter))
+        .map((row) => row.id)
+    : null;
+  const where = and(
+    ...filterConditions(filter),
+    ids ? (ids.length ? inArray(watches.id, ids) : sql`false`) : undefined,
+  );
   const page = Math.max(1, filter.page ?? 1);
 
   const [items, [count]] = await Promise.all([
@@ -285,38 +316,85 @@ export async function getSimilarWatches(
 }
 
 export interface Facets {
+  technical: Record<TechnicalFilterKey, FacetOption[]>;
   brands: { slug: string; name: string; count: number }[];
   movements: { value: Movement; count: number }[];
   priceMinCents: number | null;
   priceMaxCents: number | null;
+  diameterMinMm: number | null;
+  diameterMaxMm: number | null;
 }
 
-export async function getFacets(): Promise<Facets> {
+export async function getFacets(
+  scope: Pick<CatalogFilter, "brandSlug" | "collectionSlug"> = {},
+): Promise<Facets> {
   "use cache";
   cached();
   const db = getDb();
-  const [brandRows, movementRows, [range]] = await Promise.all([
+  const [brandRows, movementRows, [range], index] = await Promise.all([
     getBrands(),
     db
       .select({ value: watches.movement, count: sql<number>`count(*)::int` })
       .from(watches)
+      .innerJoin(brands, eq(brands.id, watches.brandId))
+      .leftJoin(collections, eq(collections.id, watches.collectionId))
+      .where(and(...filterConditions(scope)))
       .groupBy(watches.movement)
       .orderBy(sql`count(*) desc`),
     db
       .select({
         min: sql<number | null>`min(${watches.catalogPriceCents})`,
         max: sql<number | null>`max(${watches.catalogPriceCents})`,
+        diameterMin: sql<number | null>`min(${watches.diameterMm})`.mapWith(Number),
+        diameterMax: sql<number | null>`max(${watches.diameterMm})`.mapWith(Number),
       })
-      .from(watches),
+      .from(watches)
+      .innerJoin(brands, eq(brands.id, watches.brandId))
+      .leftJoin(collections, eq(collections.id, watches.collectionId))
+      .where(and(...filterConditions(scope))),
+    getFilterIndex(scope),
   ]);
   return {
+    technical: technicalFacets(index),
     brands: brandRows
       .filter((b) => b.watchCount > 0)
       .map((b) => ({ slug: b.slug, name: b.name, count: b.watchCount })),
     movements: movementRows.filter((m): m is { value: Movement; count: number } => !!m.value),
     priceMinCents: range?.min ?? null,
     priceMaxCents: range?.max ?? null,
+    diameterMinMm: range?.diameterMin ?? null,
+    diameterMaxMm: range?.diameterMax ?? null,
   };
+}
+
+/** Faits techniques relus avec les mêmes extracteurs que la fiche, en cache serveur uniquement. */
+async function getFilterIndex(scope: Pick<CatalogFilter, "brandSlug" | "collectionSlug"> = {}) {
+  "use cache";
+  cached();
+  const rows = await getDb()
+    .select({
+      id: watches.id,
+      name: watches.name,
+      brandSlug: brands.slug,
+      brandName: brands.name,
+      collectionSlug: sql<string>`coalesce(${collections.slug}, ${NO_COLLECTION_SLUG})`,
+      collectionName: collections.name,
+      movement: watches.movement,
+      caliber: watches.caliber,
+      diameterMm: watches.diameterMm,
+      waterResistanceM: watches.waterResistanceM,
+      powerReserveH: watches.powerReserveH,
+      caseMaterial: watches.caseMaterial,
+      crystal: watches.crystal,
+      strapMaterial: watches.strapMaterial,
+      dialColor: watches.dialColor,
+      rawSpecs: watches.rawSpecs,
+    })
+    .from(watches)
+    .innerJoin(brands, eq(brands.id, watches.brandId))
+    .leftJoin(collections, eq(collections.id, watches.collectionId))
+    .where(and(...filterConditions(scope)));
+  return rows.map(filterFacts);
 }
 
 /** Toutes les fiches (sitemap, generateStaticParams). */

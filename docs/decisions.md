@@ -3,6 +3,28 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-10-24 – Recherche et filtres communs au catalogue, aux marques et aux collections
+
+Un même composant serveur présente les résultats et la pagination dans les trois niveaux.
+La recherche porte sur le nom, la marque, la collection et la référence ; chaque mot doit
+correspondre. Les références sont aussi cherchées sans ponctuation, sans tenir compte de la casse.
+Les numéros de série individuels ne sont pas recherchés. Les motifs SQL sont paramétrés et les
+jokers saisis sont traités littéralement ; longueur de recherche limitée à 120 caractères.
+
+Prix et diamètre disposent de curseurs à deux poignées, avec saisie numérique complémentaire.
+Leurs bornes viennent de la marque ou collection consultée. La recherche se met à jour après une
+courte pause de saisie ; les curseurs ne relancent la requête qu'au relâchement. Les diamètres
+décimaux sont conservés. Toute modification ramène à la première page.
+
+Les paramètres restent dans l'URL ; la pagination conserve le chemin de marque ou de collection.
+Le périmètre du chemin prime sur un éventuel paramètre de marque contradictoire. Les collections
+sont désormais paginées, avec vrais liens et contenu serveur. Sur une page de marque, les liens
+des collections restent accessibles dans « Explorer les collections », replié pour laisser la
+recherche directement accessible. Sur mobile, seule la recherche est toujours ouverte.
+
+Les variantes filtrées ou paginées sont en `noindex,follow`, avec canonique sans paramètres.
+Les URL publiques existantes, le sitemap, les vrais 404 et le garde-fou d'indexation sont conservés.
+
 ## 2026-10-24 – Appliquer les migrations avant le build Vercel de production
 
 Le déploiement de `ad8ea95` (PR #20) échoue pendant le prérendu : PostgreSQL signale
