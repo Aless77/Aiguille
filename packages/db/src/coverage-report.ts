@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import { closeDb, getDb } from "./client.ts";
-import { coverage, missingBrandInfo } from "./coverage.ts";
+import { coverage, missingBrandInfo, sheetCoverage } from "./coverage.ts";
 import { brands, collections, watches } from "./schema.ts";
 
 /**
@@ -22,6 +22,10 @@ const rows = await getDb()
     crystal: watches.crystal,
     rawSpecs: watches.rawSpecs,
     priceCents: watches.catalogPriceCents,
+    thicknessMm: watches.thicknessMm,
+    lugWidthMm: watches.lugWidthMm,
+    dialColor: watches.dialColor,
+    strapMaterial: watches.strapMaterial,
     imageUrls: watches.imageUrls,
   })
   .from(watches)
@@ -42,6 +46,20 @@ for (const row of table) {
     ].join(""),
   );
 }
+// Fiche technique commune : part des montres dont chaque ligne est renseignée.
+console.log(`
+${"Fiche technique".padEnd(48)}${brandSlugs.map((b) => b.padStart(10)).join("")}`);
+for (const row of sheetCoverage(rows.map((r) => ({ ...r, storeCount: 1 })))) {
+  console.log(
+    [
+      row.label.padEnd(48),
+      ...brandSlugs.map((b) =>
+        pct(row.byBrand[b]?.known ?? 0, row.byBrand[b]?.applicable ?? 0).padStart(10),
+      ),
+    ].join(""),
+  );
+}
+
 const missing = missingBrandInfo(brandSlugs);
 if (missing.length) {
   console.log("\nÀ sourcer dans packages/db/src/brand-info.ts :");

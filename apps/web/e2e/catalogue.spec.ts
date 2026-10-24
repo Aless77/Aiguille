@@ -47,7 +47,7 @@ test.describe("fiche montre", () => {
     await page.goto(href!);
     await expectSeoBasics(page, href!);
     await expect(page.getByText("Prix catalogue officiel", { exact: true })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Caractéristiques" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Fiche technique" })).toBeVisible();
 
     const data = await jsonLd(page);
     const product = data.find((d) => d["@type"] === "Product");

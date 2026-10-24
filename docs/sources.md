@@ -78,7 +78,22 @@ Règles retenues pour les revendeurs :
 - **Pas de note revendeur** : l'`aggregateRating` d'Ocarat porte sur la boutique, pas sur la montre.
 - Un relevé par revendeur et par montre, avec la même règle « seulement si le prix ou le stock change ».
 
-## Questions ouvertes liées aux sources
+## Vérification manuelle garantie et entretien (24 octobre 2026)
+
+Pages officielles consultées pour le registre éditorial, sans nouvelle collecte automatique :
+
+- Tissot : [garantie et précautions](https://www.tissotwatches.com/fr-fr/customer-service-warranty.html),
+  [tarifs France](https://www.tissotwatches.com/fr-fr/service-prices),
+  [FAQ](https://www.tissotwatches.com/fr-fr/faq). Pages maintenant lisibles ; fréquences
+  divergentes conservées avec leurs sources (voir décisions).
+- Hamilton : [interventions et prix](https://www.hamiltonwatch.com/fr-fr/watch-intervention.html).
+  Grille et fréquences confirmées ; les règles de collecte existantes restent applicables.
+- Longines : [garantie](https://www.longines.com/fr/customer-service/warranty),
+  [tarifs](https://www.longines.com/fr/customer-service/services/maintenance-prices),
+  [services](https://www.longines.com/fr/customer-service/services). Restriction géographique du
+  forfait pile et devis pour les montres anciennes pris en compte.
+
+## Questions restant à trancher
 
 - Revendeurs de référence pour Oris et Citizen.
 - Sources d'avis externes autorisées, par marque.

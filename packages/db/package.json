@@ -9,7 +9,8 @@
     "./rating": "./src/rating.ts",
     "./facts": "./src/facts.ts",
     "./brand-info": "./src/brand-info.ts",
-    "./compare": "./src/compare.ts"
+    "./compare": "./src/compare.ts",
+    "./spec-sheet": "./src/spec-sheet.ts"
   },
   "scripts": {
     "generate": "drizzle-kit generate",

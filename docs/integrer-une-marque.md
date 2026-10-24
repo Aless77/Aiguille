@@ -38,16 +38,43 @@ aux règles d'extraction, avec un test dans `facts.test.ts` :
 | Garantie sur la fiche, pays de fabrication, pile, bracelet, mécanisme de chronographe, pièce vintage | `extractOwnershipFacts`          |
 | Famille d'usage (plongée, habillée…)                                                                 | `family` (motifs de collections) |
 
+### Fiche technique commune (`packages/db/src/spec-sheet.ts`)
+
+Toutes les marques affichent **les mêmes rubriques et les mêmes lignes, dans le même ordre**
+(Mouvement, Boîtier, Cadran, Bracelet, Garantie et entretien, et Historique pour les pièces
+vintage). Chaque ligne liste les libellés de fiche qui l'alimentent, toutes marques confondues.
+Pour une nouvelle marque :
+
+- ajouter ses libellés aux lignes correspondantes (`raw("Libellé Tissot", "Libellé Longines", …)`) ;
+- vérifier la section « Fiche technique » du rapport de couverture : une ligne à 0 % signale un
+  libellé non relié ou une information non publiée ;
+- ouvrir une fiche : le bloc repliable « Autres informations » liste les libellés de la marque
+  encore non reliés à une ligne. Les relier, ou les ajouter à `IGNORED` s'ils sont sans intérêt ;
+- ne jamais ajouter une ligne pour une seule marque : une nouvelle ligne vaut pour toutes.
+
+Les libellés et valeurs sont normalisés en Unicode NFC (certaines marques écrivent des accents
+décomposés) : écrire les libellés tels qu'ils s'affichent.
+
 ## 4. Renseigner les informations de marque (`packages/db/src/brand-info.ts`)
 
-Ce que les fiches ne donnent pas, **avec la page source et la date de vérification** :
+Ce que les fiches ne donnent pas, **avec la page source et la date de vérification**. Pages à
+chercher sur chaque site : conditions de garantie, conditions générales de vente (garantie,
+disponibilité des pièces détachées), service client (tarifs de révision), FAQ et conseils
+d'entretien.
 
-- `warranty` : garantie internationale standard et durées étendues (conditions de garantie ou de
-  vente de la marque).
-- `movementMakers` : fabricant du mouvement par motif de calibre, seulement si une page publique
-  l'établit (fiche, page calibre de la marque, communiqué).
+| Champ            | Contenu                                                                                                                                                                                                                                              |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `warranty`       | Durée standard et durées étendues, **page de détail** (lien sur la fiche), exclusions résumées                                                                                                                                                       |
+| `service`        | Tarifs de révision complète et partielle (mécanique / quartz, avec ou sans chronographe), pile, fréquences conseillées (complète, partielle, étanchéité), durée de vie de la pile, garantie de la révision, pièces de rechange, prestations offertes |
+| `madeIn`         | Pays de fabrication déclaré pour toute la marque, si les fiches ne le donnent pas                                                                                                                                                                    |
+| `care`           | Conseils d'utilisation que la marque publie (identifiants de `CARE_TIPS`)                                                                                                                                                                            |
+| `movementMakers` | Fabricant du mouvement par motif de calibre, seulement si une page de la marque l'établit                                                                                                                                                            |
+
+- Les textes sont **reformulés**, jamais copiés ; garder les chiffres exacts de la marque.
 - Laisser `null` ou une liste vide tant que ce n'est pas vérifié : le site affiche alors « non
-  communiqué par la marque ». Le rapport de couverture liste ce qui reste à sourcer.
+  communiqué ». Sans conseils de la marque, la fiche affiche des **conseils généraux**, signalés
+  comme tels. Le rapport de couverture liste ce qui reste à sourcer et ce qui date de plus de six
+  mois (à revérifier : les tarifs changent).
 
 ## 5. Recalculer et vérifier
 
