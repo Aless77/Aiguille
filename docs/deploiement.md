@@ -44,6 +44,12 @@ Settings → Branches → règle sur `main` :
 **Neon** (voir [decisions.md](decisions.md)). Le build Vercel **lit la base** (pages prérendues) :
 sans `DATABASE_URL`, le déploiement échoue.
 
+En production, `apps/web/vercel.json` applique `npm run db:migrate` **avant** `next build`.
+Si une migration échoue, le build s'arrête et le déploiement précédent reste en place.
+Les migrations déjà appliquées ne sont pas rejouées. Le seed et les collectes restent séparés.
+En preview, aucune migration automatique n'est exécutée : préparer une base dédiée et migrée,
+sans accorder d'écriture sur la base de production aux builds de branches.
+
 1. Vercel → projet `aiguille` → Storage (Marketplace) → **Neon** → Create, région Europe
    (Francfort). L'intégration crée `DATABASE_URL` dans Production et Preview, et peut créer une
    branche Neon par preview.

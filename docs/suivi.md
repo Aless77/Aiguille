@@ -71,6 +71,12 @@ Reste pour boucler le lot 4 :
 
 ## Prochaine étape : mise en production
 
+Déploiement du 24 octobre (`ad8ea95`, PR #20) en échec : `watch_scores` absente de la base
+de production. Correction préparée dans `dev` : migrations avant le build Vercel de production
+(`apps/web/vercel.json`), arrêt en cas d'échec ; previews sans migration automatique.
+Commande exacte validée dans Docker (migrations puis build). Après commit/push et fusion par le
+propriétaire, vérifier le nouveau déploiement Vercel. Aucune base distante modifiée par l'agent.
+
 Suivre [deploiement.md](deploiement.md) et les choix de [decisions.md](decisions.md).
 
 1. Connecter Neon au projet Vercel ; préparer le transfert de la base locale lorsque l'URL sera
