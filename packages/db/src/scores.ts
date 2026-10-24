@@ -180,7 +180,7 @@ export function buildScores(inputs: ScoreInput[]): Map<number, ComputedScore> {
       movement: p.m,
       construction: p.c,
       ownership: p.o,
-      warrantyMonths: warrantyFor(p.w.brandSlug, p.o.warrantyMonths)?.months ?? null,
+      warrantyMonths: warrantyFor(p.w.brandSlug, p.o.warrantyMonths, p.w.movement)?.months ?? null,
     })),
   );
   for (const [id, list] of alternatives) result.get(id)!.alternatives = list;

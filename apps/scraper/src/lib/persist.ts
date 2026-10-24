@@ -4,6 +4,7 @@ import {
   type Database,
   priceObservations,
   scrapeRuns,
+  specs,
   watches,
 } from "@aiguille/db";
 import { and, desc, eq, lt, sql } from "drizzle-orm";
@@ -87,7 +88,8 @@ export class Persister {
       crystal: listing.specs.crystal ?? null,
       dialColor: listing.specs.dialColor ?? null,
       strapMaterial: listing.specs.strapMaterial ?? null,
-      rawSpecs: listing.rawSpecs,
+      // Accents normalisés (NFC) : Tissot publie certains libellés en accents décomposés.
+      rawSpecs: specs(listing),
       imageUrls: listing.imageUrls,
       catalogPriceCents: listing.priceCents ?? null,
       officialUrl: listing.url,

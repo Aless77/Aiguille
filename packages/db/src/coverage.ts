@@ -5,6 +5,7 @@ import {
   extractOwnershipFacts,
   type WatchSource,
 } from "./facts.ts";
+import { buildSpecSheet, type SheetInput } from "./spec-sheet.ts";
 
 export interface CoverageInput extends WatchSource {
   brandSlug: string;
@@ -53,12 +54,14 @@ const CHECKS: {
   {
     label: "Garantie",
     applies: () => true,
-    known: (w) => warrantyFor(w.brandSlug, extractOwnershipFacts(w).warrantyMonths) !== null,
+    known: (w) =>
+      warrantyFor(w.brandSlug, extractOwnershipFacts(w).warrantyMonths, w.movement) !== null,
   },
   {
     label: "Pays de fabrication",
     applies: () => true,
-    known: (w) => extractOwnershipFacts(w).madeIn !== null,
+    known: (w) =>
+      extractOwnershipFacts(w).madeIn !== null || Boolean(BRAND_INFO[w.brandSlug]?.madeIn),
   },
   {
     label: "Bracelet (boucle, interchangeabilité)",
@@ -107,13 +110,52 @@ export function coverage(watches: CoverageInput[]): CoverageRow[] {
 }
 
 /** Informations de marque (brand-info.ts) encore à sourcer. */
-export function missingBrandInfo(brandSlugs: string[]): string[] {
+/** Informations de marque (brand-info.ts) encore à sourcer, ou vérifiées il y a plus de 6 mois. */
+export function missingBrandInfo(brandSlugs: string[], today = new Date()): string[] {
+  const stale = (checkedAt: string) =>
+    today.getTime() - new Date(checkedAt).getTime() > 183 * 86_400_000;
   return brandSlugs.flatMap((b) => {
     const info = BRAND_INFO[b];
     if (!info) return [`${b} : aucune entrée dans brand-info.ts`];
+    const sourced = [
+      info.warranty,
+      info.service,
+      info.madeIn,
+      info.care,
+      info.group,
+      ...info.movementMakers,
+    ].filter((e): e is NonNullable<typeof e> => e !== null);
     return [
       ...(info.warranty ? [] : [`${b} : garantie de la marque non sourcée`]),
+      ...(info.service ? [] : [`${b} : tarifs de révision non sourcés`]),
+      ...(info.care
+        ? []
+        : [`${b} : conseils d'utilisation non sourcés (conseils généraux affichés)`]),
       ...(info.movementMakers.length ? [] : [`${b} : aucun fabricant de mouvement sourcé`]),
+      ...sourced
+        .filter((e) => stale(e.checkedAt))
+        .map((e) => `${b} : à revérifier (${e.source}, vérifié le ${e.checkedAt})`),
     ];
   });
+}
+
+/**
+ * Remplissage de la fiche technique commune, ligne par ligne et par marque. Les rubriques propres
+ * à certaines montres (historique des pièces vintage) ne comptent que pour elles.
+ */
+export function sheetCoverage(watches: (SheetInput & { brandSlug: string })[]): CoverageRow[] {
+  const rows = new Map<string, CoverageRow>();
+  for (const w of watches) {
+    for (const group of buildSpecSheet(w).groups) {
+      for (const r of group.rows) {
+        const label = `${group.title} › ${r.label}`;
+        const row = rows.get(label) ?? { label, byBrand: {} };
+        const cell = (row.byBrand[w.brandSlug] ??= { known: 0, applicable: 0 });
+        cell.applicable++;
+        if (r.value !== null) cell.known++;
+        rows.set(label, row);
+      }
+    }
+  }
+  return [...rows.values()];
 }
