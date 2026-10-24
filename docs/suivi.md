@@ -71,6 +71,11 @@ Reste pour boucler le lot 4 :
 
 ## Prochaine étape : mise en production
 
+Recherche du 24 octobre : barre par nom/référence et curseurs prix/diamètre sur le catalogue,
+les marques et les collections ; URL partageable, pagination dans le même périmètre, filtres
+non indexés. Validation locale de la recherche, des références sans ponctuation, des bornes,
+du clavier, de l'ouverture mobile, de la remise à zéro et des vrais 404. Code non déployé.
+
 Déploiement du 24 octobre (`ad8ea95`, PR #20) en échec : `watch_scores` absente de la base
 de production. Correction préparée dans `dev` : migrations avant le build Vercel de production
 (`apps/web/vercel.json`), arrêt en cas d'échec ; previews sans migration automatique.

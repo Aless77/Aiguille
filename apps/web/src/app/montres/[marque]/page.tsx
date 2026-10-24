@@ -2,17 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { buttonVariants } from "@/components/ui/button";
-import { WatchGrid } from "@/components/watch-card";
+import { CatalogBrowser } from "@/components/catalog-browser";
 import { formatPrice } from "@/lib/catalog/format";
-import {
-  getBrand,
-  getBrands,
-  getCollections,
-  getStoreCounts,
-  getWatchCards,
-} from "@/lib/catalog/queries";
-import { serializeCatalogParams } from "@/lib/catalog/search-params";
+import { getBrand, getBrands, getCollections, getStoreCounts } from "@/lib/catalog/queries";
+import { hasCatalogFilters, loadCatalogParams } from "@/lib/catalog/search-params";
 import { PLACEHOLDER_SLUG, withPlaceholder } from "@/lib/catalog/static-params";
 import { JsonLd, itemListJsonLd } from "@/lib/seo/json-ld";
 import { pageMetadata } from "@/lib/seo/metadata";
@@ -32,7 +25,7 @@ export async function generateStaticParams() {
   );
 }
 
-export async function generateMetadata({ params }: PageProps<"/montres/[marque]">) {
+export async function generateMetadata({ params, searchParams }: PageProps<"/montres/[marque]">) {
   const { marque } = await params;
   const brand = await getBrand(marque);
   if (!brand) return {};
@@ -45,19 +38,18 @@ export async function generateMetadata({ params }: PageProps<"/montres/[marque]"
     description: `${brand.watchCount} montres ${brand.name} suivies${range}. Prix catalogue officiels, mouvements, diamètres et collections.`,
     path: `/montres/${brand.slug}`,
     // Marque pas encore collectée : page utile mais trop pauvre pour être indexée.
-    index: brand.watchCount > 0,
+    index: brand.watchCount > 0 && !hasCatalogFilters(loadCatalogParams(await searchParams)),
   });
 }
 
-export default async function BrandPage({ params }: PageProps<"/montres/[marque]">) {
+export default async function BrandPage({ params, searchParams }: PageProps<"/montres/[marque]">) {
   // notFound() avant tout Suspense : vraie réponse 404 (docs streaming, « Status codes »).
   const { marque } = await params;
   const brand = await getBrand(marque);
   if (!brand) notFound();
 
-  const [collections, top, storeCounts] = await Promise.all([
+  const [collections, storeCounts] = await Promise.all([
     getCollections(brand.slug),
-    getWatchCards({ brandSlug: brand.slug, sort: "prix-asc", page: 1 }),
     getStoreCounts(),
   ]);
   const storeCount = storeCounts.find((c) => c.brandSlug === brand.slug)?.count ?? 0;
@@ -91,9 +83,11 @@ export default async function BrandPage({ params }: PageProps<"/montres/[marque]
       </div>
 
       {collections.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-2xl font-semibold tracking-tight">Collections {brand.name}</h2>
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <details className="rounded-xl border p-4">
+          <summary className="cursor-pointer font-medium">
+            Explorer les {collections.length} collections {brand.name}
+          </summary>
+          <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {collections.map((c) => (
               <li key={c.slug}>
                 <Link
@@ -114,23 +108,14 @@ export default async function BrandPage({ params }: PageProps<"/montres/[marque]
               collections.map((c) => ({ name: c.name, path: `/montres/${brand.slug}/${c.slug}` })),
             )}
           />
-        </section>
+        </details>
       )}
 
-      {top.items.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-2xl font-semibold tracking-tight">
-            Les montres {brand.name} les plus abordables
-          </h2>
-          <WatchGrid watches={top.items.slice(0, 8)} />
-          <Link
-            href={serializeCatalogParams("/montres", { marque: [brand.slug] })}
-            className={buttonVariants({ variant: "outline" })}
-          >
-            Voir les {brand.watchCount} montres {brand.name} avec filtres
-          </Link>
-        </section>
-      )}
+      <CatalogBrowser
+        searchParams={searchParams}
+        scope={{ brandSlug: brand.slug }}
+        basePath={`/montres/${brand.slug}`}
+      />
     </div>
   );
 }
