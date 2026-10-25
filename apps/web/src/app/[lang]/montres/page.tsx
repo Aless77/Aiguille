@@ -1,23 +1,25 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { CatalogBrowser } from "@/components/catalog-browser";
 import { hasCatalogFilters, loadCatalogParams } from "@/lib/catalog/search-params";
-import { pageMetadata } from "@/lib/seo/metadata";
+import { getDictionary } from "@/lib/i18n/server";
+import { localizedMetadata } from "@/lib/seo/localized-metadata";
 
 export async function generateMetadata({ searchParams }: PageProps<"/[lang]/montres">) {
-  return pageMetadata({
-    title: "Toutes les montres : prix et caractéristiques",
-    description:
-      "Tissot, Hamilton et Longines : recherchez un nom ou une référence et filtrez les montres par prix, mouvement et diamètre.",
+  const t = (await getDictionary()).dict.catalog.catalogPage;
+  return localizedMetadata({
+    title: t.metaTitle,
+    description: t.metaDescription,
     path: "/montres",
     index: !hasCatalogFilters(loadCatalogParams(await searchParams)),
   });
 }
 
-export default function CatalogPage({ searchParams }: PageProps<"/[lang]/montres">) {
+export default async function CatalogPage({ searchParams }: PageProps<"/[lang]/montres">) {
+  const { dict } = await getDictionary();
   return (
     <div className="flex flex-col gap-6">
-      <Breadcrumbs crumbs={[{ name: "Montres" }]} />
-      <h1 className="text-3xl font-semibold tracking-tight">Toutes les montres</h1>
+      <Breadcrumbs crumbs={[{ name: dict.catalog.breadcrumb.watches }]} />
+      <h1 className="text-3xl font-semibold tracking-tight">{dict.catalog.catalogPage.title}</h1>
       <CatalogBrowser searchParams={searchParams} />
     </div>
   );

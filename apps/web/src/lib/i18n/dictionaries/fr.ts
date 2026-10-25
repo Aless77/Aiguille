@@ -1,3 +1,6 @@
+import { pages } from "../messages/pages";
+import { sections } from "../messages/sections";
+import { catalog } from "../messages/catalog";
 /**
  * Textes de l'interface, en français : la référence. L'anglais doit tout traduire (vérifié par
  * TypeScript) ; les autres langues peuvent être partielles, les manques s'affichent en anglais
@@ -66,6 +69,22 @@ export const fr = {
     seeCollection: "Voir toute la collection",
     imageAlt: "{name}, référence {reference}",
     metaTitle: "{name} ({reference}) : prix et caractéristiques",
+    summary: {
+      intro: "La {name} (référence {reference}) est {kind}{diameter}",
+      kinds: {
+        automatique: "une montre automatique",
+        manuel: "une montre à remontage manuel",
+        quartz: "une montre à quartz",
+        solaire: "une montre solaire",
+        autre: "une montre",
+        none: "une montre",
+      },
+      diameter: " de {mm}",
+      caliber: "équipée du calibre {caliber}",
+      water: "étanche à {m} m",
+      reserve: "avec {h} heures de réserve de marche",
+      price: " Prix catalogue officiel relevé : {price}.",
+    },
   },
   variants: {
     label: "Déclinaisons de ce modèle",
@@ -104,10 +123,11 @@ export const fr = {
     } as Record<string, string>,
     /** Libellés de lignes (packages/db/src/spec-sheet.ts), par libellé français. */
     rows: {} as Record<string, string>,
-    /** Valeurs fixes produites par la fiche (« Oui », « Non mentionnée »…). */
-    values: {} as Record<string, string>,
   },
   /** Textes des composants navigateur (transmis par LocaleProvider). */
+  pages: pages.fr,
+  catalog: catalog.fr,
+  sections: sections.fr,
   client: {
     signIn: "Se connecter",
     signOut: "Se déconnecter",

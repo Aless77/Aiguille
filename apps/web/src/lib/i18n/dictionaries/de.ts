@@ -1,3 +1,6 @@
+import { pages } from "../messages/pages";
+import { sections } from "../messages/sections";
+import { catalog } from "../messages/catalog";
 import { type PartialDictionary } from "../dictionary";
 
 export const de: PartialDictionary = {
@@ -57,6 +60,22 @@ export const de: PartialDictionary = {
     seeCollection: "Ganze Kollektion ansehen",
     imageAlt: "{name}, Referenz {reference}",
     metaTitle: "{name} ({reference}): Preis und technische Daten",
+    summary: {
+      intro: "Die {name} (Referenz {reference}) ist {kind}{diameter}",
+      kinds: {
+        automatique: "eine Automatikuhr",
+        manuel: "eine Uhr mit Handaufzug",
+        quartz: "eine Quarzuhr",
+        solaire: "eine Solaruhr",
+        autre: "eine Uhr",
+        none: "eine Uhr",
+      },
+      diameter: " mit {mm} Durchmesser",
+      caliber: "ausgestattet mit dem Kaliber {caliber}",
+      water: "wasserdicht bis {m} m",
+      reserve: "mit {h} Stunden Gangreserve",
+      price: " Erfasster offizieller Listenpreis: {price}.",
+    },
   },
   variants: {
     label: "Varianten dieses Modells",
@@ -147,23 +166,10 @@ export const de: PartialDictionary = {
       Documents: "Dokumente",
       "Type de montre": "Uhrentyp",
     },
-    values: {
-      Oui: "Ja",
-      Non: "Nein",
-      "Non mentionnée": "Nicht angegeben",
-      "Non mentionné": "Nicht angegeben",
-      "Oui, COSC": "Ja, COSC",
-      "Mécanique automatique": "Mechanisch mit Automatikaufzug",
-      "Mécanique à remontage manuel": "Mechanisch mit Handaufzug",
-      Quartz: "Quarz",
-      "Quartz solaire": "Solar-Quarz",
-      Autre: "Andere",
-      "Détail de la garantie": "Garantiebedingungen",
-      "Tarifs de la marque": "Preise der Marke",
-      "Conseils de la marque": "Hinweise der Marke",
-      "Recommandations de la marque": "Empfehlungen der Marke",
-    },
   },
+  pages: pages.de,
+  catalog: catalog.de,
+  sections: sections.de,
   client: {
     signIn: "Anmelden",
     signOut: "Abmelden",

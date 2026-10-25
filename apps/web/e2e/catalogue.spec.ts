@@ -15,6 +15,22 @@ test.describe("accueil", () => {
 });
 
 test.describe("catalogue", () => {
+  test("fournit le verrou Dark Reader avant les icônes, même avec le HTML diffusé", async ({
+    request,
+  }) => {
+    const response = await request.get("/montres", {
+      // Un navigateur ordinaire reçoit les métadonnées diffusées ; un robot pourrait masquer
+      // la régression en forçant Next.js à les attendre avant de servir la page.
+      headers: { "user-agent": "Mozilla/5.0 Chrome/140.0.0.0 Safari/537.36" },
+    });
+    expect(response.ok()).toBe(true);
+    const html = await response.text();
+    const lock = html.indexOf('name="darkreader-lock"');
+    expect(lock).toBeGreaterThan(-1);
+    expect(lock).toBeLessThan(html.indexOf("</head>"));
+    expect(lock).toBeLessThan(html.indexOf("<svg"));
+  });
+
   test("liste des montres, canonique sans paramètres", async ({ page }) => {
     await page.goto("/montres?tri=prix-desc");
     await expectSeoBasics(page, "/montres");

@@ -1,17 +1,18 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { WatchGrid } from "@/components/watch-card";
-import { displayName, formatDate } from "@/lib/catalog/format";
+import { displayName } from "@/lib/catalog/format";
 import { getNewWatches } from "@/lib/catalog/queries";
 import { watchPath } from "@/lib/catalog/types";
+import { format } from "@/lib/i18n/dictionary";
+import { getDictionary } from "@/lib/i18n/server";
 import { itemListJsonLd, JsonLd } from "@/lib/seo/json-ld";
-import { pageMetadata } from "@/lib/seo/metadata";
+import { localizedMetadata } from "@/lib/seo/localized-metadata";
 
 export async function generateMetadata() {
-  const { items } = await getNewWatches();
-  return pageMetadata({
-    title: "Nouveautés : les dernières montres ajoutées par les marques",
-    description:
-      "Les nouvelles références Tissot, Hamilton et Longines, détectées automatiquement dès leur apparition sur les sites officiels, avec leur prix.",
+  const [{ items }, { dict }] = await Promise.all([getNewWatches(), getDictionary()]);
+  return localizedMetadata({
+    title: dict.catalog.news.metaTitle,
+    description: dict.catalog.news.metaDescription,
     path: "/nouveautes",
     // Page vide (aucune nouveauté encore détectée) : utile aux visiteurs, sans valeur de recherche.
     index: items.length > 0,
@@ -19,41 +20,38 @@ export async function generateMetadata() {
 }
 
 /** Regroupe les montres par mois d'apparition (« octobre 2026 »). */
-function byMonth<T extends { firstSeenAt: Date }>(items: T[]) {
+function byMonth<T extends { firstSeenAt: Date }>(items: T[], month: (date: Date) => string) {
   const months = new Map<string, T[]>();
   for (const item of items) {
-    const label = new Intl.DateTimeFormat("fr-FR", {
-      month: "long",
-      year: "numeric",
-      timeZone: "Europe/Paris",
-    }).format(item.firstSeenAt);
+    const label = month(item.firstSeenAt);
     months.set(label, [...(months.get(label) ?? []), item]);
   }
   return [...months.entries()];
 }
 
 export default async function NewWatchesPage() {
-  const { items, trackedSince } = await getNewWatches();
+  const [{ items, trackedSince }, { dict, f, path }] = await Promise.all([
+    getNewWatches(),
+    getDictionary(),
+  ]);
+  const t = dict.catalog.news;
 
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-        <Breadcrumbs crumbs={[{ name: "Nouveautés" }]} />
-        <h1 className="text-3xl font-semibold tracking-tight">Nouveautés</h1>
-        <p className="max-w-2xl text-muted-foreground">
-          Les références qui apparaissent sur les sites officiels des marques sont détectées lors de
-          notre relevé quotidien et listées ici, des plus récentes aux plus anciennes.
-        </p>
+        <Breadcrumbs crumbs={[{ name: t.title }]} />
+        <h1 className="text-3xl font-semibold tracking-tight">{t.title}</h1>
+        <p className="max-w-2xl text-muted-foreground">{t.intro}</p>
       </div>
 
       {items.length === 0 ? (
         <p className="rounded-xl border border-dashed p-6 text-muted-foreground">
-          Aucune nouvelle référence détectée pour l&apos;instant
-          {trackedSince && ` depuis le début du suivi, le ${formatDate(trackedSince)}`}. Les
-          prochaines sorties des marques apparaîtront ici automatiquement.
+          {t.empty}
+          {trackedSince && format(t.since, { date: f.date(trackedSince) })}
+          {t.emptyEnd}
         </p>
       ) : (
-        byMonth(items).map(([month, watches]) => (
+        byMonth(items, f.month).map(([month, watches]) => (
           <section key={month} className="space-y-4">
             <h2 className="text-2xl font-semibold tracking-tight first-letter:uppercase">
               {month}
@@ -66,7 +64,10 @@ export default async function NewWatchesPage() {
       {items.length > 0 && (
         <JsonLd
           data={itemListJsonLd(
-            items.map((w) => ({ name: displayName(w.brandName, w.name), path: watchPath(w) })),
+            items.map((w) => ({
+              name: displayName(w.brandName, w.name),
+              path: path(watchPath(w)),
+            })),
           )}
         />
       )}

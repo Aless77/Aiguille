@@ -49,8 +49,12 @@ const toDay = (d: Date | string) =>
  * Libellé lisible d'une source : « tissot-officiel » → « Site officiel Tissot ». Les revendeurs
  * (lot 3, suite) suivront le même format d'identifiant.
  */
-export function sourceLabel(source: string, brandName: string): string {
-  if (source.endsWith("-officiel")) return `Site officiel ${brandName}`;
+export function sourceLabel(
+  source: string,
+  brandName: string,
+  official = "Site officiel {brand}",
+): string {
+  if (source.endsWith("-officiel")) return official.replace("{brand}", brandName);
   return RETAILER_LABELS[source] ?? source.charAt(0).toUpperCase() + source.slice(1);
 }
 
@@ -77,7 +81,12 @@ const AVAILABILITY_RANK: Record<Availability, number> = {
  * Offre en cours de chaque vendeur (dernier relevé par source). Une offre retirée (dernier relevé
  * sans prix) n'est plus listée. Tri : disponibles d'abord, puis du moins cher au plus cher.
  */
-export function currentOffers(observations: Observation[], brandName: string): CurrentOffer[] {
+export function currentOffers(
+  observations: Observation[],
+  brandName: string,
+  /** Libellé du site de la marque dans la langue de la page (« Site officiel {brand} »). */
+  official?: string,
+): CurrentOffer[] {
   const latest = new Map<string, Observation>();
   for (const o of observations) {
     const previous = latest.get(o.source);
@@ -88,7 +97,7 @@ export function currentOffers(observations: Observation[], brandName: string): C
     .filter((o): o is Observation & { priceCents: number } => o.priceCents !== null)
     .map((o) => ({
       source: o.source,
-      label: sourceLabel(o.source, brandName),
+      label: sourceLabel(o.source, brandName, official),
       official: o.source.endsWith("-officiel"),
       priceCents: o.priceCents,
       availability: o.availability,
@@ -112,6 +121,7 @@ export function buildPriceHistory(
   brandName: string,
   seenAt: Date | string,
   officialSource?: string,
+  official?: string,
 ): PriceHistory {
   const sorted = [...observations].sort(
     (a, b) => new Date(a.observedAt).getTime() - new Date(b.observedAt).getTime(),
@@ -127,7 +137,7 @@ export function buildPriceHistory(
       .map((o) => ({ date: toDay(o.observedAt), priceCents: o.priceCents }));
     const last = points.at(-1);
     if (last && last.date < lastDay) points.push({ date: lastDay, priceCents: last.priceCents });
-    return { source, label: sourceLabel(source, brandName), points };
+    return { source, label: sourceLabel(source, brandName, official), points };
   });
 
   let lowest: PriceExtreme | null = null;
@@ -162,7 +172,7 @@ export function buildPriceHistory(
       .map((o) => ({
         date: toDay(o.observedAt),
         source: o.source,
-        label: sourceLabel(o.source, brandName),
+        label: sourceLabel(o.source, brandName, official),
         priceCents: o.priceCents,
         availability: o.availability,
       }))

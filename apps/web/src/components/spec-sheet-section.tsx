@@ -2,6 +2,7 @@ import { buildSpecSheet } from "@aiguille/db/spec-sheet";
 import { ExternalLink, Languages } from "lucide-react";
 
 import { type WatchDetail } from "@/lib/catalog/queries";
+import { type Locale } from "@/lib/i18n/config";
 import { Link } from "@/lib/i18n/client";
 import { type Dictionary, format, translateLabel } from "@/lib/i18n/dictionary";
 
@@ -19,18 +20,19 @@ export function SpecSheetSection({
   dict,
   labels = {},
   fallbackNotice = null,
+  locale,
 }: {
   watch: WatchDetail;
   storeCount: number;
   dict: Dictionary;
   labels?: Record<string, string>;
   fallbackNotice?: string | null;
+  locale: Locale;
 }) {
   const t = dict.specSheet;
   const unknown = dict.common.unknown;
-  const sheet = buildSpecSheet({ ...w, storeCount });
+  const sheet = buildSpecSheet({ ...w, storeCount }, locale);
   const vintage = sheet.groups.some((g) => g.id === "historique");
-  const value = (v: string) => translateLabel(t.values, v);
 
   return (
     <section id="technique" aria-labelledby="technique-titre" className="scroll-mt-20 space-y-5">
@@ -91,7 +93,7 @@ export function SpecSheetSection({
                 >
                   <dt className="text-muted-foreground">{translateLabel(t.rows, r.label)}</dt>
                   <dd className={r.value === null ? "text-muted-foreground" : "font-medium"}>
-                    {r.value === null ? unknown : value(r.value)}
+                    {r.value ?? unknown}
                     {r.note && (
                       <span className="block text-xs font-normal text-muted-foreground">
                         {r.note}
@@ -104,7 +106,7 @@ export function SpecSheetSection({
                         rel="nofollow noopener noreferrer"
                         className="mt-1 inline-flex items-center gap-1 text-xs font-normal underline underline-offset-4"
                       >
-                        {value(r.link.label)} {w.brandName}
+                        {r.link.label} {w.brandName}
                         <ExternalLink className="size-3" aria-hidden />
                         <span className="sr-only">{dict.common.newTab}</span>
                       </a>

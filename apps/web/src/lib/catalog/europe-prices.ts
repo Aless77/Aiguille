@@ -81,12 +81,33 @@ export function buildEuropePrices(
     .sort((a, b) => a.eurCents - b.eurCents);
 }
 
+export interface EuropeSummaryTexts {
+  /** La France est le pays le moins cher. */
+  franceCheapest: string;
+  /** « Moins chère {inCountry} : environ {percent} % de moins qu'en France… ». */
+  cheaper: string;
+  /** Pays précédé de sa préposition (« au Royaume-Uni ») ou simple nom selon la langue. */
+  inCountry: (code: string) => string;
+  number: (n: number) => string;
+}
+
+const FRENCH_SUMMARY: EuropeSummaryTexts = {
+  franceCheapest: "La France fait partie des pays où cette montre est la moins chère.",
+  cheaper: "Moins chère {inCountry} : environ {percent} % de moins qu'en France après conversion.",
+  inCountry: (code) => COUNTRY_INFO[code]?.inName ?? code,
+  number: (n) => n.toLocaleString("fr-FR"),
+};
+
 /** Phrase de synthèse pour le HTML serveur (SEO) : pays le moins cher comparé à la France. */
-export function europeSummary(prices: EuropePrice[]): string | null {
+export function europeSummary(
+  prices: EuropePrice[],
+  texts: EuropeSummaryTexts = FRENCH_SUMMARY,
+): string | null {
   const france = prices.find((p) => p.country === "FR");
   const cheapest = prices[0];
   if (!france || !cheapest || prices.length < 2) return null;
-  if (cheapest.country === "FR")
-    return "La France fait partie des pays où cette montre est la moins chère.";
-  return `Moins chère ${COUNTRY_INFO[cheapest.country]!.inName} : environ ${Math.abs(cheapest.deltaPercent ?? 0).toLocaleString("fr-FR")} % de moins qu'en France après conversion.`;
+  if (cheapest.country === "FR") return texts.franceCheapest;
+  return texts.cheaper
+    .replace("{inCountry}", texts.inCountry(cheapest.country))
+    .replace("{percent}", texts.number(Math.abs(cheapest.deltaPercent ?? 0)));
 }

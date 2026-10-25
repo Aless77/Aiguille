@@ -9,36 +9,37 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDate, formatPrice } from "@/lib/catalog/format";
-import { AVAILABILITY_LABELS, type CurrentOffer } from "@/lib/catalog/price-history";
+import { format } from "@/lib/i18n/dictionary";
+import { getDictionary } from "@/lib/i18n/server";
+import { type CurrentOffer } from "@/lib/catalog/price-history";
 
 /**
  * Offres relevées chez la marque et les revendeurs (cahier des charges, lot 3 : « prix neuf
  * réel, stock »). Liens sans affiliation, en nofollow : nous ne vendons rien et ne touchons rien.
  */
-export function OffersSection({ offers }: { offers: CurrentOffer[] }) {
+export async function OffersSection({ offers }: { offers: CurrentOffer[] }) {
   if (offers.length === 0) return null;
   const sellers = offers.length;
+  const { dict, f } = await getDictionary();
+  const t = dict.sections.offers;
 
   return (
     <section className="space-y-4" aria-labelledby="offres">
       <h2 id="offres" className="text-2xl font-semibold tracking-tight">
-        Où la trouver
+        {t.title}
       </h2>
       <p className="text-muted-foreground">
-        {sellers > 1
-          ? `${sellers} vendeurs suivis proposent cette montre. Les liens ne sont pas affiliés.`
-          : "Un vendeur suivi propose cette montre. Le lien n'est pas affilié."}
+        {sellers > 1 ? format(t.many, { count: sellers }) : t.one}
       </p>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Vendeur</TableHead>
-            <TableHead>Prix</TableHead>
-            <TableHead>Disponibilité</TableHead>
-            <TableHead className="hidden sm:table-cell">Dernier changement</TableHead>
+            <TableHead>{t.seller}</TableHead>
+            <TableHead>{t.price}</TableHead>
+            <TableHead>{t.availability}</TableHead>
+            <TableHead className="hidden sm:table-cell">{t.lastChange}</TableHead>
             <TableHead>
-              <span className="sr-only">Lien</span>
+              <span className="sr-only">{t.link}</span>
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -46,14 +47,14 @@ export function OffersSection({ offers }: { offers: CurrentOffer[] }) {
           {offers.map((o) => (
             <TableRow key={o.source}>
               <TableCell className="font-medium">{o.label}</TableCell>
-              <TableCell>{formatPrice(o.priceCents)}</TableCell>
+              <TableCell>{f.price(o.priceCents)}</TableCell>
               <TableCell>
                 <Badge variant={o.availability === "in_stock" ? "default" : "outline"}>
-                  {AVAILABILITY_LABELS[o.availability]}
+                  {dict.availability[o.availability]}
                 </Badge>
               </TableCell>
               <TableCell className="hidden text-muted-foreground sm:table-cell">
-                {formatDate(o.date)}
+                {f.date(o.date)}
               </TableCell>
               <TableCell className="text-right">
                 {o.url && (
@@ -63,9 +64,9 @@ export function OffersSection({ offers }: { offers: CurrentOffer[] }) {
                     rel="nofollow noopener noreferrer"
                     className="inline-flex items-center gap-1 underline underline-offset-4"
                   >
-                    Voir l&apos;offre
+                    {t.seeOffer}
                     <ExternalLink className="size-3.5" aria-hidden />
-                    <span className="sr-only">chez {o.label}</span>
+                    <span className="sr-only">{format(t.at, { seller: o.label })}</span>
                   </a>
                 )}
               </TableCell>

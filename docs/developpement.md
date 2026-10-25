@@ -120,9 +120,12 @@ redémarrer `docker compose restart web` après en avoir créé un.
 - `Download the React DevTools…` et `[HMR] connected` sont des messages informatifs en développement.
 - Une erreur d'hydratation montrant `data-darkreader-inline-stroke` et
   `--darkreader-inline-stroke` sur les SVG vient de **Dark Reader**, qui modifie le HTML avant React.
-  Le site suit déjà le thème du système : le layout émet une balise
+  Le site suit déjà le thème du système : le layout émet directement dans son `<head>` une balise
   `<meta name="darkreader-lock" content="true">` pour demander à l'extension de ne pas le réécrire.
-  Dans `metadata.other`, garder une valeur non vide : la chaîne vide est omise par Next.js.
+  Ne pas déplacer ce verrou dans `metadata.other` : avec `generateMetadata`, Next.js peut diffuser
+  cette balise après les premières icônes. Dark Reader les a alors déjà modifiées avant React.
+  Régression couverte dans `e2e/catalogue.spec.ts` : le verrou doit précéder la fermeture du
+  `<head>` et le premier SVG dans la réponse HTML destinée à un navigateur ordinaire.
   Recharger complètement la page après la correction ; si le problème persiste, désactiver Dark
   Reader pour `localhost` et `127.0.0.1`, puis recharger. Ne pas masquer les avertissements sur tous
   les composants : cela cacherait aussi les vrais défauts d'hydratation.

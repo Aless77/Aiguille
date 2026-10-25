@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { useIsDarkTheme } from "@/components/use-theme";
+import { useLocale } from "@/lib/i18n/client";
 
 export interface EuropeMapDatum {
   /** Identifiant ISO 3166 numérique du pays (« 250 » pour la France). */
@@ -21,6 +22,8 @@ export interface EuropeMapDatum {
 export function EuropeMap({ data }: { data: EuropeMapDatum[] }) {
   const container = useRef<HTMLDivElement>(null);
   const dark = useIsDarkTheme();
+  const t = useLocale().dict.sections.europe;
+  const { noPrice, moreExpensive, cheaperLegend } = t;
 
   useEffect(() => {
     const element = container.current;
@@ -70,7 +73,7 @@ export function EuropeMap({ data }: { data: EuropeMapDatum[] }) {
           trigger: "item",
           formatter: (p: { name: string }) => {
             const d = byIso.get(p.name);
-            return d ? `${d.name}<br/>${d.label}` : "Pas de prix relevé";
+            return d ? `${d.name}<br/>${d.label}` : noPrice;
           },
         },
         visualMap: {
@@ -80,7 +83,7 @@ export function EuropeMap({ data }: { data: EuropeMapDatum[] }) {
           calculable: false,
           left: 8,
           bottom: 8,
-          text: ["Plus cher", "Moins cher"],
+          text: [moreExpensive, cheaperLegend],
           textStyle: { color: dark ? "#a3a3a3" : "#525252" },
           inRange: { color: ["#059669", dark ? "#404040" : "#e5e5e5", "#dc2626"] },
         },
@@ -117,14 +120,7 @@ export function EuropeMap({ data }: { data: EuropeMapDatum[] }) {
       disposed = true;
       cleanup?.();
     };
-  }, [data, dark]);
+  }, [data, dark, noPrice, moreExpensive, cheaperLegend]);
 
-  return (
-    <div
-      ref={container}
-      role="img"
-      aria-label="Carte des écarts de prix avec la France (le détail figure dans le tableau)"
-      className="h-96 w-full"
-    />
-  );
+  return <div ref={container} role="img" aria-label={t.mapLabel} className="h-96 w-full" />;
 }

@@ -62,6 +62,26 @@ Reste pour boucler le lot 4 :
   fiches Longines traduites depuis les versions nationales. Activer avec `LANGUAGES`. Reste à
   traduire : catalogue, filtres, pages de contenu, offres, historique, avis ; libellés IT/ES de
   la fiche technique ; `translate` pour Tissot et Hamilton.
+- **Reprise multilingue du 25 octobre** : travail local existant conservé (accueil, catalogue,
+  filtres, pagination, nouveautés, collections, offres, historique, alternatives et libellés de
+  fiche technique). Pages « À propos », « Prix en Europe » et page introuvable désormais reliées
+  aux dictionnaires dans les cinq langues ; métadonnées localisées des deux pages publiques,
+  pays et formats des tableaux européens adaptés à la langue. Tests supplémentaires sur les
+  variables de traduction, dates, prix, pluriels et métadonnées. Restent à traduire les pages
+  méthodologie, confidentialité, boutiques, connexion/compte, listes/communauté, avis et certains
+  contenus techniques/entretien issus des marques ; `translate` Tissot/Hamilton reste à faire.
+  Les langues secondaires restent volontairement non indexables. Aucun déploiement effectué.
+  Vérifications : `npm run check` réussi (268 tests), build de production réussi avec les cinq
+  langues activées (8 891 pages générées). Playwright dans Docker : 20 pages vérifiées à 1 280
+  et 393 px, métadonnées, changement EN → IT, liens localisés et vraie 404 en anglais, sans erreur
+  navigateur sur les parcours testés. Débordement de l'en-tête mobile corrigé : navigation sur
+  une seconde ligne, sélecteur de langue accessible. Captures ordinateur/mobile relues.
+- **Hydratation et Dark Reader (25 octobre)** : les trois avertissements sur les icônes montre,
+  fil d'Ariane et recherche ont été reproduits en simulant les attributs de l'extension avant
+  l'hydratation. Cause : verrou diffusé trop tard via `generateMetadata`. Verrou déplacé dans le
+  `<head>` initial du layout ; aucune suppression d'avertissement ajoutée sur les composants.
+  Même simulation après correction : aucun SVG modifié, aucun avertissement d'hydratation ;
+  recherche interactive vérifiée. Test de régression sur l'ordre du HTML ajouté au parcours catalogue.
 - **Déclinaisons** : sélecteur de cadrans, matières, bracelets et tailles du même modèle sur la
   fiche (Tissot, Longines, Hamilton), regroupé par la référence (`variants.ts`), une rangée
   visible et la suite repliée.

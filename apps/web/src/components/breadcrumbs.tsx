@@ -1,15 +1,18 @@
 import { ChevronRight } from "lucide-react";
-import { Link } from "@/lib/i18n/client";
 import { Fragment } from "react";
 
+import { Link } from "@/lib/i18n/client";
+import { getDictionary } from "@/lib/i18n/server";
 import { breadcrumbJsonLd, type Crumb, JsonLd } from "@/lib/seo/json-ld";
 
 /** Fil d'Ariane visible + BreadcrumbList JSON-LD (checklist SEO). Le dernier élément est la page courante. */
-export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
-  const all: Crumb[] = [{ name: "Accueil", path: "/" }, ...crumbs];
+export async function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
+  const { dict, path } = await getDictionary();
+  const t = dict.catalog.breadcrumb;
+  const all: Crumb[] = [{ name: t.home, path: "/" }, ...crumbs];
   return (
     <>
-      <nav aria-label="Fil d'Ariane" className="text-sm text-muted-foreground">
+      <nav aria-label={t.label} className="text-sm text-muted-foreground">
         <ol className="flex flex-wrap items-center gap-1">
           {all.map((c, i) => (
             <Fragment key={`${c.name}-${i}`}>
@@ -29,7 +32,9 @@ export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
           ))}
         </ol>
       </nav>
-      <JsonLd data={breadcrumbJsonLd(all)} />
+      <JsonLd
+        data={breadcrumbJsonLd(all.map((c) => (c.path ? { ...c, path: path(c.path) } : c)))}
+      />
     </>
   );
 }
