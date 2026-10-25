@@ -1,11 +1,12 @@
 import { Link } from "@/lib/i18n/client";
+import { getDictionary } from "@/lib/i18n/server";
 
 import { buttonVariants } from "@/components/ui/button";
 import { type CatalogParams, serializeCatalogParams } from "@/lib/catalog/search-params";
 import { cn } from "@/lib/utils";
 
 /** Pagination en vrais liens <a href> : crawlables, contrairement à un bouton « charger plus ». */
-export function CatalogPagination({
+export async function CatalogPagination({
   params,
   page,
   pageCount,
@@ -17,16 +18,17 @@ export function CatalogPagination({
   basePath?: string;
 }) {
   if (pageCount <= 1) return null;
+  const t = (await getDictionary()).dict.catalog.results;
   const href = (p: number) => serializeCatalogParams(basePath, { ...params, page: p });
   const pages = Array.from({ length: pageCount }, (_, i) => i + 1).filter(
     (p) => p === 1 || p === pageCount || Math.abs(p - page) <= 2,
   );
 
   return (
-    <nav aria-label="Pagination" className="flex flex-wrap items-center justify-center gap-1">
+    <nav aria-label={t.pagination} className="flex flex-wrap items-center justify-center gap-1">
       {page > 1 && (
         <Link href={href(page - 1)} className={buttonVariants({ variant: "outline", size: "sm" })}>
-          Précédent
+          {t.previous}
         </Link>
       )}
       {pages.map((p, i) => (
@@ -45,7 +47,7 @@ export function CatalogPagination({
       ))}
       {page < pageCount && (
         <Link href={href(page + 1)} className={buttonVariants({ variant: "outline", size: "sm" })}>
-          Suivant
+          {t.next}
         </Link>
       )}
     </nav>

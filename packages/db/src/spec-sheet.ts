@@ -22,6 +22,14 @@ import {
   type Movement,
   type WatchSource,
 } from "./facts.ts";
+import {
+  formatIsoDate,
+  formatNumber,
+  type Locale,
+  localize,
+  localizeList,
+  PHRASES,
+} from "./i18n.ts";
 
 export interface SheetInput extends WatchSource {
   brandSlug: string;
@@ -66,29 +74,31 @@ const MOVEMENT_LABELS: Record<Movement, string> = {
 
 // ── Formats ─────────────────────────────────────────────────────────────────────────────────
 
-const fr = (n: number) =>
-  n.toLocaleString("fr-FR", { maximumFractionDigits: 2 }).replace(/ /g, " ");
-
 /** « 10.20 », « 10,2 », « 10.2 mm » → nombre. */
 function parseNumber(value: string): number | null {
   const m = /(\d+(?:[.,]\d+)?)/.exec(value);
   return m ? Number(m[1]!.replace(",", ".")) : null;
 }
 
-const mm = (n: number | null) => (n === null ? null : `${fr(n)} mm`);
-const unit = (u: string) => (v: string | null) => {
-  if (v === null) return null;
-  const n = parseNumber(v);
-  return n === null ? v : `${fr(n)} ${u}`;
-};
-/** « 15mm x 19mm », « 14.30 x 18.00 mm » → « 15 × 19 mm ». */
-function dimensions(v: string | null): string | null {
-  if (v === null) return null;
-  const parts = v.split(/\s*[x×X]\s*/).map(parseNumber);
-  if (parts.length !== 2 || parts.some((p) => p === null)) return null;
-  // Montre ronde (« 40 x 40 mm ») : le diamètre suffit.
-  if (parts[0] === parts[1]) return null;
-  return `${fr(parts[0]!)} × ${fr(parts[1]!)} mm`;
+/** Formats de nombres et d'unités dans la langue de la fiche. */
+function formats(locale: Locale) {
+  const fr = (n: number) => formatNumber(n, locale);
+  const mm = (n: number | null) => (n === null ? null : `${fr(n)} mm`);
+  const unit = (u: string) => (v: string | null) => {
+    if (v === null) return null;
+    const n = parseNumber(v);
+    return n === null ? v : `${fr(n)} ${u}`;
+  };
+  /** « 15mm x 19mm », « 14.30 x 18.00 mm » → « 15 × 19 mm ». */
+  const dimensions = (v: string | null): string | null => {
+    if (v === null) return null;
+    const parts = v.split(/\s*[x×X]\s*/).map(parseNumber);
+    if (parts.length !== 2 || parts.some((p) => p === null)) return null;
+    // Montre ronde (« 40 x 40 mm ») : le diamètre suffit.
+    if (parts[0] === parts[1]) return null;
+    return `${fr(parts[0]!)} × ${fr(parts[1]!)} mm`;
+  };
+  return { fr, mm, unit, dimensions };
 }
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -120,8 +130,14 @@ function rawReader(w: SheetInput, consumed: Set<string>) {
 
 const yes = (v: string | null) => v !== null && /^(oui|yes)\b/i.test(v);
 
-/** Fiche commune d'une montre. */
-export function buildSpecSheet(w: SheetInput): SpecSheet {
+/**
+ * Fiche commune d'une montre. Libellés de lignes et titres de rubriques en français (clés
+ * traduites par le site) ; valeurs, notes et conseils produits ici dans la langue demandée.
+ */
+export function buildSpecSheet(w: SheetInput, locale: Locale = "fr"): SpecSheet {
+  const { fr, mm, unit, dimensions } = formats(locale);
+  const L = (text: string) => localize(text, locale);
+  const P = PHRASES[locale];
   const consumed = new Set<string>();
   const raw = rawReader(w, consumed);
   const m = extractMovementFacts(w);
@@ -206,41 +222,46 @@ export function buildSpecSheet(w: SheetInput): SpecSheet {
   const special = raw("Mouvement · Fonction spéciale", "Fonctions du mouvement");
 
   const movement: SheetRow[] = [
-    { label: "Type", value: m.type ? MOVEMENT_LABELS[m.type] : null },
+    { label: "Type", value: m.type ? L(MOVEMENT_LABELS[m.type]) : null },
     { label: "Calibre", value: m.caliber },
-    { label: "Constructeur du mouvement", value: maker?.value ?? null },
+    { label: "Constructeur du mouvement", value: maker ? L(maker.value) : null },
     {
       label: "Réserve de marche",
-      value: quartz ? "Sans objet (quartz)" : m.powerReserveH ? `${m.powerReserveH} heures` : null,
+      value: quartz
+        ? L("Sans objet (quartz)")
+        : m.powerReserveH
+          ? P.hours(fr(m.powerReserveH))
+          : null,
     },
     {
       label: "Fréquence",
-      value: quartz
-        ? "Sans objet (quartz)"
-        : m.frequencyVph
-          ? `${fr(m.frequencyVph)} alternances par heure`
-          : null,
+      value: quartz ? L("Sans objet (quartz)") : m.frequencyVph ? P.vph(fr(m.frequencyVph)) : null,
     },
     {
       label: "Spiral et magnétisme",
       value: m.siliconHairspring
-        ? "Spiral en silicium, amagnétique"
+        ? L("Spiral en silicium, amagnétique")
         : m.antimagnetic
           ? /nivachron/i.test(Object.entries(specs(w)).flat().join(" ")) &&
             specs(w)["Nivachron"] !== "Non"
-            ? "Spiral Nivachron, antimagnétique"
-            : "Antimagnétique"
+            ? L("Spiral Nivachron, antimagnétique")
+            : L("Antimagnétique")
           : quartz
-            ? "Sans objet (quartz)"
+            ? L("Sans objet (quartz)")
             : null,
     },
-    { label: "Certification chronomètre", value: m.chronometer ? "Oui, COSC" : "Non mentionnée" },
+    {
+      label: "Certification chronomètre",
+      value: m.chronometer ? L("Oui, COSC") : L("Non mentionnée"),
+    },
     {
       label: "Fonctions",
       value:
         [
           functions,
-          m.complications.length ? m.complications.map((x) => COMPLICATIONS[x]).join(", ") : null,
+          m.complications.length
+            ? m.complications.map((x) => L(COMPLICATIONS[x])).join(", ")
+            : null,
           chronograph,
           // Fonctions spéciales (E.O.L., compteurs…), sans la mention du spiral (ligne dédiée).
           special
@@ -257,14 +278,14 @@ export function buildSpecSheet(w: SheetInput): SpecSheet {
             label: "Pile",
             value:
               m.type === "solaire"
-                ? "Accumulateur rechargé par la lumière"
+                ? L("Accumulateur rechargé par la lumière")
                 : [
                     o.battery && `${o.battery}`,
                     raw("Tension de la batterie") && `${raw("Tension de la batterie")} V`,
                   ]
                     .filter(Boolean)
                     .join(", ") || null,
-            note: o.endOfLifeIndicator ? "Indicateur de fin de vie de la pile." : undefined,
+            note: o.endOfLifeIndicator ? L("Indicateur de fin de vie de la pile.") : undefined,
           },
         ]
       : []),
@@ -302,19 +323,19 @@ export function buildSpecSheet(w: SheetInput): SpecSheet {
     },
     {
       label: "Lunette",
-      value: raw("Matière de la lunette") ?? (c.ceramicBezel ? "Céramique" : null),
+      value: raw("Matière de la lunette") ?? (c.ceramicBezel ? L("Céramique") : null),
     },
     {
       label: "Verre",
       value: c.crystalKnown
-        ? `${cap(w.crystal!.trim())}${c.antiReflective && !/antireflet|anti-reflet/i.test(w.crystal!) ? ", antireflet" : ""}`
+        ? `${cap(w.crystal!.trim())}${c.antiReflective && !/antireflet|anti-reflet/i.test(w.crystal!) ? P.antiReflective : ""}`
         : null,
     },
     {
       label: "Fond",
-      value: raw("Boîtier · Fond") ?? (c.exhibitionCaseback ? "Transparent" : null),
+      value: raw("Boîtier · Fond") ?? (c.exhibitionCaseback ? L("Transparent") : null),
     },
-    { label: "Couronne vissée", value: c.screwDownCrown ? "Oui" : "Non mentionnée" },
+    { label: "Couronne vissée", value: c.screwDownCrown ? L("Oui") : L("Non mentionnée") },
     { label: "Étanchéité", value: w.waterResistanceM ? `${w.waterResistanceM} m` : null },
     { label: "Particularités", value: raw("Boîtier · Spécificités", "Options de la boîte") },
     { label: "Poids", value: unit("g")(raw("Boîtier · Poids", "Poids (g)")) },
@@ -334,15 +355,19 @@ export function buildSpecSheet(w: SheetInput): SpecSheet {
           "Matière luminescente sur la lunette",
           "Cadran · Spécificités",
         ) ??
-        (yes(raw("Super Luminova")) ? "Super-LumiNova" : c.luminescent ? "Oui" : "Non mentionnée"),
+        (yes(raw("Super Luminova"))
+          ? "Super-LumiNova"
+          : c.luminescent
+            ? L("Oui")
+            : L("Non mentionnée")),
     },
     {
       label: "Pierres précieuses",
       value:
         raw("Cadran · Diamants", "Boîtier · Diamants") ??
         (tissotDiamonds
-          ? `${fr(parseNumber(tissotDiamonds) ?? 0)} diamants${carats && parseNumber(carats) ? `, ${fr(parseNumber(carats)!)} carat` : ""}`
-          : "Aucune mentionnée"),
+          ? `${P.diamonds(fr(parseNumber(tissotDiamonds) ?? 0))}${carats && parseNumber(carats) ? P.carat(fr(parseNumber(carats)!)) : ""}`
+          : L("Aucune mentionnée")),
     },
     { label: "Description", value: raw("Cadran · Description") },
   ];
@@ -364,9 +389,9 @@ export function buildSpecSheet(w: SheetInput): SpecSheet {
       value:
         [
           w.strapMaterial,
-          top && `dessus : ${top}`,
-          under && `dessous : ${under}`,
-          raw("Revêtement du bracelet") && `revêtement ${raw("Revêtement du bracelet")}`,
+          top && P.top(top),
+          under && P.under(under),
+          raw("Revêtement du bracelet") && P.coating(raw("Revêtement du bracelet")!),
         ]
           .filter(Boolean)
           .join(" · ") || null,
@@ -380,51 +405,48 @@ export function buildSpecSheet(w: SheetInput): SpecSheet {
     {
       label: "Longueur des brins",
       value:
-        brin12 && brin6
-          ? `${fr(parseNumber(brin12)!)} mm (12 h) et ${fr(parseNumber(brin6)!)} mm (6 h)`
-          : null,
+        brin12 && brin6 ? P.strapLengths(fr(parseNumber(brin12)!), fr(parseNumber(brin6)!)) : null,
     },
     {
       label: "Interchangeable sans outil",
-      value: o.interchangeableStrap ? "Oui" : "Non mentionné",
+      value: o.interchangeableStrap ? L("Oui") : L("Non mentionné"),
     },
     { label: "Référence du bracelet", value: raw("Référence du bracelet") },
   ];
 
-  const date = (iso: string) => iso.split("-").reverse().join("/");
   const brandMadeIn = BRAND_INFO[w.brandSlug]?.madeIn;
   const care: SheetRow[] = [
     {
       label: "Garantie internationale",
-      value: warranty ? `${fr(warranty.months / 12)} ans` : null,
+      value: warranty ? P.years(fr(warranty.months / 12)) : null,
       note:
-        warranty?.extended.map((e) => `${fr(e.months / 12)} ans : ${e.when}.`).join(" ") ||
+        warranty?.extended.map((e) => P.yearsWhen(fr(e.months / 12), L(e.when))).join(" ") ||
         undefined,
-      link: warranty?.page ? { href: warranty.page, label: "Détail de la garantie" } : undefined,
+      link: warranty?.page ? { href: warranty.page, label: L("Détail de la garantie") } : undefined,
     },
     {
       label: "Non couvert par la garantie",
-      value: warranty?.excludes.length ? cap(warranty.excludes.join(", ")) : null,
+      value: warranty?.excludes.length ? cap(localizeList(warranty.excludes, locale)) : null,
     },
     {
       label: "Garantie de la révision",
-      value: service?.serviceWarrantyMonths ? `${fr(service.serviceWarrantyMonths)} mois` : null,
+      value: service?.serviceWarrantyMonths ? P.months(fr(service.serviceWarrantyMonths)) : null,
     },
-    { label: "Pièces de rechange", value: service?.spareParts ? cap(service.spareParts) : null },
-    { label: "Fabrication", value: o.madeIn ?? brandMadeIn?.value ?? null },
+    { label: "Pièces de rechange", value: service?.spareParts ? cap(L(service.spareParts)) : null },
+    { label: "Fabrication", value: o.madeIn ?? (brandMadeIn ? L(brandMadeIn.value) : null) },
     {
       label: "Révision complète",
       value: service?.full ? `${fr(service.full)} €` : null,
       note: service
         ? [
-            `Prix conseillé par la marque en France, relevé le ${date(service.checkedAt)}.`,
-            service.priceNote,
-            service.free.length && `Offerts : ${service.free.join(", ")}.`,
+            P.priceNote(formatIsoDate(service.checkedAt, locale)),
+            service.priceNote && L(service.priceNote),
+            service.free.length && P.free(localizeList(service.free, locale)),
           ]
             .filter(Boolean)
             .join(" ")
         : undefined,
-      link: service ? { href: service.source, label: "Tarifs de la marque" } : undefined,
+      link: service ? { href: service.source, label: L("Tarifs de la marque") } : undefined,
     },
     { label: "Révision partielle", value: service?.partial ? `${fr(service.partial)} €` : null },
     ...(quartz
@@ -433,7 +455,7 @@ export function buildSpecSheet(w: SheetInput): SpecSheet {
             label: "Remplacement de la pile",
             value:
               m.type === "solaire"
-                ? "Sans objet (rechargée par la lumière)"
+                ? L("Sans objet (rechargée par la lumière)")
                 : service?.battery
                   ? `${fr(service.battery)} €`
                   : null,
@@ -441,8 +463,8 @@ export function buildSpecSheet(w: SheetInput): SpecSheet {
               m.type === "solaire"
                 ? undefined
                 : [
-                    service?.batteryNote,
-                    service?.batteryLife && `Durée de vie d'une pile : ${service.batteryLife}.`,
+                    service?.batteryNote && L(service.batteryNote),
+                    service?.batteryLife && P.batteryLife(L(service.batteryLife)),
                   ]
                     .filter(Boolean)
                     .join(" ") || undefined,
@@ -454,29 +476,32 @@ export function buildSpecSheet(w: SheetInput): SpecSheet {
       value:
         service?.fullServiceInterval &&
         ((m.type !== "quartz" && m.type !== "solaire") || w.brandSlug === "tissot")
-          ? cap(service.fullServiceInterval)
+          ? cap(L(service.fullServiceInterval))
           : null,
       link: service
         ? {
             href: service.adviceSources?.[0] ?? service.source,
-            label: "Recommandations de la marque",
+            label: L("Recommandations de la marque"),
           }
         : undefined,
     },
     {
       label: "Révision partielle conseillée",
-      value: service?.partialServiceInterval ? cap(service.partialServiceInterval) : null,
+      value: service?.partialServiceInterval ? cap(L(service.partialServiceInterval)) : null,
     },
     {
       label: "Contrôle d'étanchéité conseillé",
-      value: service?.waterResistanceCheck ? cap(service.waterResistanceCheck) : null,
+      value: service?.waterResistanceCheck ? cap(L(service.waterResistanceCheck)) : null,
       link: service
-        ? { href: service.adviceSources?.at(-1) ?? service.source, label: "Conseils de la marque" }
+        ? {
+            href: service.adviceSources?.at(-1) ?? service.source,
+            label: L("Conseils de la marque"),
+          }
         : undefined,
     },
     {
       label: "Points de vente agréés en Europe",
-      value: w.storeCount > 0 ? `${fr(w.storeCount)} répertoriés` : null,
+      value: w.storeCount > 0 ? P.stores(fr(w.storeCount)) : null,
     },
   ];
 
@@ -520,5 +545,5 @@ export function buildSpecSheet(w: SheetInput): SpecSheet {
     waterResistanceM: w.waterResistanceM,
   });
 
-  return { groups, others, care: tips };
+  return { groups, others, care: tips.map((tip) => ({ ...tip, text: L(tip.text) })) };
 }

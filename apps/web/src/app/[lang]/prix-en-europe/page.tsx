@@ -9,33 +9,49 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { buildEuropeIndex, type CountryIndex } from "@/lib/catalog/europe-index";
-import { formatDate } from "@/lib/catalog/format";
 import { getLatestRates, getOfficialCountryPrices } from "@/lib/catalog/queries";
-import { pageMetadata } from "@/lib/seo/metadata";
+import { type Dictionary, format } from "@/lib/i18n/dictionary";
+import { type Formatters } from "@/lib/i18n/format";
+import { getDictionary } from "@/lib/i18n/server";
+import { localizedMetadata } from "@/lib/seo/localized-metadata";
 
-export const metadata = pageMetadata({
-  title: "Prix des montres en Europe : où acheter moins cher ?",
-  description:
-    "Écart de prix médian avec la France pour Tissot, Hamilton et Longines dans 14 pays européens, à partir des prix catalogue officiels convertis en euros.",
-  path: "/prix-en-europe",
-});
+export async function generateMetadata() {
+  const { dict } = await getDictionary();
+  return localizedMetadata({
+    title: dict.pages.europe.metaTitle,
+    description: dict.pages.europe.metaDescription,
+    path: "/prix-en-europe",
+  });
+}
 
-const signed = (n: number) => `${n > 0 ? "+" : ""}${n.toLocaleString("fr-FR")} %`;
+const signed = (n: number, f: Formatters) => `${n > 0 ? "+" : ""}${f.number(n)} %`;
 
-function brandSummary(brandName: string, countries: CountryIndex[]): string {
+function brandSummary(
+  brandName: string,
+  countries: CountryIndex[],
+  t: Dictionary["pages"]["europe"],
+  f: Formatters,
+): string {
   const cheapest = countries[0];
   const priciest = countries.at(-1);
   if (!cheapest || !priciest) return "";
   const parts = [];
   if (cheapest.medianDeltaPercent < 0)
     parts.push(
-      `les montres ${brandName} sont les moins chères ${cheapest.inName} (${signed(cheapest.medianDeltaPercent)} en médiane par rapport à la France)`,
+      format(t.cheapest, {
+        brand: brandName,
+        country: f.country(cheapest.country),
+        delta: signed(cheapest.medianDeltaPercent, f),
+      }),
     );
   if (priciest.medianDeltaPercent > 0)
-    parts.push(`les plus chères ${priciest.inName} (${signed(priciest.medianDeltaPercent)})`);
-  return parts.length
-    ? `Après conversion en euros, ${parts.join(", et ")}.`
-    : `Les prix ${brandName} sont alignés sur la France dans les pays relevés.`;
+    parts.push(
+      format(t.priciest, {
+        country: f.country(priciest.country),
+        delta: signed(priciest.medianDeltaPercent, f),
+      }),
+    );
+  return parts.length ? parts.join(" ") : format(t.aligned, { brand: brandName });
 }
 
 /**
@@ -43,26 +59,24 @@ function brandSummary(brandName: string, countries: CountryIndex[]): string {
  * moyen ou disponibilité »). Médiane des écarts avec la France sur les mêmes références.
  */
 export default async function EuropePricesPage() {
-  const [rows, rates] = await Promise.all([getOfficialCountryPrices(), getLatestRates()]);
+  const [rows, rates, { dict, f }] = await Promise.all([
+    getOfficialCountryPrices(),
+    getLatestRates(),
+    getDictionary(),
+  ]);
+  const t = dict.pages.europe;
   const index = buildEuropeIndex(rows, rates.unitsPerEur);
 
   return (
     <div className="space-y-10">
       <div className="space-y-4">
-        <Breadcrumbs crumbs={[{ name: "Prix en Europe" }]} />
-        <h1 className="text-3xl font-semibold tracking-tight">Prix des montres en Europe</h1>
-        <p className="max-w-3xl text-muted-foreground">
-          Pour chaque marque et chaque pays, écart médian entre le prix catalogue officiel national
-          (converti en euros) et le prix français des mêmes références. Les prix étrangers incluent
-          la TVA locale ; acheter à l&apos;étranger implique d&apos;y acheter sur place et d&apos;y
-          faire valoir la garantie.
-        </p>
+        <Breadcrumbs crumbs={[{ name: t.breadcrumb }]} />
+        <h1 className="text-3xl font-semibold tracking-tight">{t.title}</h1>
+        <p className="max-w-3xl text-muted-foreground">{t.intro}</p>
       </div>
 
       {index.length === 0 && (
-        <p className="rounded-xl border border-dashed p-6 text-muted-foreground">
-          Les prix nationaux sont en cours de relevé : chaque pays est revu une fois par semaine.
-        </p>
+        <p className="rounded-xl border border-dashed p-6 text-muted-foreground">{t.empty}</p>
       )}
 
       {index.map((brand) => (
@@ -75,31 +89,34 @@ export default async function EuropePricesPage() {
             {brand.brandName}
           </h2>
           <p className="max-w-3xl leading-relaxed">
-            {brandSummary(brand.brandName, brand.countries)}
+            {brandSummary(brand.brandName, brand.countries, t, f)}
           </p>
           <div className="rounded-xl border p-2">
             <EuropeMap
               data={brand.countries.map((c) => ({
                 isoNumeric: c.isoNumeric,
-                name: c.name,
+                name: f.country(c.country),
                 deltaPercent: c.medianDeltaPercent,
-                label: `${signed(c.medianDeltaPercent)} en médiane (${c.compared} montres)`,
+                label: format(t.mapValue, {
+                  delta: signed(c.medianDeltaPercent, f),
+                  count: f.number(c.compared, 0),
+                }),
               }))}
             />
           </div>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Pays</TableHead>
-                <TableHead>Écart médian avec la France</TableHead>
-                <TableHead>Montres comparées</TableHead>
-                <TableHead>En stock sur le site national</TableHead>
+                <TableHead>{t.country}</TableHead>
+                <TableHead>{t.delta}</TableHead>
+                <TableHead>{t.compared}</TableHead>
+                <TableHead>{t.stock}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {brand.countries.map((c) => (
                 <TableRow key={c.country}>
-                  <TableCell className="font-medium">{c.name}</TableCell>
+                  <TableCell className="font-medium">{f.country(c.country)}</TableCell>
                   <TableCell
                     className={
                       c.medianDeltaPercent < 0
@@ -109,10 +126,10 @@ export default async function EuropePricesPage() {
                           : undefined
                     }
                   >
-                    {signed(c.medianDeltaPercent)}
+                    {signed(c.medianDeltaPercent, f)}
                   </TableCell>
-                  <TableCell>{c.compared}</TableCell>
-                  <TableCell>{c.inStockPercent} %</TableCell>
+                  <TableCell>{f.number(c.compared, 0)}</TableCell>
+                  <TableCell>{f.number(c.inStockPercent)} %</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -122,7 +139,7 @@ export default async function EuropePricesPage() {
 
       {rates.date && (
         <p className="text-sm text-muted-foreground">
-          Conversion au taux de référence de la BCE du {formatDate(rates.date)}.
+          {format(t.rates, { date: f.date(rates.date) })}
         </p>
       )}
     </div>

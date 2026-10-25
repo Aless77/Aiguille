@@ -18,6 +18,7 @@ import {
   LOCALE_TAGS,
 } from "@/lib/i18n/config";
 import { LocaleProvider } from "@/lib/i18n/client";
+import { FeaturesProvider } from "@/lib/features-client";
 import { format } from "@/lib/i18n/dictionary";
 import { getDictionary } from "@/lib/i18n/server";
 import { notFound } from "next/navigation";
@@ -51,10 +52,6 @@ const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image" },
   robots: isIndexable() ? { index: true, follow: true } : { index: false, follow: false },
-  // Le site a son propre thème sombre : demande à Dark Reader de ne pas réécrire la page (sinon
-  // ses attributs injectés provoquent des erreurs d'hydratation et faussent les couleurs).
-  // Une valeur vide est omise par Next.js : il faut une valeur non vide pour émettre la balise.
-  other: { "darkreader-lock": "true" },
 };
 
 /** Langues publiées (variable LANGUAGES) ; le français seul par défaut. */
@@ -87,23 +84,30 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
       // l'hydratation ; ne concerne que cette balise.
       suppressHydrationWarning
     >
+      <head>
+        {/* Présent avant les SVG : generateMetadata peut être diffusé après le corps de page,
+            trop tard pour empêcher Dark Reader de modifier les icônes avant l'hydratation. */}
+        <meta name="darkreader-lock" content="true" />
+      </head>
       <body className="flex min-h-full flex-col">
         {/* Thème sombre choisi par le visiteur : appliqué avant l'affichage du contenu (pas de
             flash blanc). Script inline bloquant en tête de <body>, volontairement hors de
             next/script (exécuté trop tard) et de <head> (recréé côté client par React 19). */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-        <LocaleProvider locale={lang} t={dict.client}>
-          <NuqsAdapter>
-            <SiteHeader />
-            <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</div>
-            <SiteFooter />
-            {(features.reviews() || features.community()) && <CountryPrompt />}
-            <FallbackNotice
-              messages={
-                missing.length ? [format(dict.fallback.ui, { language: LOCALE_NAMES[lang] })] : []
-              }
-            />
-          </NuqsAdapter>
+        <LocaleProvider locale={lang} dict={dict}>
+          <FeaturesProvider score={features.score()}>
+            <NuqsAdapter>
+              <SiteHeader />
+              <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</div>
+              <SiteFooter />
+              {(features.reviews() || features.community()) && <CountryPrompt />}
+              <FallbackNotice
+                messages={
+                  missing.length ? [format(dict.fallback.ui, { language: LOCALE_NAMES[lang] })] : []
+                }
+              />
+            </NuqsAdapter>
+          </FeaturesProvider>
         </LocaleProvider>
         <JsonLd data={[websiteJsonLd(), organizationJsonLd()]} />
       </body>

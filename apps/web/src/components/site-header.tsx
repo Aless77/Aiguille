@@ -17,12 +17,15 @@ export async function SiteHeader() {
 
   return (
     <header className="border-b">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-6 px-4">
+      <div className="mx-auto flex min-h-14 w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2 lg:flex-nowrap lg:py-0">
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
           <Watch className="size-5" aria-hidden />
           {siteConfig.name}
         </Link>
-        <nav aria-label={t.label} className="flex items-center gap-4 text-sm">
+        <nav
+          aria-label={t.label}
+          className="order-3 flex w-full items-center gap-4 overflow-x-auto pb-1 text-sm lg:order-none lg:w-auto lg:overflow-visible lg:pb-0"
+        >
           <Link
             href="/montres"
             className="whitespace-nowrap text-muted-foreground hover:text-foreground"

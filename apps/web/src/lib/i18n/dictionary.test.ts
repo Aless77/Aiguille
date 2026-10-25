@@ -10,12 +10,10 @@ describe("dictionnaires", () => {
     expect(resolveDictionary("en").missing).toEqual([]);
   });
 
-  it("complète une langue partielle par l'anglais et liste les manques", () => {
-    const { dict, missing } = resolveDictionary("it");
-    expect(dict.nav.allWatches).toBe("Tutti gli orologi");
-    expect(dict.specSheet.rows["Diamètre"]).toBe("Diameter");
-    expect(missing).toContain("specSheet.rows.Diamètre");
-    expect(missing.every((k) => k.startsWith("specSheet."))).toBe(true);
+  it("traduit chaque texte du site dans toutes les langues", () => {
+    for (const locale of ["de", "it", "es"] as const) {
+      expect(resolveDictionary(locale).missing, locale).toEqual([]);
+    }
   });
 
   it("traduit en allemand chaque libellé de la fiche technique", () => {
@@ -34,5 +32,34 @@ describe("dictionnaires", () => {
     expect(format("Bonjour {inconnu}")).toBe("Bonjour {inconnu}");
     expect(translateLabel({ Diamètre: "Diameter" }, "Diamètre")).toBe("Diameter");
     expect(translateLabel({}, "Lunette")).toBe("Lunette");
+  });
+
+  it("conserve les variables de chaque message dans les cinq langues", () => {
+    const flatten = (tree: object, prefix = ""): Record<string, string> =>
+      Object.fromEntries(
+        Object.entries(tree).flatMap(([key, value]) => {
+          const path = `${prefix}${key}`;
+          return typeof value === "string"
+            ? [[path, value]]
+            : Object.entries(flatten(value as object, `${path}.`));
+        }),
+      );
+    const variables = (text: string) => [...new Set(text.match(/\{\w+\}/g) ?? [])].sort();
+    const reference = flatten(resolveDictionary("fr").dict);
+    for (const locale of LOCALES) {
+      const messages = flatten(resolveDictionary(locale).dict);
+      for (const [key, text] of Object.entries(reference)) {
+        // Les avertissements secondaires nomment leur langue directement (« auf Deutsch »).
+        const expected = variables(text).filter(
+          (variable) =>
+            !(
+              key.startsWith("fallback.") &&
+              variable === "{language}" &&
+              !["fr", "en"].includes(locale)
+            ),
+        );
+        expect(variables(messages[key]!), `${locale}: ${key}`).toEqual(expected);
+      }
+    }
   });
 });
