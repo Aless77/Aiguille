@@ -13,7 +13,20 @@ import {
   watchScores,
   type WatchScoreRow,
 } from "@aiguille/db";
-import { and, asc, desc, eq, gte, inArray, isNull, lte, ne, type SQL, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNull,
+  lte,
+  ne,
+  notInArray,
+  type SQL,
+  sql,
+} from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
 
 import {
@@ -289,12 +302,39 @@ export async function getWatch(
   return row ?? null;
 }
 
-/** Montres proches : même collection, prix le plus voisin. */
+export interface FamilyWatch extends WatchCard {
+  dialColor: string | null;
+  caseMaterial: string | null;
+  strapMaterial: string | null;
+}
+
+/** Montres de la même collection, pour en extraire les déclinaisons (packages/db/src/variants.ts). */
+export async function getCollectionFamily(
+  brandSlug: string,
+  collectionSlug: string,
+): Promise<FamilyWatch[]> {
+  "use cache";
+  cached();
+  return getDb()
+    .select({
+      ...cardColumns,
+      dialColor: watches.dialColor,
+      caseMaterial: watches.caseMaterial,
+      strapMaterial: watches.strapMaterial,
+    })
+    .from(watches)
+    .innerJoin(brands, eq(brands.id, watches.brandId))
+    .leftJoin(collections, eq(collections.id, watches.collectionId))
+    .where(and(eq(brands.slug, brandSlug), collectionCondition(collectionSlug)));
+}
+
+/** Montres proches : même collection, prix le plus voisin, hors déclinaisons déjà proposées. */
 export async function getSimilarWatches(
   watchId: number,
   brandSlug: string,
   collectionSlug: string,
   priceCents: number | null,
+  excludeSlugs: string[] = [],
 ): Promise<WatchCard[]> {
   "use cache";
   cached();
@@ -309,6 +349,7 @@ export async function getSimilarWatches(
         collectionCondition(collectionSlug),
         ne(watches.id, watchId),
         eq(watches.status, "active"),
+        excludeSlugs.length ? notInArray(watches.slug, excludeSlugs) : undefined,
       ),
     )
     .orderBy(sql`abs(coalesce(${watches.catalogPriceCents}, 0) - ${priceCents ?? 0})`)

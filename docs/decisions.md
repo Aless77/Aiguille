@@ -3,6 +3,17 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-10-25 – Sélecteur de déclinaisons sur la fiche montre
+
+Comme sur les sites des marques, la fiche propose les déclinaisons du même modèle (cadran,
+boîtier, bracelet) en vignettes, et ses autres tailles en pastilles. Regroupement par la partie
+« modèle » de la référence, propre à chaque marque (`MODEL_KEYS` : `T137.407` chez Tissot,
+`L2.893` chez Longines, `H32705` chez Hamilton), plutôt que par le nom, écrit de façon irrégulière
+(« 42mm », « 42 mm », espaces doublés). Les tailles rapprochent les modèles de même nom une fois la
+taille retirée. Chaque choix est un lien vers sa propre fiche : rendu serveur, aucune URL nouvelle,
+chaque déclinaison reste indexable. Les pièces vintage (références sans motif) n'ont pas de
+sélecteur. Les déclinaisons déjà proposées sont retirées de « Autres modèles ».
+
 ## 2026-10-24 – Recherche et filtres communs au catalogue, aux marques et aux collections
 
 Un même composant serveur présente les résultats et la pagination dans les trois niveaux.
