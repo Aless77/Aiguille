@@ -93,3 +93,18 @@ test.describe("fichiers pour les moteurs", () => {
     expect(body).toMatch(/<loc>[^<]+\/montres\/[^/<]+\/[^/<]+\/[^/<]+<\/loc>/);
   });
 });
+
+test.describe("langues", () => {
+  test("le français reste sans préfixe, /fr redirige vers l'URL canonique", async ({ page }) => {
+    const response = await page.goto("/fr/montres");
+    expect(response?.status()).toBe(200);
+    await expect(page).toHaveURL(/\/montres$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+  });
+
+  test("une langue non publiée répond 404", async ({ page }) => {
+    // LANGUAGES n'est pas défini pour les tests : seul le français est publié.
+    const response = await page.goto("/en/montres");
+    expect(response?.status()).toBe(404);
+  });
+});

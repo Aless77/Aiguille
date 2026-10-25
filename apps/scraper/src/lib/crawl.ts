@@ -85,6 +85,9 @@ export async function runSource(
           if (!parsed.success) return invalid(parsed.error.issues);
           stats.watchesFound++;
           const result = await persister.save(parsed.data, startedAt);
+          // Version française : pivot des fiches traduites (libellé ↔ clé stable).
+          const translation = adapter.translate?.($, url);
+          if (translation) await persister.saveTranslation(result.watchId, "fr", translation, url);
           if (result.created) stats.watchesCreated++;
           if (result.priceChanged) stats.priceChanges++;
           return;

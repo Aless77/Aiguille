@@ -63,6 +63,15 @@ marque (par exemple `H32705` pour `H32705141` chez Hamilton), avec un test dans 
 Vérifier sur le site de la marque que deux références au même préfixe sont bien le même modèle.
 Sans motif, la marque n'a simplement pas de sélecteur.
 
+### Fiches dans d'autres langues (`translate` de l'adaptateur)
+
+Si le site publie ses fiches en plusieurs langues, implémenter `translate($, url)` : valeurs de la
+page rangées par une clé stable, identique dans toutes les langues (code d'attribut, identifiant
+de ligne…), avec les mêmes libellés que `rawSpecs` pour la version française. Les versions
+nationales relevées pour les prix (`locales`) fournissent alors les traductions sans requête de
+plus (`COUNTRY_LANGUAGES`). Sans `translate`, le site affiche la fiche en français, avec un
+avertissement. Exemple : `translateLongines`.
+
 ### Gammes officielles (`packages/db/src/collection-families.ts`)
 
 Relever sur le site de la marque comment elle regroupe ses collections (menu « Montres », pages

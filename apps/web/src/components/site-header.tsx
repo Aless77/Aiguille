@@ -1,14 +1,19 @@
 import { Watch } from "lucide-react";
-import Link from "next/link";
 
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { features } from "@/lib/features";
 import { getBrands } from "@/lib/catalog/queries";
+import { Link } from "@/lib/i18n/client";
+import { enabledLocales } from "@/lib/i18n/config";
+import { getDictionary } from "@/lib/i18n/server";
 import { siteConfig } from "@/lib/site";
 
 export async function SiteHeader() {
   const brands = (await getBrands()).filter((b) => b.watchCount > 0);
+  const { dict } = await getDictionary();
+  const t = dict.nav;
 
   return (
     <header className="border-b">
@@ -17,32 +22,32 @@ export async function SiteHeader() {
           <Watch className="size-5" aria-hidden />
           {siteConfig.name}
         </Link>
-        <nav aria-label="Navigation principale" className="flex items-center gap-4 text-sm">
+        <nav aria-label={t.label} className="flex items-center gap-4 text-sm">
           <Link
             href="/montres"
             className="whitespace-nowrap text-muted-foreground hover:text-foreground"
           >
-            Toutes les montres
+            {t.allWatches}
           </Link>
           <Link
             href="/nouveautes"
             className="whitespace-nowrap text-muted-foreground hover:text-foreground"
           >
-            Nouveautés
+            {t.newArrivals}
           </Link>
           {features.community() && (
             <Link
               href="/communaute"
               className="hidden whitespace-nowrap text-muted-foreground hover:text-foreground md:inline"
             >
-              Communauté
+              {t.community}
             </Link>
           )}
           <Link
             href="/boutiques"
             className="hidden whitespace-nowrap text-muted-foreground hover:text-foreground md:inline"
           >
-            Boutiques
+            {t.stores}
           </Link>
           {brands.map((b) => (
             <Link
@@ -55,6 +60,7 @@ export async function SiteHeader() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-3">
+          <LanguageSwitcher locales={enabledLocales()} label={dict.language.label} />
           <ThemeToggle />
           {/* Un compte sert aux avis et aux listes : lien masqué si les deux le sont. */}
           {(features.reviews() || features.community()) && (

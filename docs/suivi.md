@@ -57,6 +57,11 @@ Reste pour boucler le lot 4 :
   /communaute avec avis et réponses des membres, anonymat possible, plafonds de stockage ;
   migrations `0007` et `0008` à appliquer en production (collecte
   `limit 1` ou build Vercel).
+- **Pays de provenance** des comptes (demandé après la première connexion, `npm run db:pays`).
+- **Multilingue** (FR, EN, DE, IT, ES) : routage `app/[lang]`, dictionnaires, repli anglais,
+  fiches Longines traduites depuis les versions nationales. Activer avec `LANGUAGES`. Reste à
+  traduire : catalogue, filtres, pages de contenu, offres, historique, avis ; libellés IT/ES de
+  la fiche technique ; `translate` pour Tissot et Hamilton.
 - **Déclinaisons** : sélecteur de cadrans, matières, bracelets et tailles du même modèle sur la
   fiche (Tissot, Longines, Hamilton), regroupé par la référence (`variants.ts`), une rangée
   visible et la suite repliée.

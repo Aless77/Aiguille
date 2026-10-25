@@ -19,6 +19,7 @@ import {
 
 import { type Alternative } from "./compare.ts";
 import { type Pillars } from "./rating.ts";
+import { type WatchTranslationData } from "./translations.ts";
 
 /** Segment de marché d'une marque (voir le cahier des charges, section Périmètre). */
 export const brandSegment = pgEnum("brand_segment", ["coeur", "milieu_haut"]);
@@ -245,6 +246,11 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
+  /**
+   * Pays de provenance déclaré (voir countries.ts) (code ISO 3166-1 alpha-2), jamais d'adresse : statistiques de
+   * fréquentation par pays. `null` : pas encore demandé ; `ZZ` : préfère ne pas le dire.
+   */
+  country: text("country"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -356,6 +362,24 @@ export const reviews = pgTable(
 export type Review = typeof reviews.$inferSelect;
 
 export const scoreConfidence = pgEnum("score_confidence", ["low", "medium", "high"]);
+
+/**
+ * Fiche d'une montre dans une autre langue, telle que publiée par la marque (translations.ts).
+ * Une ligne par langue, mise à jour à chaque relevé ; « fr » relie les libellés à leurs clés.
+ */
+export const watchTranslations = pgTable(
+  "watch_translations",
+  {
+    watchId: integer("watch_id")
+      .notNull()
+      .references(() => watches.id, { onDelete: "cascade" }),
+    locale: text("locale").notNull(),
+    data: jsonb("data").$type<WatchTranslationData>().notNull(),
+    sourceUrl: text("source_url").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.watchId, t.locale] })],
+);
 
 /**
  * Note sur 100 de chaque montre, recalculée par scores.ts après chaque collecte et chaque avis.

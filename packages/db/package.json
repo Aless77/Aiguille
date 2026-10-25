@@ -12,6 +12,8 @@
     "./compare": "./src/compare.ts",
     "./spec-sheet": "./src/spec-sheet.ts",
     "./variants": "./src/variants.ts",
+    "./countries": "./src/countries.ts",
+    "./translations": "./src/translations.ts",
     "./collection-families": "./src/collection-families.ts"
   },
   "scripts": {
@@ -21,6 +23,7 @@
     "seed:e2e": "tsx src/seed-e2e.ts",
     "scores": "tsx src/refresh-scores.ts",
     "couverture": "tsx src/coverage-report.ts",
+    "pays": "tsx src/countries-report.ts",
     "studio": "drizzle-kit studio --host 0.0.0.0",
     "typecheck": "tsc --noEmit"
   },

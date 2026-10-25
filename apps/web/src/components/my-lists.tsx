@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Link2, Trash2 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/client";
 import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";

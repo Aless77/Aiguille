@@ -64,6 +64,20 @@
       "when": 1792949871453,
       "tag": "0008_fast_wild_child",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792953305825,
+      "tag": "0009_bored_ironclad",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792954108385,
+      "tag": "0010_unknown_zzzax",
+      "breakpoints": true
     }
   ]
 }

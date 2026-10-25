@@ -11,6 +11,8 @@ import {
   users,
   watches,
   watchScores,
+  watchTranslations,
+  type WatchTranslationData,
   type WatchScoreRow,
 } from "@aiguille/db";
 import {
@@ -786,4 +788,17 @@ export async function getWatchAlternatives(watchId: number): Promise<WatchAltern
       savingCents: a.savingCents,
       advantages: a.advantages,
     }));
+}
+
+/** Fiches de la marque dans chaque langue relevée (packages/db/src/translations.ts). */
+export async function getWatchTranslations(
+  watchId: number,
+): Promise<Partial<Record<string, WatchTranslationData>>> {
+  "use cache";
+  cached();
+  const rows = await getDb()
+    .select({ locale: watchTranslations.locale, data: watchTranslations.data })
+    .from(watchTranslations)
+    .where(eq(watchTranslations.watchId, watchId));
+  return Object.fromEntries(rows.map((r) => [r.locale, r.data]));
 }

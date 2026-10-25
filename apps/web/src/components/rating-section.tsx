@@ -6,7 +6,7 @@ import {
   REVIEW_CRITERIA,
   type ReviewCriterion,
 } from "@aiguille/db/rating";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/client";
 
 import { ReviewForm } from "@/components/review-form";
 import { ScoreBadge, scoreTone } from "@/components/score-badge";

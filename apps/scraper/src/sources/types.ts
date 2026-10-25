@@ -1,3 +1,4 @@
+import { type WatchTranslationData } from "@aiguille/db/translations";
 import { type CheerioAPI } from "cheerio";
 
 import { type Country } from "../lib/countries.ts";
@@ -21,6 +22,11 @@ export interface OfficialAdapter extends BaseAdapter {
   brandSlug: string;
   /** Fiche extraite (non encore validée), ou `null` si la page n'est pas une fiche montre. */
   parse($: CheerioAPI, url: string): Listing | null;
+  /**
+   * Fiche dans la langue de la page (française ou version nationale), valeurs rangées par clé
+   * stable : affichage du site dans d'autres langues (packages/db/src/translations.ts).
+   */
+  translate?($: CheerioAPI, url: string): WatchTranslationData | null;
   /**
    * Versions nationales du site (lot 4, prix par pays). Un pays absent n'a pas de version
    * nationale propre (redirection vers un site « international ») : il n'est pas relevé.

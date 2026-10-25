@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Heart, Plus } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/client";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 

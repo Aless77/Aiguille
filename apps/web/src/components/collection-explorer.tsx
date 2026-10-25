@@ -1,6 +1,6 @@
 import { type FamilyGroup } from "@aiguille/db/collection-families";
 import { ChevronDown, ExternalLink } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/client";
 
 import { OpenDetailsOnHash } from "@/components/open-details-on-hash";
 import { WatchImage } from "@/components/watch-image";

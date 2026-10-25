@@ -1,7 +1,9 @@
 "use client";
 
 import { Heart } from "lucide-react";
-import Link from "next/link";
+import { Link, useLocale } from "@/lib/i18n/client";
+import { splitLocale } from "@/lib/i18n/config";
+import { format } from "@/lib/i18n/dictionary";
 import { usePathname, useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -13,20 +15,21 @@ import { authClient } from "@/lib/auth/client";
  */
 export function UserMenu({ showLists = false }: { showLists?: boolean }) {
   const { data, isPending } = authClient.useSession();
+  const { t } = useLocale();
   const pathname = usePathname();
   const router = useRouter();
 
   if (isPending) return <span className="h-7 w-24" aria-hidden />;
 
   if (!data) {
-    const returnTo = pathname === "/connexion" ? "/" : pathname;
+    const returnTo = splitLocale(pathname).path === "/connexion" ? "/" : pathname;
     return (
       <Link
         href={`/connexion?retour=${encodeURIComponent(returnTo)}`}
         className="text-sm text-muted-foreground hover:text-foreground"
         rel="nofollow"
       >
-        Se connecter
+        {t.signIn}
       </Link>
     );
   }
@@ -38,8 +41,8 @@ export function UserMenu({ showLists = false }: { showLists?: boolean }) {
         <Link
           href="/listes"
           className="text-muted-foreground hover:text-foreground"
-          aria-label="Mes listes de souhaits"
-          title="Mes listes de souhaits"
+          aria-label={t.myLists}
+          title={t.myLists}
         >
           <Heart className="size-4" aria-hidden />
         </Link>
@@ -47,7 +50,7 @@ export function UserMenu({ showLists = false }: { showLists?: boolean }) {
       <Link
         href="/compte"
         className="flex items-center gap-2 hover:text-foreground"
-        aria-label={`Mon compte (${user.name})`}
+        aria-label={format(t.myAccount, { name: user.name })}
         title={user.email}
       >
         {user.image ? (
@@ -72,7 +75,7 @@ export function UserMenu({ showLists = false }: { showLists?: boolean }) {
           router.refresh();
         }}
       >
-        Se déconnecter
+        {t.signOut}
       </Button>
     </div>
   );
