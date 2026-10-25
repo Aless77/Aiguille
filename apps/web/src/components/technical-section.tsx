@@ -5,7 +5,7 @@ import {
   extractMovementFacts,
   extractOwnershipFacts,
 } from "@aiguille/db/facts";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/client";
 
 import { MOVEMENT_LABELS } from "@/lib/catalog/format";
 import { type WatchDetail } from "@/lib/catalog/queries";

@@ -7,9 +7,17 @@ const priceFormatter = new Intl.NumberFormat("fr-FR", {
 });
 
 /** Centimes → « 1 250 € ». Les centimes sont arrondis : les prix catalogue sont ronds. */
-export function formatPrice(cents: number | null | undefined): string | null {
+export function formatPrice(cents: number | null | undefined, locale = "fr-FR"): string | null {
   if (cents === null || cents === undefined) return null;
-  return priceFormatter.format(Math.round(cents / 100)).replace(/ /g, " ");
+  const formatter =
+    locale === "fr-FR"
+      ? priceFormatter
+      : new Intl.NumberFormat(locale, {
+          style: "currency",
+          currency: "EUR",
+          maximumFractionDigits: 0,
+        });
+  return formatter.format(Math.round(cents / 100)).replace(/ /g, " ");
 }
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
@@ -19,8 +27,12 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
   timeZone: "Europe/Paris",
 });
 
-export function formatDate(date: Date | string): string {
-  return dateFormatter.format(typeof date === "string" ? new Date(date) : date);
+export function formatDate(date: Date | string, locale = "fr-FR"): string {
+  const formatter =
+    locale === "fr-FR"
+      ? dateFormatter
+      : new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "Europe/Paris" });
+  return formatter.format(typeof date === "string" ? new Date(date) : date);
 }
 
 export const MOVEMENT_LABELS: Record<Movement, string> = {

@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Link2, Reply, Share2, Trash2 } from "lucide-react";
-import Link from "next/link";
+import { Link, useLocalePath } from "@/lib/i18n/client";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 
@@ -136,6 +136,7 @@ export function ListOwnerBar({
 }) {
   const { owner, reload } = useViewer();
   const router = useRouter();
+  const localize = useLocalePath();
   const [error, setError] = useState<string | null>(null);
   if (!owner) return null;
 
@@ -184,7 +185,7 @@ export function ListOwnerBar({
           if (!window.confirm("Supprimer cette liste et les avis reçus ?")) return;
           const failed = await send(`/api/listes/${shareId}`, "DELETE");
           if (failed) setError(failed);
-          else router.push("/listes");
+          else router.push(localize("/listes"));
         }}
       >
         <Trash2 aria-hidden />

@@ -50,6 +50,8 @@ export interface Variant<T extends VariantCandidate> {
   current: boolean;
   /** Ce qui distingue cette déclinaison des autres (cadran, boîtier, bracelet). */
   label: string;
+  /** Mêmes éléments, séparés, pour un libellé traduit (champ et valeur publiée). */
+  parts: { field: (typeof DISTINCTIVE)[number][0]; value: string }[];
 }
 
 export interface SizeOption<T extends VariantCandidate> {
@@ -110,6 +112,9 @@ export function modelVariants<T extends VariantCandidate>(
       ? siblings.map((watch) => ({
           watch,
           current: watch.slug === current.slug,
+          parts: differing.flatMap(([field]) =>
+            watch[field] ? [{ field, value: watch[field] as string }] : [],
+          ),
           label:
             differing
               .map(([field, prefix]) => (watch[field] ? `${prefix} ${watch[field]}` : null))

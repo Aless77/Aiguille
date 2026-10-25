@@ -1,0 +1,115 @@
+import { type PartialDictionary } from "../dictionary";
+
+/** Libellés de la fiche technique (rows, values) encore à traduire : affichés en anglais. */
+export const it: PartialDictionary = {
+  common: { unknown: "Non comunicato", newTab: "(nuova scheda)", close: "Chiudi" },
+  nav: {
+    label: "Navigazione principale",
+    allWatches: "Tutti gli orologi",
+    newArrivals: "Novità",
+    community: "Community",
+    stores: "Negozi",
+  },
+  footer: {
+    label: "Link del sito",
+    europePrices: "Prezzi in Europa",
+    methodology: "Metodologia",
+    privacy: "Privacy",
+    about: "Chi siamo",
+    independent:
+      "{site} è gratuito, indipendente e senza pubblicità: nessuna affiliazione con marchi o rivenditori.",
+    sources:
+      "Prezzi e caratteristiche rilevati automaticamente sui siti ufficiali dei marchi. Foto: © i rispettivi marchi, mostrate dai loro siti.",
+  },
+  language: { label: "Lingua" },
+  fallback: {
+    ui: "Alcuni testi non sono ancora tradotti in italiano: sono mostrati in inglese.",
+    content:
+      "{brand} non pubblica questa scheda in italiano: le informazioni sono mostrate in inglese.",
+    contentSource:
+      "{brand} non pubblica questa scheda in italiano: le informazioni sono mostrate come pubblicate in francese.",
+  },
+  availability: {
+    in_stock: "Disponibile",
+    out_of_stock: "Esaurito",
+    preorder: "In preordine",
+    unknown: "Disponibilità sconosciuta",
+  },
+  watch: {
+    reference: "Referenza {reference}",
+    discontinued: "Fuori produzione",
+    photo: "Foto: © {brand}",
+    catalogPrice: "Prezzo di listino ufficiale",
+    availabilityOn: "{status} sul sito {brand}",
+    bestPrice: "Miglior prezzo rilevato: ",
+    alsoAt: "Anche da ",
+    priceAt: "{price} da {store}",
+    observedOn: "Rilevato sul sito {brand} il {date}.",
+    ourMethod: "Il nostro metodo",
+    seeOn: "Vedi sul sito {brand}",
+    seeInPerson: "Per vederlo dal vivo:",
+    stores: "{count} negozi autorizzati {brand} in Europa",
+    stockNotPublished: "(scorte non pubblicate dal marchio).",
+    otherModels: "Altri modelli {name}",
+    otherModelsFallback: "Altri modelli",
+    watches: "Orologi",
+    range: "Linea {name}",
+    collection: "Collezione {name}",
+    seeCollection: "Vedi tutta la collezione",
+    imageAlt: "{name}, referenza {reference}",
+    metaTitle: "{name} ({reference}): prezzo e caratteristiche",
+  },
+  variants: {
+    label: "Varianti di questo modello",
+    caseSize: "Dimensione della cassa",
+    count: "{count} varianti",
+    showMore: "Mostra altre {count} varianti",
+    hide: "Nascondi",
+    discontinued: "fuori produzione",
+    dialColor: "Quadrante",
+    caseMaterial: "Cassa",
+    strapMaterial: "Cinturino",
+  },
+  specSheet: {
+    title: "Scheda tecnica",
+    intro:
+      "Informazioni pubblicate da {brand}, presentate allo stesso modo per tutti i marchi. «{unknown}»: il marchio non pubblica questa informazione.",
+    navLabel: "Sezioni della scheda tecnica",
+    careNav: "Consigli di manutenzione",
+    vintage:
+      "Pezzo vintage venduto usato da {brand}: la sua storia è nella sezione «Storia». Non viene confrontato con gli orologi nuovi.",
+    careTitle: "Prendersi cura di questo orologio",
+    careIntro:
+      "Consigli adatti alle sue caratteristiche (corona, cronografo, batteria…), riformulati da Aiguille.",
+    recommendedBy: "Consigliato da {brand}",
+    generalTip: "Consiglio generale",
+    others: "Altre informazioni pubblicate da {brand} ({count})",
+    sources: "Da dove provengono queste informazioni:",
+    methodology: "la nostra metodologia",
+    groups: {
+      mouvement: "Movimento",
+      boitier: "Cassa",
+      cadran: "Quadrante",
+      bracelet: "Cinturino",
+      garantie: "Garanzia e manutenzione",
+      historique: "Storia",
+    },
+  },
+  client: {
+    signIn: "Accedi",
+    signOut: "Esci",
+    myLists: "Le mie liste dei desideri",
+    myAccount: "Il mio account ({name})",
+    close: "Chiudi",
+    country: {
+      label: "Paese",
+      placeholder: "Scegli un paese…",
+      save: "Salva",
+      skip: "Preferisco non dirlo",
+      saved: "Salvato.",
+      failed: "Salvataggio non riuscito. Riprova.",
+      hint: "Solo il paese, per sapere da dove arrivano i nostri visitatori. Mai il tuo indirizzo.",
+      welcome: "Benvenuto! Da quale paese ci visiti?",
+    },
+  },
+};

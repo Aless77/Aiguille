@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/client";
 
 import { buttonVariants } from "@/components/ui/button";
 import { type CatalogParams, serializeCatalogParams } from "@/lib/catalog/search-params";

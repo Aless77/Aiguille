@@ -1,42 +1,39 @@
-import Link from "next/link";
-
+import { Link } from "@/lib/i18n/client";
+import { format } from "@/lib/i18n/dictionary";
+import { getDictionary } from "@/lib/i18n/server";
 import { siteConfig } from "@/lib/site";
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const { dict } = await getDictionary();
+  const t = dict.footer;
   return (
     <footer className="mt-16 border-t">
       <div className="mx-auto w-full max-w-6xl space-y-4 px-4 py-8 text-sm text-muted-foreground">
-        <nav aria-label="Liens du site" className="flex flex-wrap gap-4">
+        <nav aria-label={t.label} className="flex flex-wrap gap-4">
           <Link href="/montres" className="hover:text-foreground">
-            Toutes les montres
+            {dict.nav.allWatches}
           </Link>
           <Link href="/nouveautes" className="hover:text-foreground">
-            Nouveautés
+            {dict.nav.newArrivals}
           </Link>
           <Link href="/boutiques" className="hover:text-foreground">
-            Boutiques
+            {dict.nav.stores}
           </Link>
           <Link href="/prix-en-europe" className="hover:text-foreground">
-            Prix en Europe
+            {t.europePrices}
           </Link>
           <Link href="/methodologie" className="hover:text-foreground">
-            Méthodologie
+            {t.methodology}
           </Link>
           <Link href="/confidentialite" className="hover:text-foreground">
-            Confidentialité
+            {t.privacy}
           </Link>
           <Link href="/a-propos" className="hover:text-foreground">
-            À propos
+            {t.about}
           </Link>
         </nav>
-        <p>
-          {siteConfig.name} est un site gratuit, indépendant et sans publicité : aucune affiliation
-          avec les marques ni les revendeurs.
-        </p>
-        <p>
-          Prix et caractéristiques relevés automatiquement sur les sites officiels des marques.
-          Photos : © les marques respectives, affichées depuis leurs sites.
-        </p>
+        <p>{format(t.independent, { site: siteConfig.name })}</p>
+        <p>{t.sources}</p>
       </div>
     </footer>
   );

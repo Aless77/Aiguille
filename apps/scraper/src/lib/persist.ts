@@ -6,6 +6,9 @@ import {
   scrapeRuns,
   specs,
   watches,
+  watchTranslations,
+  translationSchema,
+  type WatchTranslationData,
 } from "@aiguille/db";
 import { and, desc, eq, lt, sql } from "drizzle-orm";
 
@@ -25,6 +28,7 @@ export function hasChanged(
 }
 
 export interface SaveResult {
+  watchId: number;
   created: boolean;
   priceChanged: boolean;
 }
@@ -122,7 +126,7 @@ export class Persister {
     if (!row) throw new Error(`Montre non enregistrée : ${listing.reference}`);
 
     const priceChanged = await this.recordObservation(row.id, listing, seenAt);
-    return { created: row.created, priceChanged };
+    return { watchId: row.id, created: row.created, priceChanged };
   }
 
   /** Ajoute un relevé pour (montre, source, pays) si le prix ou la disponibilité a changé. */
@@ -160,6 +164,30 @@ export class Persister {
       observedAt: seenAt,
     });
     return true;
+  }
+
+  /**
+   * Fiche dans une langue (translations.ts) : remplacée à chaque relevé, écrite seulement si elle
+   * change. Une fiche invalide est ignorée sans interrompre la collecte.
+   */
+  async saveTranslation(
+    watchId: number,
+    locale: string,
+    data: WatchTranslationData,
+    sourceUrl: string,
+  ): Promise<boolean> {
+    const parsed = translationSchema.safeParse(data);
+    if (!parsed.success) return false;
+    const result = await this.db
+      .insert(watchTranslations)
+      .values({ watchId, locale, data: parsed.data, sourceUrl })
+      .onConflictDoUpdate({
+        target: [watchTranslations.watchId, watchTranslations.locale],
+        set: { data: parsed.data, sourceUrl, updatedAt: sql`now()` },
+        setWhere: sql`${watchTranslations.data} is distinct from excluded.data`,
+      })
+      .returning({ watchId: watchTranslations.watchId });
+    return result.length > 0;
   }
 
   /** Prix national d'une montre du catalogue (lot 4), dans la devise du pays. */

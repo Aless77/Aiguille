@@ -58,6 +58,34 @@ identifiant aléatoire de 12 caractères (environ 60 bits), jamais l'identifiant
   60 Mo au pire. Au-delà, création suspendue avec un message clair. À relever si on change
   d'offre.
 
+## 2026-10-25 – Pays de provenance des comptes
+
+À la création du compte (connexion GitHub ou Google, sans formulaire d'inscription), une petite
+fenêtre demande le pays de provenance : liste des 249 pays ISO, « Ne pas préciser » possible,
+modifiable sur /compte. Seul le code pays est stocké (`users.country`, `ZZ` pour « ne pas le
+dire »), jamais d'adresse ; validé côté serveur (hook Better Auth). Usage : statistiques par pays
+(`npm run db:pays`, sans donnée individuelle). Mentionné dans la page Confidentialité.
+
+## 2026-10-25 – Site multilingue (FR, EN, DE, IT, ES)
+
+- **URL** : le français garde ses URL (déjà indexées) ; les autres langues ont un préfixe et les
+  mêmes chemins (`/en/montres/tissot/prx/…`). Toutes les pages sont sous `app/[lang]` ; le proxy
+  réécrit les URL sans préfixe vers `/fr`, redirige `/fr/…` vers l'URL sans préfixe et répond 404
+  pour une langue non publiée. Liens internes écrits sans préfixe : `Link` de `@/lib/i18n/client`
+  ajoute celui de la langue affichée.
+- **Publication** : variable `LANGUAGES` (français seul par défaut). Langues hors français en
+  `noindex` (`INDEXABLE_LOCALES`) tant que tout le site n'est pas traduit.
+- **Textes du site** : dictionnaires TypeScript (`lib/i18n/dictionaries`). Le français fait
+  référence, l'anglais doit être complet (vérifié par TypeScript), les autres peuvent être
+  partiels : les manques s'affichent en anglais avec un avertissement refermable.
+- **Fiches des marques** : chaque version nationale déjà relevée pour les prix (DE, IT, ES, GB)
+  sert aussi de traduction, sans requête de plus (`watch_translations`, valeurs rangées par clé
+  stable, la version française servant de pivot). Langue absente : version anglaise, puis
+  française, avec un avertissement sur la fiche. Longines d'abord (`translate` de l'adaptateur).
+- **Traduit dans ce lot** : en-tête, pied de page, menu du compte, demande du pays, fiche montre
+  (sauf note, avis, offres, historique et prix européens) et fiche technique. Le reste du site
+  s'affiche encore en français dans les autres langues.
+
 ## 2026-10-25 – Sélecteur de déclinaisons sur la fiche montre
 
 Comme sur les sites des marques, la fiche propose les déclinaisons du même modèle (cadran,
