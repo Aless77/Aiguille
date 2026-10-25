@@ -84,7 +84,7 @@ docker compose run --rm tools npm run db:couverture   # ce qui manque encore
 docker compose run --rm tools npm run check
 ```
 
-Puis ouvrir quelques fiches : section « Technique, garantie et entretien » et « Aussi bien
+Puis ouvrir quelques fiches : section « Fiche technique » (dont « Garantie et entretien » et les conseils) et « Aussi bien
 équipées, pour moins cher ». Vérifier à la main 2 ou 3 alternatives proposées.
 
 ## 6. Documenter
