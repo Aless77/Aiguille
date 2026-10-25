@@ -3,6 +3,25 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-10-25 – Gammes officielles au-dessus des collections
+
+Les collections sont regroupées en gammes uniquement quand la marque le fait sur son site,
+relevé le 25 octobre (`collection-families.ts`) : Longines en cinq univers de son menu (Master,
+Conquest, Spirit, Elegance, Heritage, toutes collections couvertes) ; Tissot par ses « collections
+emblématiques » qui réunissent plusieurs lignes (PRX, PR 100, Seastar, Le Locle, Supersport
+Chrono, T-Race, XL), membres vérifiés page par page, les autres lignes restant autonomes ;
+Hamilton à plat. Pas de nouvelle URL ni de migration : la gamme s'affiche sur la page marque
+(ancre `#gamme-…`), sur la page collection (collections sœurs) et dans l'en-tête de la fiche.
+PR100 Sport Chic et PR100 Vuelta n'apparaissent pas sur la page PR 100 : non rattachées.
+
+Page marque : un menu « Explorer les N collections », replié par défaut ; dedans, chaque gamme est repliée (nom, nombre de collections et de modèles, prix
+d'entrée, aperçu) et se déplie au clic ; un lien `#gamme-…` l'ouvre directement. Chaque collection
+montre une montre d'exemple **fixe** (la moins chère en vente avec photo) plutôt qu'aléatoire :
+pages en cache, pas de saut d'image, même repère visuel d'une visite à l'autre.
+
+Le sélecteur de déclinaisons affiche une rangée de six vignettes, la suite étant repliée
+(« Voir les N autres déclinaisons »), la déclinaison ouverte restant toujours visible.
+
 ## 2026-10-25 – Sélecteur de déclinaisons sur la fiche montre
 
 Comme sur les sites des marques, la fiche propose les déclinaisons du même modèle (cadran,

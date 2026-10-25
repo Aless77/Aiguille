@@ -63,6 +63,15 @@ marque (par exemple `H32705` pour `H32705141` chez Hamilton), avec un test dans 
 Vérifier sur le site de la marque que deux références au même préfixe sont bien le même modèle.
 Sans motif, la marque n'a simplement pas de sélecteur.
 
+### Gammes officielles (`packages/db/src/collection-families.ts`)
+
+Relever sur le site de la marque comment elle regroupe ses collections (menu « Montres », pages
+de collection) et le reporter tel quel : nom de la gamme, page officielle, collections membres
+(slugs Aiguille), avec la source et la date. Ne créer aucune gamme que la marque ne présente pas :
+une marque à plat (Hamilton) est déclarée avec une liste vide. `complete: true` quand toute
+collection doit appartenir à une gamme ; le rapport de couverture liste alors les collections à
+rattacher, et pour toutes les marques les slugs devenus inconnus.
+
 ## 4. Renseigner les informations de marque (`packages/db/src/brand-info.ts`)
 
 Ce que les fiches ne donnent pas, **avec la page source et la date de vérification**. Pages à

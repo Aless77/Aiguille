@@ -236,6 +236,41 @@ export async function getCollections(brandSlug?: string): Promise<CollectionSumm
   return rows;
 }
 
+export interface CollectionPreview {
+  slug: string;
+  name: string;
+  imageUrl: string | null;
+}
+
+/**
+ * Montre d'exemple de chaque collection d'une marque : la moins chère encore en vente avec une
+ * photo (en général celle du « dès … » affiché). Choix fixe plutôt qu'aléatoire : la page reste
+ * en cache et le visiteur retrouve la même image d'une visite à l'autre (docs/decisions.md).
+ */
+export async function getCollectionPreviews(brandSlug: string): Promise<CollectionPreview[]> {
+  "use cache";
+  cached();
+  // Littéral et non paramètre : DISTINCT ON exige la même expression que le premier ORDER BY.
+  const collectionSlug = sql<string>`coalesce(${collections.slug}, ${sql.raw(`'${NO_COLLECTION_SLUG}'`)})`;
+  return getDb()
+    .selectDistinctOn([collectionSlug], {
+      slug: collectionSlug,
+      name: watches.name,
+      imageUrl: sql<string | null>`${watches.imageUrls}->>0`,
+    })
+    .from(watches)
+    .innerJoin(brands, eq(brands.id, watches.brandId))
+    .leftJoin(collections, eq(collections.id, watches.collectionId))
+    .where(
+      and(
+        eq(brands.slug, brandSlug),
+        eq(watches.status, "active"),
+        sql`jsonb_array_length(${watches.imageUrls}) > 0`,
+      ),
+    )
+    .orderBy(collectionSlug, sql`${watches.catalogPriceCents} asc nulls last`, asc(watches.slug));
+}
+
 export async function getCollection(
   brandSlug: string,
   collectionSlug: string,

@@ -1,10 +1,18 @@
+import { groupByFamily } from "@aiguille/db/collection-families";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { CatalogBrowser } from "@/components/catalog-browser";
+import { CollectionExplorer } from "@/components/collection-explorer";
 import { formatPrice } from "@/lib/catalog/format";
-import { getBrand, getBrands, getCollections, getStoreCounts } from "@/lib/catalog/queries";
+import {
+  getBrand,
+  getBrands,
+  getCollectionPreviews,
+  getCollections,
+  getStoreCounts,
+} from "@/lib/catalog/queries";
 import { hasCatalogFilters, loadCatalogParams } from "@/lib/catalog/search-params";
 import { PLACEHOLDER_SLUG, withPlaceholder } from "@/lib/catalog/static-params";
 import { JsonLd, itemListJsonLd } from "@/lib/seo/json-ld";
@@ -48,11 +56,14 @@ export default async function BrandPage({ params, searchParams }: PageProps<"/mo
   const brand = await getBrand(marque);
   if (!brand) notFound();
 
-  const [collections, storeCounts] = await Promise.all([
+  const [collections, previews, storeCounts] = await Promise.all([
     getCollections(brand.slug),
+    getCollectionPreviews(brand.slug),
     getStoreCounts(),
   ]);
   const storeCount = storeCounts.find((c) => c.brandSlug === brand.slug)?.count ?? 0;
+  // Gammes officielles de la marque (Longines : Master, Conquest…), à plat sinon.
+  const groups = groupByFamily(brand.slug, collections);
 
   return (
     <div className="space-y-10">
@@ -83,32 +94,19 @@ export default async function BrandPage({ params, searchParams }: PageProps<"/mo
       </div>
 
       {collections.length > 0 && (
-        <details className="rounded-xl border p-4">
-          <summary className="cursor-pointer font-medium">
-            Explorer les {collections.length} collections {brand.name}
-          </summary>
-          <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {collections.map((c) => (
-              <li key={c.slug}>
-                <Link
-                  href={`/montres/${brand.slug}/${c.slug}`}
-                  className="block h-full rounded-xl border p-4 transition-colors hover:bg-muted/60"
-                >
-                  <span className="font-medium">{c.name}</span>
-                  <span className="block text-sm text-muted-foreground">
-                    {c.watchCount} modèle{c.watchCount > 1 ? "s" : ""}
-                    {c.minPriceCents !== null && ` · dès ${formatPrice(c.minPriceCents)}`}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+        <>
+          <CollectionExplorer
+            brandSlug={brand.slug}
+            brandName={brand.name}
+            groups={groups}
+            previews={previews}
+          />
           <JsonLd
             data={itemListJsonLd(
               collections.map((c) => ({ name: c.name, path: `/montres/${brand.slug}/${c.slug}` })),
             )}
           />
-        </details>
+        </>
       )}
 
       <CatalogBrowser
