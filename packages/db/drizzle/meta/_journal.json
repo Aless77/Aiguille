@@ -50,6 +50,20 @@
       "when": 1792844183839,
       "tag": "0006_condemned_jimmy_woo",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792948697132,
+      "tag": "0007_heavy_the_order",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792949871453,
+      "tag": "0008_fast_wild_child",
+      "breakpoints": true
     }
   ]
 }

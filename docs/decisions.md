@@ -3,6 +3,72 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-10-25 – Gammes officielles au-dessus des collections
+
+Les collections sont regroupées en gammes uniquement quand la marque le fait sur son site,
+relevé le 25 octobre (`collection-families.ts`) : Longines en cinq univers de son menu (Master,
+Conquest, Spirit, Elegance, Heritage, toutes collections couvertes) ; Tissot par ses « collections
+emblématiques » qui réunissent plusieurs lignes (PRX, PR 100, Seastar, Le Locle, Supersport
+Chrono, T-Race, XL), membres vérifiés page par page, les autres lignes restant autonomes ;
+Hamilton à plat. Pas de nouvelle URL ni de migration : la gamme s'affiche sur la page marque
+(ancre `#gamme-…`), sur la page collection (collections sœurs) et dans l'en-tête de la fiche.
+PR100 Sport Chic et PR100 Vuelta n'apparaissent pas sur la page PR 100 : non rattachées.
+
+Page marque : un menu « Explorer les N collections », replié par défaut ; dedans, chaque gamme est repliée (nom, nombre de collections et de modèles, prix
+d'entrée, aperçu) et se déplie au clic ; un lien `#gamme-…` l'ouvre directement. Chaque collection
+montre une montre d'exemple **fixe** (la moins chère en vente avec photo) plutôt qu'aléatoire :
+pages en cache, pas de saut d'image, même repère visuel d'une visite à l'autre.
+
+Le sélecteur de déclinaisons affiche une rangée de six vignettes, la suite étant repliée
+(« Voir les N autres déclinaisons »), la déclinaison ouverte restant toujours visible.
+
+## 2026-10-25 – Listes de souhaits et communauté
+
+Un compte peut créer des listes de souhaits (20 au plus, 50 montres chacune) depuis la fiche d'une
+montre (« Ajouter à une liste ») ou la page « Mes listes ». Trois visibilités : **privée** (par
+défaut), **partagée par lien** (lisible sans compte par qui a l'URL) et **publiée dans la
+communauté** (page /communaute, ouverte aux avis des membres). L'URL d'une liste porte un
+identifiant aléatoire de 12 caractères (environ 60 bits), jamais l'identifiant en base : une liste
+« par lien » ne peut pas être devinée. Migration `0007`.
+
+- **Forum** : /communaute liste les listes publiées, la plus récemment active en premier. Les
+  membres connectés y laissent un avis sur la liste ou sur l'une de ses montres. Mêmes garde-fous
+  que les avis de montres : connexion, Turnstile si configuré, liens refusés, plafonds détaillés
+  ci-dessous. L'auteur d'une liste masque les avis reçus ; chacun supprime les siens.
+- **Non indexé** (listes, communauté, « Mes listes ») : contenu des membres, modération encore
+  manuelle. À revoir quand le volume et la modération le justifieront.
+- **Cache** : chaque liste est en cache par son étiquette et invalidée immédiatement à chaque
+  modification (`expire: 0`). Les droits du visiteur (auteur, ses avis) sont lus côté navigateur.
+- **Interrupteur** `FEATURE_COMMUNITY` : affiché par défaut, masqué seulement avec « false ».
+- Suppression du compte : listes, montres des listes et commentaires effacés en cascade.
+- **Anonymat** (migration `0008`) : une liste peut être publiée anonymement (« Auteur de la
+  liste », sans nom ni photo) ; un membre peut écrire sous **pseudonyme propre à chaque liste**
+  (HMAC du secret serveur, de la liste et du compte : « Balancier ambre 27 »). Stable dans une
+  discussion, différent d'une liste à l'autre, impossible à relier au compte sans le secret.
+  Choix **à chaque message**, avis comme réponse (case « Écrire anonymement », préremplie avec
+  le choix du dernier message). Remplace le choix fixé par liste (demande du 25 octobre) : rien ne
+  relie techniquement un pseudonyme aux messages signés du même compte ; seul le pseudonyme sort
+  du serveur. L'auteur d'une liste peut répondre sans son nom (« Auteur de la liste ») ; sur une
+  liste anonyme, il reste toujours anonyme.
+- **Réponses** : un niveau de discussion. Les messages de l'auteur de la liste portent partout
+  le badge « Auteur de la liste ». Un avis supprimé par son auteur laisse ses réponses en place.
+- **Plafonds de stockage** (Neon gratuit, 0,5 Go) : par compte 20 listes, 50 montres par liste,
+  30 messages par jour, 40 par liste, 500 au total ; 300 messages par liste (discussion close
+  au-delà) ; pour le site 20 000 listes, 200 000 montres en liste, 50 000 messages, soit environ
+  60 Mo au pire. Au-delà, création suspendue avec un message clair. À relever si on change
+  d'offre.
+
+## 2026-10-25 – Sélecteur de déclinaisons sur la fiche montre
+
+Comme sur les sites des marques, la fiche propose les déclinaisons du même modèle (cadran,
+boîtier, bracelet) en vignettes, et ses autres tailles en pastilles. Regroupement par la partie
+« modèle » de la référence, propre à chaque marque (`MODEL_KEYS` : `T137.407` chez Tissot,
+`L2.893` chez Longines, `H32705` chez Hamilton), plutôt que par le nom, écrit de façon irrégulière
+(« 42mm », « 42 mm », espaces doublés). Les tailles rapprochent les modèles de même nom une fois la
+taille retirée. Chaque choix est un lien vers sa propre fiche : rendu serveur, aucune URL nouvelle,
+chaque déclinaison reste indexable. Les pièces vintage (références sans motif) n'ont pas de
+sélecteur. Les déclinaisons déjà proposées sont retirées de « Autres modèles ».
+
 ## 2026-10-24 – Recherche et filtres communs au catalogue, aux marques et aux collections
 
 Un même composant serveur présente les résultats et la pagination dans les trois niveaux.

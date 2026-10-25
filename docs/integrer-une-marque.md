@@ -55,6 +55,23 @@ Pour une nouvelle marque :
 Les libellés et valeurs sont normalisés en Unicode NFC (certaines marques écrivent des accents
 décomposés) : écrire les libellés tels qu'ils s'affichent.
 
+### Déclinaisons d'un modèle (`packages/db/src/variants.ts`)
+
+La fiche propose les autres cadrans, matières et bracelets du même modèle, et ses autres tailles.
+Le regroupement lit la partie « modèle » de la référence : ajouter à `MODEL_KEYS` le motif de la
+marque (par exemple `H32705` pour `H32705141` chez Hamilton), avec un test dans `variants.test.ts`.
+Vérifier sur le site de la marque que deux références au même préfixe sont bien le même modèle.
+Sans motif, la marque n'a simplement pas de sélecteur.
+
+### Gammes officielles (`packages/db/src/collection-families.ts`)
+
+Relever sur le site de la marque comment elle regroupe ses collections (menu « Montres », pages
+de collection) et le reporter tel quel : nom de la gamme, page officielle, collections membres
+(slugs Aiguille), avec la source et la date. Ne créer aucune gamme que la marque ne présente pas :
+une marque à plat (Hamilton) est déclarée avec une liste vide. `complete: true` quand toute
+collection doit appartenir à une gamme ; le rapport de couverture liste alors les collections à
+rattacher, et pour toutes les marques les slugs devenus inconnus.
+
 ## 4. Renseigner les informations de marque (`packages/db/src/brand-info.ts`)
 
 Ce que les fiches ne donnent pas, **avec la page source et la date de vérification**. Pages à
@@ -84,7 +101,7 @@ docker compose run --rm tools npm run db:couverture   # ce qui manque encore
 docker compose run --rm tools npm run check
 ```
 
-Puis ouvrir quelques fiches : section « Technique, garantie et entretien » et « Aussi bien
+Puis ouvrir quelques fiches : section « Fiche technique » (dont « Garantie et entretien » et les conseils) et « Aussi bien
 équipées, pour moins cher ». Vérifier à la main 2 ou 3 alternatives proposées.
 
 ## 6. Documenter

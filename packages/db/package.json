@@ -10,7 +10,9 @@
     "./facts": "./src/facts.ts",
     "./brand-info": "./src/brand-info.ts",
     "./compare": "./src/compare.ts",
-    "./spec-sheet": "./src/spec-sheet.ts"
+    "./spec-sheet": "./src/spec-sheet.ts",
+    "./variants": "./src/variants.ts",
+    "./collection-families": "./src/collection-families.ts"
   },
   "scripts": {
     "generate": "drizzle-kit generate",

@@ -1,4 +1,6 @@
+import { familyOf } from "@aiguille/db/collection-families";
 import { reviewMean } from "@aiguille/db/rating";
+import { modelVariants } from "@aiguille/db/variants";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -6,6 +8,7 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { EuropePricesSection } from "@/components/europe-prices-section";
 import { OffersSection } from "@/components/offers-section";
+import { AddToList } from "@/components/add-to-list";
 import { AlternativesSection } from "@/components/alternatives-section";
 import { PriceHistorySection } from "@/components/price-history-section";
 import { SpecSheetSection } from "@/components/spec-sheet-section";
@@ -14,13 +17,16 @@ import { ScoreBadge } from "@/components/score-badge";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { WatchGrid } from "@/components/watch-card";
+import { VariantsPicker } from "@/components/variants-picker";
 import { WatchImage } from "@/components/watch-image";
 import { displayName, formatDate, formatPrice, watchSummary } from "@/lib/catalog/format";
 import { AVAILABILITY_LABELS, buildPriceHistory, currentOffers } from "@/lib/catalog/price-history";
 import { buildEuropePrices } from "@/lib/catalog/europe-prices";
 import {
   getAllWatchPaths,
+  getCollectionFamily,
   getCountryPrices,
+  type FamilyWatch,
   getLatestRates,
   getStoreCounts,
   getPriceObservations,
@@ -79,9 +85,16 @@ export default async function WatchPage({ params }: Props) {
   const showScore = features.score();
   const showReviews = features.reviews();
   const summary = watchSummary({ ...w, catalogPriceCents: w.priceCents });
+  const model = modelVariants<FamilyWatch>(
+    w.brandSlug,
+    w,
+    await getCollectionFamily(w.brandSlug, w.collectionSlug),
+  );
+  // Les déclinaisons déjà dans le sélecteur ne sont pas reproposées dans « Autres modèles ».
+  const shown = [...model.variants, ...model.sizes].map((v) => v.watch.slug);
   const [similar, observations, countryPrices, rates, storeCounts, rating, alternatives] =
     await Promise.all([
-      getSimilarWatches(w.id, w.brandSlug, w.collectionSlug, w.priceCents),
+      getSimilarWatches(w.id, w.brandSlug, w.collectionSlug, w.priceCents, shown),
       getPriceObservations(w.id),
       getCountryPrices(w.id, `${w.brandSlug}-officiel`),
       getLatestRates(),
@@ -104,6 +117,8 @@ export default async function WatchPage({ params }: Props) {
   // Statut de stock sur le site officiel (cahier des charges, lot 3 : « Disponibilité »).
   const availability = w.discontinued ? null : (history.current?.availability ?? "unknown");
   const collectionName = w.collectionName ?? "Autres modèles";
+  const collectionPath = `/montres/${w.brandSlug}/${w.collectionSlug}`;
+  const family = familyOf(w.brandSlug, w.collectionSlug);
 
   return (
     <div className="space-y-12">
@@ -131,10 +146,38 @@ export default async function WatchPage({ params }: Props) {
 
         <div className="space-y-6">
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Référence {w.reference}</p>
+            <p className="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
+              <Link href={`/montres/${w.brandSlug}`} className="underline-offset-4 hover:underline">
+                {w.brandName}
+              </Link>
+              {family && !sameName(family.name, collectionName) && (
+                <>
+                  <span aria-hidden>·</span>
+                  <Link
+                    href={`/montres/${w.brandSlug}#gamme-${family.slug}`}
+                    className="underline-offset-4 hover:underline"
+                  >
+                    Gamme {family.name}
+                  </Link>
+                </>
+              )}
+              <span aria-hidden>·</span>
+              <Link
+                href={collectionPath}
+                className="font-medium text-foreground underline underline-offset-4"
+              >
+                {w.collectionName ? `Collection ${w.collectionName}` : collectionName}
+              </Link>
+              <span aria-hidden>·</span>
+              <span>Référence {w.reference}</span>
+            </p>
             <h1 className="text-3xl font-semibold tracking-tight">{name}</h1>
             {w.discontinued && <Badge variant="secondary">Plus produite</Badge>}
           </div>
+
+          {features.community() && <AddToList watchId={w.id} />}
+
+          <VariantsPicker model={model} />
 
           {showScore && rating.score && (
             <a
@@ -239,9 +282,14 @@ export default async function WatchPage({ params }: Props) {
 
       {similar.length > 0 && (
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold tracking-tight">
-            Autres modèles {displayName(w.brandName, collectionName)}
-          </h2>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Autres modèles {displayName(w.brandName, collectionName)}
+            </h2>
+            <Link href={collectionPath} className="text-sm underline underline-offset-4">
+              Voir toute la collection
+            </Link>
+          </div>
           <WatchGrid watches={similar} />
         </section>
       )}
@@ -271,4 +319,10 @@ export default async function WatchPage({ params }: Props) {
       />
     </div>
   );
+}
+
+/** « PRX » et « PRX » : inutile de répéter la gamme quand elle porte le nom de la collection. */
+function sameName(a: string, b: string): boolean {
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return norm(a) === norm(b);
 }

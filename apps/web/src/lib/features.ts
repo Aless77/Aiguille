@@ -13,8 +13,11 @@ const isFalse = (value: string | undefined) => value === "false" || value === "0
  * - FEATURE_REVIEWS : avis de la communauté (fiche, formulaire, API, données structurées) et
  *   lien de connexion. **Affichés par défaut**, même sans la variable : masqués seulement avec
  *   « false ».
+ * - FEATURE_COMMUNITY : listes de souhaits, partage et page Communauté. **Affichées par défaut** :
+ *   masquées seulement avec « false » (les listes existantes restent en base).
  */
 export const features = {
   score: (env: Env = process.env) => isTrue(env.FEATURE_SCORE),
   reviews: (env: Env = process.env) => !isFalse(env.FEATURE_REVIEWS),
+  community: (env: Env = process.env) => !isFalse(env.FEATURE_COMMUNITY),
 };

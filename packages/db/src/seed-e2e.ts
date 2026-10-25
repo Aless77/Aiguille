@@ -11,6 +11,9 @@ import {
   stores,
   users,
   watches,
+  wishlistComments,
+  wishlistItems,
+  wishlists,
 } from "./schema.ts";
 
 /**
@@ -256,9 +259,60 @@ await db
     })),
   )
   .onConflictDoNothing();
+// Communauté : une liste publiée par Testeur 1 (identifiant d'URL fixe), avec un avis de Testeur 2.
+const [list] = await db
+  .insert(wishlists)
+  .values({
+    shareId: "e2etestz2345",
+    userId: "e2e-user-1",
+    title: "Ma sélection de test",
+    description: "Liste de démonstration pour les tests.",
+    visibility: "community",
+  })
+  .onConflictDoUpdate({ target: wishlists.shareId, set: { visibility: "community" } })
+  .returning({ id: wishlists.id });
+if (list) {
+  await db
+    .insert(wishlistItems)
+    .values({ wishlistId: list.id, watchId: reviewed.id })
+    .onConflictDoNothing();
+  await db.delete(wishlistComments).where(eq(wishlistComments.wishlistId, list.id));
+  const [first] = await db
+    .insert(wishlistComments)
+    .values({
+      wishlistId: list.id,
+      userId: "e2e-user-2",
+      watchId: reviewed.id,
+      body: "Bon choix, la finition est soignée pour le prix.",
+    })
+    .returning({ id: wishlistComments.id });
+  // Réponse de l'auteur de la liste, puis un avis sous pseudonyme (Testeur 3 reste caché).
+  await db.insert(wishlistComments).values([
+    {
+      wishlistId: list.id,
+      userId: "e2e-user-1",
+      parentId: first!.id,
+      body: "Merci pour le conseil !",
+    },
+    {
+      wishlistId: list.id,
+      userId: "e2e-user-3",
+      anonymous: true,
+      body: "Je préfère le cadran bleu, mais question de goût.",
+    },
+    {
+      wishlistId: list.id,
+      userId: "e2e-user-3",
+      parentId: first!.id,
+      anonymous: true,
+      body: "Réponse anonyme : d'accord sur la finition.",
+    },
+  ]);
+}
+
 const scored = await refreshScores(db);
 
 process.stdout.write(
-  `Seed e2e : ${fixtures.length + 2} montres de test, 3 boutiques, 3 avis, ${scored} notes.`,
+  `Seed e2e : ${fixtures.length + 2} montres de test, 3 boutiques, 3 avis, 1 liste, ${scored} notes.`,
 );
 await closeDb();

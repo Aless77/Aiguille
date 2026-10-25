@@ -53,6 +53,7 @@ jobs:
       # Même configuration au build et au démarrage (catalogue rendu à la requête).
       FEATURE_SCORE: "true"
       FEATURE_REVIEWS: "true"
+      FEATURE_COMMUNITY: "true"
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
