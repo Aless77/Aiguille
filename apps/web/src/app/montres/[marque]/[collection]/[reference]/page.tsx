@@ -8,6 +8,7 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { EuropePricesSection } from "@/components/europe-prices-section";
 import { OffersSection } from "@/components/offers-section";
+import { AddToList } from "@/components/add-to-list";
 import { AlternativesSection } from "@/components/alternatives-section";
 import { PriceHistorySection } from "@/components/price-history-section";
 import { SpecSheetSection } from "@/components/spec-sheet-section";
@@ -173,6 +174,8 @@ export default async function WatchPage({ params }: Props) {
             <h1 className="text-3xl font-semibold tracking-tight">{name}</h1>
             {w.discontinued && <Badge variant="secondary">Plus produite</Badge>}
           </div>
+
+          {features.community() && <AddToList watchId={w.id} />}
 
           <VariantsPicker model={model} />
 

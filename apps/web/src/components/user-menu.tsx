@@ -1,5 +1,6 @@
 "use client";
 
+import { Heart } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -10,7 +11,7 @@ import { authClient } from "@/lib/auth/client";
  * Lien de connexion ou compte connecté, dans l'en-tête. Lu côté navigateur : les pages restent
  * statiques et mises en cache, la session n'entre jamais dans le HTML serveur.
  */
-export function UserMenu() {
+export function UserMenu({ showLists = false }: { showLists?: boolean }) {
   const { data, isPending } = authClient.useSession();
   const pathname = usePathname();
   const router = useRouter();
@@ -33,6 +34,16 @@ export function UserMenu() {
   const { user } = data;
   return (
     <div className="flex items-center gap-2 text-sm">
+      {showLists && (
+        <Link
+          href="/listes"
+          className="text-muted-foreground hover:text-foreground"
+          aria-label="Mes listes de souhaits"
+          title="Mes listes de souhaits"
+        >
+          <Heart className="size-4" aria-hidden />
+        </Link>
+      )}
       <Link
         href="/compte"
         className="flex items-center gap-2 hover:text-foreground"

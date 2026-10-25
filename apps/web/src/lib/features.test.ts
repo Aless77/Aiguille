@@ -24,3 +24,12 @@ describe("features.reviews", () => {
     expect(features.reviews({ FEATURE_REVIEWS: "0" })).toBe(false);
   });
 });
+
+describe("features.community", () => {
+  it("est affichée par défaut et masquée seulement avec false ou 0", () => {
+    expect(features.community({})).toBe(true);
+    expect(features.community({ FEATURE_COMMUNITY: "true" })).toBe(true);
+    expect(features.community({ FEATURE_COMMUNITY: "false" })).toBe(false);
+    expect(features.community({ FEATURE_COMMUNITY: "0" })).toBe(false);
+  });
+});

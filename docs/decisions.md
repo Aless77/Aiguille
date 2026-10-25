@@ -21,6 +21,41 @@ pages en cache, pas de saut d'image, même repère visuel d'une visite à l'autr
 
 Le sélecteur de déclinaisons affiche une rangée de six vignettes, la suite étant repliée
 (« Voir les N autres déclinaisons »), la déclinaison ouverte restant toujours visible.
+## 2026-10-25 – Listes de souhaits et communauté
+
+Un compte peut créer des listes de souhaits (20 au plus, 50 montres chacune) depuis la fiche d'une
+montre (« Ajouter à une liste ») ou la page « Mes listes ». Trois visibilités : **privée** (par
+défaut), **partagée par lien** (lisible sans compte par qui a l'URL) et **publiée dans la
+communauté** (page /communaute, ouverte aux avis des membres). L'URL d'une liste porte un
+identifiant aléatoire de 12 caractères (environ 60 bits), jamais l'identifiant en base : une liste
+« par lien » ne peut pas être devinée. Migration `0007`.
+
+- **Forum** : /communaute liste les listes publiées, la plus récemment active en premier. Les
+  membres connectés y laissent un avis sur la liste ou sur l'une de ses montres. Mêmes garde-fous
+  que les avis de montres : connexion, Turnstile si configuré, liens refusés, plafonds détaillés
+  ci-dessous. L'auteur d'une liste masque les avis reçus ; chacun supprime les siens.
+- **Non indexé** (listes, communauté, « Mes listes ») : contenu des membres, modération encore
+  manuelle. À revoir quand le volume et la modération le justifieront.
+- **Cache** : chaque liste est en cache par son étiquette et invalidée immédiatement à chaque
+  modification (`expire: 0`). Les droits du visiteur (auteur, ses avis) sont lus côté navigateur.
+- **Interrupteur** `FEATURE_COMMUNITY` : affiché par défaut, masqué seulement avec « false ».
+- Suppression du compte : listes, montres des listes et commentaires effacés en cascade.
+- **Anonymat** (migration `0008`) : une liste peut être publiée anonymement (« Auteur de la
+  liste », sans nom ni photo) ; un membre peut écrire sous **pseudonyme propre à chaque liste**
+  (HMAC du secret serveur, de la liste et du compte : « Balancier ambre 27 »). Stable dans une
+  discussion, différent d'une liste à l'autre, impossible à relier au compte sans le secret.
+  Choix **à chaque message**, avis comme réponse (case « Écrire anonymement », préremplie avec
+  le choix du dernier message). Remplace le choix fixé par liste (demande du 25 octobre) : rien ne
+  relie techniquement un pseudonyme aux messages signés du même compte ; seul le pseudonyme sort
+  du serveur. L'auteur d'une liste peut répondre sans son nom (« Auteur de la liste ») ; sur une
+  liste anonyme, il reste toujours anonyme.
+- **Réponses** : un niveau de discussion. Les messages de l'auteur de la liste portent partout
+  le badge « Auteur de la liste ». Un avis supprimé par son auteur laisse ses réponses en place.
+- **Plafonds de stockage** (Neon gratuit, 0,5 Go) : par compte 20 listes, 50 montres par liste,
+  30 messages par jour, 40 par liste, 500 au total ; 300 messages par liste (discussion close
+  au-delà) ; pour le site 20 000 listes, 200 000 montres en liste, 50 000 messages, soit environ
+  60 Mo au pire. Au-delà, création suspendue avec un message clair. À relever si on change
+  d'offre.
 
 ## 2026-10-25 – Sélecteur de déclinaisons sur la fiche montre
 

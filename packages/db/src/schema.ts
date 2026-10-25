@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   check,
   index,
@@ -8,6 +9,7 @@ import {
   numeric,
   pgEnum,
   pgTable,
+  primaryKey,
   serial,
   smallint,
   text,
@@ -426,3 +428,91 @@ export const calibers = pgTable(
 export type Caliber = typeof calibers.$inferSelect;
 
 export type WatchScoreRow = typeof watchScores.$inferSelect;
+
+// ── Listes de souhaits et communauté ───────────────────────────────────────────────────────
+
+/**
+ * Visibilité d'une liste : privée (son auteur seulement), partagée par son lien (toute personne
+ * qui a l'URL, sans compte) ou publiée dans la communauté (/communaute, ouverte aux avis).
+ */
+export const wishlistVisibility = pgEnum("wishlist_visibility", ["private", "link", "community"]);
+
+/**
+ * Liste de souhaits d'un compte. `shareId` aléatoire et non devinable : c'est lui qui figure dans
+ * l'URL publique (/listes/{shareId}), jamais l'identifiant numérique. Supprimée avec le compte.
+ */
+export const wishlists = pgTable(
+  "wishlists",
+  {
+    id: serial("id").primaryKey(),
+    shareId: text("share_id").notNull().unique(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    description: text("description"),
+    visibility: wishlistVisibility("visibility").notNull().default("private"),
+    /** Publiée sans nom ni photo : l'auteur apparaît comme « Auteur de la liste ». */
+    anonymous: boolean("anonymous").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    /** Dernière activité (modification, montre ajoutée, avis) : tri du forum. */
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("wishlists_user_idx").on(t.userId),
+    index("wishlists_visibility_updated_idx").on(t.visibility, t.updatedAt),
+  ],
+);
+
+export type Wishlist = typeof wishlists.$inferSelect;
+
+export const wishlistItems = pgTable(
+  "wishlist_items",
+  {
+    wishlistId: integer("wishlist_id")
+      .notNull()
+      .references(() => wishlists.id, { onDelete: "cascade" }),
+    watchId: integer("watch_id")
+      .notNull()
+      .references(() => watches.id, { onDelete: "cascade" }),
+    addedAt: timestamp("added_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.wishlistId, t.watchId] }),
+    index("wishlist_items_watch_idx").on(t.watchId),
+  ],
+);
+
+/**
+ * Avis laissé sur une liste partagée, sur la liste entière ou sur l'une de ses montres. Masqué
+ * (et non supprimé) quand l'auteur de la liste le retire ; supprimé avec le compte de son auteur.
+ */
+export const wishlistComments = pgTable(
+  "wishlist_comments",
+  {
+    id: serial("id").primaryKey(),
+    wishlistId: integer("wishlist_id")
+      .notNull()
+      .references(() => wishlists.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    watchId: integer("watch_id").references(() => watches.id, { onDelete: "set null" }),
+    body: text("body").notNull(),
+    /** Affiché sous un pseudonyme propre à la liste (le compte reste connu du site seul). */
+    anonymous: boolean("anonymous").notNull().default(false),
+    /** Réponse à un avis (un seul niveau) ; supprimée avec lui. */
+    parentId: integer("parent_id").references((): AnyPgColumn => wishlistComments.id, {
+      onDelete: "cascade",
+    }),
+    status: reviewStatus("status").notNull().default("published"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("wishlist_comments_list_idx").on(t.wishlistId, t.createdAt),
+    index("wishlist_comments_user_idx").on(t.userId, t.createdAt),
+    index("wishlist_comments_parent_idx").on(t.parentId),
+  ],
+);
+
+export type WishlistComment = typeof wishlistComments.$inferSelect;
