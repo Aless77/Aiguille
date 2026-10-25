@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import { Link, useLocalePath } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { CountryField } from "@/components/country-field";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/client";
 
@@ -13,6 +14,7 @@ type DeleteState = "idle" | "confirm" | "pending" | "stale" | "failed";
 export function AccountPanel() {
   const { data, isPending } = authClient.useSession();
   const router = useRouter();
+  const localize = useLocalePath();
   const [state, setState] = useState<DeleteState>("idle");
 
   if (isPending) return <p className="text-muted-foreground">Chargement…</p>;
@@ -34,7 +36,7 @@ export function AccountPanel() {
     setState("pending");
     const { error } = await authClient.deleteUser({ callbackURL: "/" });
     if (!error) {
-      router.push("/");
+      router.push(localize("/"));
       router.refresh();
       return;
     }
@@ -44,7 +46,7 @@ export function AccountPanel() {
 
   async function reconnect() {
     await authClient.signOut();
-    router.push("/connexion?retour=%2Fcompte");
+    router.push(localize(`/connexion?retour=${encodeURIComponent(localize("/compte"))}`));
   }
 
   return (
@@ -63,6 +65,11 @@ export function AccountPanel() {
           Le nom et la photo viennent du service utilisé pour vous connecter (GitHub ou Google),
           tels qu&apos;ils étaient lors de la création du compte.
         </p>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold tracking-tight">Pays de provenance</h2>
+        <CountryField value={user.country} />
       </section>
 
       <section className="space-y-3">

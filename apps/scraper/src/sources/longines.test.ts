@@ -2,7 +2,7 @@ import { load } from "cheerio";
 import { describe, expect, it } from "vitest";
 
 import { listingSchema } from "../lib/listing.ts";
-import { parseLongines } from "./longines.ts";
+import { parseLongines, translateLongines } from "./longines.ts";
 
 const URL = "https://www.longines.com/fr/p/watch-longines-spirit-pilot-l3-809-4-93-9";
 const KEY = `"fr","watch-longines-spirit-pilot-l3-809-4-93-9",`;
@@ -145,6 +145,41 @@ describe("parseLongines", () => {
         load(html({ mvt_fct_type: "112" })),
         "https://www.longines.com/fr/p/strap-l682101234",
       ),
+    ).toBeNull();
+  });
+});
+
+describe("translateLongines", () => {
+  it("relie chaque libellé français de rawSpecs à son code d'attribut (pivot)", () => {
+    const $ = load(html({ mvt_fct_type: "112" }));
+    const listing = parseLongines($, URL);
+    const fr = translateLongines($, URL);
+    expect(fr?.specs.case_material).toEqual({ label: "Boîtier · Matière", value: "Acier" });
+    for (const { label, value } of Object.values(fr?.specs ?? {})) {
+      expect(listing?.rawSpecs[label]).toBe(value);
+    }
+    expect(fr?.name).toBe("Longines Spirit Pilot 39 mm");
+  });
+
+  it("lit une version nationale avec ses libellés et valeurs, par les mêmes codes", () => {
+    const german = html({ mvt_fct_type: "112" })
+      .replaceAll('"fr"', '"de"')
+      .replace(
+        '"Matière","attribute_options":[{"label":"Acier"',
+        '"Material","attribute_options":[{"label":"Edelstahl"',
+      );
+    const de = translateLongines(
+      load(german),
+      "https://www.longines.com/de/p/watch-longines-spirit-pilot-l3-809-4-93-9",
+    );
+    expect(de?.specs.case_material).toEqual({ label: "Gehäuse · Material", value: "Edelstahl" });
+    expect(de?.fields.caseMaterial).toBe("Edelstahl");
+  });
+
+  it("ignore les pages qui ne sont pas des fiches montres", () => {
+    expect(translateLongines(load(html({})), URL)).toBeNull();
+    expect(
+      translateLongines(load(html({ mvt_fct_type: "112" })), "https://example.com"),
     ).toBeNull();
   });
 });

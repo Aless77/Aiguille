@@ -1,7 +1,7 @@
 "use client";
 
 import { REVIEW_CRITERIA, type ReviewCriterion } from "@aiguille/db/rating";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 

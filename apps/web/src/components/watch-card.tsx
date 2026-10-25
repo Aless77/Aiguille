@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/client";
 
 import { Badge } from "@/components/ui/badge";
 import { displayName, formatPrice, MOVEMENT_LABELS } from "@/lib/catalog/format";

@@ -52,6 +52,11 @@ code Next, lisez le guide correspondant dans `node_modules/next/dist/docs/` (dan
 `"use cache"` avec `cacheLife`/`cacheTag`. Les lectures du catalogue sont dans
 `apps/web/src/lib/catalog/queries.ts` (profil `hours`, étiquette `catalog`).
 
+Langues : toutes les pages sont sous `apps/web/src/app/[lang]` (français sans préfixe, réécrit par
+`proxy.ts`). Liens internes avec `Link` de `@/lib/i18n/client` (jamais `next/link`), écrits sans
+préfixe ; textes affichés tirés de `getDictionary()` (`lib/i18n/dictionaries`, français et anglais
+complets). Voir docs/decisions.md (25 octobre 2026).
+
 Pages dynamiques indexables (marque, collection, fiche) : même gabarit partout.
 
 - `generateStaticParams` renvoie toutes les pages connues, via `withPlaceholder` (base vide = build OK).

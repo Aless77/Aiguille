@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   // rendue de façon bloquante et renvoie un vrai 404. Toutes nos pages étant prérendues, leurs
   // liens restent préchargés normalement. Vérifié par e2e/catalogue.spec.ts.
   partialPrefetching: false,
+  // Pages sous app/[lang] (langues) : 404 autonome pour les adresses sans page correspondante.
+  experimental: { globalNotFound: true },
   // Docker Desktop (Windows/macOS) ne transmet pas les événements fichiers au conteneur : sans
   // sondage, le rechargement à chaud ne voit pas les modifications. Activé par compose.yaml
   // uniquement (coûteux en CPU, déconseillé ailleurs ; voir docs/developpement.md).

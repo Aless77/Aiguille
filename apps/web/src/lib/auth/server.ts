@@ -1,4 +1,6 @@
 import { accounts, getDb, refreshScores, sessions, users, verifications } from "@aiguille/db";
+import { isCountryAnswer } from "@aiguille/db/countries";
+import { APIError } from "better-auth/api";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { revalidateTag } from "next/cache";
@@ -7,6 +9,13 @@ import { getSiteUrl } from "@/lib/site";
 import { COMMUNITY_TAG, LISTS_TAG } from "@/lib/wishlists/queries";
 
 import { configuredProviders } from "./providers";
+
+function checkCountry<T extends Record<string, unknown>>(user: T) {
+  if (user.country != null && !isCountryAnswer(user.country)) {
+    throw new APIError("BAD_REQUEST", { message: "Pays inconnu" });
+  }
+  return { data: user };
+}
 
 function createAuth() {
   return betterAuth({
@@ -26,6 +35,10 @@ function createAuth() {
     // Ses avis, listes et commentaires partent avec le compte (suppression en cascade) : notes
     // recalculées, pages de listes vidées.
     user: {
+      // Pays de provenance (jamais d'adresse), modifiable par l'utilisateur sur /compte.
+      additionalFields: {
+        country: { type: "string", required: false, input: true },
+      },
       deleteUser: {
         enabled: true,
         afterDelete: async () => {
@@ -35,6 +48,13 @@ function createAuth() {
           revalidateTag(LISTS_TAG, { expire: 0 });
           revalidateTag(COMMUNITY_TAG, { expire: 0 });
         },
+      },
+    },
+    databaseHooks: {
+      user: {
+        // Seul un code pays ISO (ou « ne pas le dire ») est accepté : pas de texte libre.
+        create: { before: async (user) => checkCountry(user) },
+        update: { before: async (user) => checkCountry(user) },
       },
     },
     session: {

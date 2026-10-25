@@ -1,4 +1,4 @@
-import { type Database } from "@aiguille/db";
+import { COUNTRY_LANGUAGES, type Database } from "@aiguille/db";
 import { type CheerioAPI } from "cheerio";
 import { z } from "zod";
 
@@ -94,6 +94,12 @@ export async function runCountryPrices(
         if (response.statusCode === 404 || response.statusCode === 410) {
           stats.notSold++;
           return;
+        }
+        // La version nationale sert aussi de traduction de la fiche (même requête, aucune de plus).
+        const language = COUNTRY_LANGUAGES[country];
+        const translation = language ? adapter.translate?.($, request.url) : null;
+        if (language && translation) {
+          await persister.saveTranslation(watchId, language, translation, request.url);
         }
         const price = parseCountryPrice($, country);
         if (!price) {

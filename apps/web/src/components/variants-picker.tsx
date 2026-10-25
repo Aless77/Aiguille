@@ -1,13 +1,13 @@
 import { type ModelVariants, type Variant } from "@aiguille/db/variants";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/client";
 
 import { WatchImage } from "@/components/watch-image";
 import { formatPrice } from "@/lib/catalog/format";
 import { type FamilyWatch } from "@/lib/catalog/queries";
 import { watchPath } from "@/lib/catalog/types";
+import { type Dictionary, format } from "@/lib/i18n/dictionary";
 import { cn } from "@/lib/utils";
 
-const sizeFormat = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 });
 /** Une rangée de vignettes ; les suivantes sont repliées pour ne pas noyer la fiche. */
 const VISIBLE_VARIANTS = 6;
 
@@ -16,7 +16,23 @@ const VISIBLE_VARIANTS = 6;
  * autres cadrans, matières ou bracelets (packages/db/src/variants.ts). Chaque choix est un lien
  * vers sa propre fiche : rendu serveur, sans JavaScript, et chaque déclinaison reste indexable.
  */
-export function VariantsPicker({ model }: { model: ModelVariants<FamilyWatch> }) {
+type Texts = Dictionary["variants"];
+
+/** Libellé traduit d'une déclinaison : « Cadran Bleu · Bracelet Cuir ». */
+function variantLabel(v: Variant<FamilyWatch>, t: Texts): string {
+  return v.parts.map((p) => `${t[p.field]} ${p.value}`).join(" · ") || v.watch.reference;
+}
+
+export function VariantsPicker({
+  model,
+  t,
+  locale,
+}: {
+  model: ModelVariants<FamilyWatch>;
+  t: Texts;
+  locale: string;
+}) {
+  const sizeFormat = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
   const { variants, sizes } = model;
   if (variants.length === 0 && sizes.length === 0) return null;
   const current = variants.find((v) => v.current);
@@ -26,10 +42,10 @@ export function VariantsPicker({ model }: { model: ModelVariants<FamilyWatch> })
   const hidden = variants.filter((v) => !visible.includes(v));
 
   return (
-    <div className="space-y-4" aria-label="Déclinaisons de ce modèle" role="group">
+    <div className="space-y-4" aria-label={t.label} role="group">
       {sizes.length > 0 && (
         <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">Taille du boîtier</p>
+          <p className="text-sm text-muted-foreground">{t.caseSize}</p>
           <ul className="flex flex-wrap gap-2">
             {sizes.map((s) => (
               <li key={s.diameterMm}>
@@ -54,24 +70,24 @@ export function VariantsPicker({ model }: { model: ModelVariants<FamilyWatch> })
       {variants.length > 0 && (
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground">
-            {variants.length} déclinaisons
+            {format(t.count, { count: variants.length })}
             {current && (
               <>
                 {" "}
-                · <span className="text-foreground">{current.label}</span>
+                · <span className="text-foreground">{variantLabel(current, t)}</span>
               </>
             )}
           </p>
-          <VariantGrid variants={visible} />
+          <VariantGrid variants={visible} t={t} locale={locale} />
           {hidden.length > 0 && (
             <details className="group">
               <summary className="cursor-pointer text-sm underline underline-offset-4 group-open:mb-2">
                 <span className="group-open:hidden">
-                  Voir les {hidden.length} autres déclinaisons
+                  {format(t.showMore, { count: hidden.length })}
                 </span>
-                <span className="hidden group-open:inline">Masquer</span>
+                <span className="hidden group-open:inline">{t.hide}</span>
               </summary>
-              <VariantGrid variants={hidden} />
+              <VariantGrid variants={hidden} t={t} locale={locale} />
             </details>
           )}
         </div>
@@ -80,14 +96,22 @@ export function VariantsPicker({ model }: { model: ModelVariants<FamilyWatch> })
   );
 }
 
-function VariantGrid({ variants }: { variants: Variant<FamilyWatch>[] }) {
+function VariantGrid({
+  variants,
+  t,
+  locale,
+}: {
+  variants: Variant<FamilyWatch>[];
+  t: Texts;
+  locale: string;
+}) {
   return (
     <ul className="grid max-w-md grid-cols-6 gap-2">
       {variants.map((v) => {
         const description = [
-          v.label,
-          formatPrice(v.watch.priceCents),
-          v.watch.discontinued ? "plus produite" : null,
+          variantLabel(v, t),
+          formatPrice(v.watch.priceCents, locale),
+          v.watch.discontinued ? t.discontinued : null,
         ]
           .filter(Boolean)
           .join(", ");
