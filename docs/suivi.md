@@ -53,6 +53,10 @@ Reste pour boucler le lot 4 :
   cher » (685 montres avec au moins une alternative). Registre sourcé `brand-info.ts`, rapport
   `npm run db:couverture`, procédure [integrer-une-marque.md](integrer-une-marque.md).
   Migration `0006`.
+- **Listes de souhaits et communauté** : listes privées, partagées par lien ou publiées sur
+  /communaute avec avis et réponses des membres, anonymat possible, plafonds de stockage ;
+  migrations `0007` et `0008` à appliquer en production (collecte
+  `limit 1` ou build Vercel).
 - **Déclinaisons** : sélecteur de cadrans, matières, bracelets et tailles du même modèle sur la
   fiche (Tissot, Longines, Hamilton), regroupé par la référence (`variants.ts`), une rangée
   visible et la suite repliée.

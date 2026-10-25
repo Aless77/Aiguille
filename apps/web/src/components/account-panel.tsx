@@ -68,7 +68,8 @@ export function AccountPanel() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold tracking-tight">Supprimer mon compte</h2>
         <p className="text-sm">
-          Votre profil, vos sessions et vos avis sont effacés immédiatement et définitivement.
+          Votre profil, vos sessions, vos avis, vos listes de souhaits et vos commentaires sont
+          effacés immédiatement et définitivement.
         </p>
         {state === "idle" && (
           <Button variant="destructive" onClick={() => setState("confirm")}>

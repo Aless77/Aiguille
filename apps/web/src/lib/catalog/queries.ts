@@ -52,7 +52,7 @@ function cached() {
   cacheTag("catalog");
 }
 
-const cardColumns = {
+export const cardColumns = {
   slug: watches.slug,
   reference: watches.reference,
   name: watches.name,

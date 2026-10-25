@@ -18,15 +18,29 @@ export async function SiteHeader() {
           {siteConfig.name}
         </Link>
         <nav aria-label="Navigation principale" className="flex items-center gap-4 text-sm">
-          <Link href="/montres" className="text-muted-foreground hover:text-foreground">
+          <Link
+            href="/montres"
+            className="whitespace-nowrap text-muted-foreground hover:text-foreground"
+          >
             Toutes les montres
           </Link>
-          <Link href="/nouveautes" className="text-muted-foreground hover:text-foreground">
+          <Link
+            href="/nouveautes"
+            className="whitespace-nowrap text-muted-foreground hover:text-foreground"
+          >
             Nouveautés
           </Link>
+          {features.community() && (
+            <Link
+              href="/communaute"
+              className="hidden whitespace-nowrap text-muted-foreground hover:text-foreground md:inline"
+            >
+              Communauté
+            </Link>
+          )}
           <Link
             href="/boutiques"
-            className="hidden text-muted-foreground hover:text-foreground md:inline"
+            className="hidden whitespace-nowrap text-muted-foreground hover:text-foreground md:inline"
           >
             Boutiques
           </Link>
@@ -34,7 +48,7 @@ export async function SiteHeader() {
             <Link
               key={b.slug}
               href={`/montres/${b.slug}`}
-              className="hidden text-muted-foreground hover:text-foreground sm:inline"
+              className="hidden whitespace-nowrap text-muted-foreground hover:text-foreground sm:inline"
             >
               {b.name}
             </Link>
@@ -42,8 +56,10 @@ export async function SiteHeader() {
         </nav>
         <div className="ml-auto flex items-center gap-3">
           <ThemeToggle />
-          {/* Un compte ne sert qu'à donner son avis : lien masqué tant que les avis le sont. */}
-          {features.reviews() && <UserMenu />}
+          {/* Un compte sert aux avis et aux listes : lien masqué si les deux le sont. */}
+          {(features.reviews() || features.community()) && (
+            <UserMenu showLists={features.community()} />
+          )}
         </div>
       </div>
     </header>

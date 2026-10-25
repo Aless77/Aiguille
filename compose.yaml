@@ -98,6 +98,7 @@ services:
       # Notation masquée en production mais testée : les e2e la voient (lib/features.ts).
       FEATURE_SCORE: "true"
       FEATURE_REVIEWS: "true"
+      FEATURE_COMMUNITY: "true"
     command: sh -c "npm run build -w @aiguille/web && npm run start -w @aiguille/web -- --hostname 0.0.0.0"
     healthcheck:
       # 127.0.0.1 et non localhost : sous Alpine, localhost se résout en IPv6, où Next n'écoute pas.

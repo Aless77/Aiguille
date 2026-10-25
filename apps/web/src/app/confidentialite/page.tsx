@@ -25,7 +25,10 @@ export default function PrivacyPage() {
         <h2 className={titleClass}>En bref</h2>
         <ul className="list-disc space-y-1 pl-6">
           <li>Consulter le site ne demande aucun compte et ne dépose aucun traceur.</li>
-          <li>Un compte sert uniquement à donner votre avis sur les montres.</li>
+          <li>
+            Un compte sert uniquement à donner votre avis sur les montres et à tenir vos listes de
+            souhaits.
+          </li>
           <li>Nous ne vendons, ne louons ni ne partageons aucune donnée. Aucune publicité.</li>
           <li>Vous pouvez supprimer votre compte vous-même, à tout moment.</li>
         </ul>
@@ -51,6 +54,16 @@ export default function PrivacyPage() {
           avec votre nom et votre photo de profil, sur la fiche de la montre.
         </p>
         <p>
+          Vos listes de souhaits (nom, description, montres choisies) sont privées par défaut. Si
+          vous choisissez de les partager par lien ou de les publier dans la communauté, elles
+          deviennent visibles avec votre nom et votre photo de profil, comme les messages que vous
+          laissez sur les listes des autres membres. Vous pouvez aussi publier une liste ou écrire
+          anonymement : les autres membres voient alors « Auteur de la liste » ou un pseudonyme
+          propre à chaque liste (par exemple « Balancier ambre 27 »), jamais votre nom ni votre
+          photo, et ne peuvent pas relier vos messages d&apos;une liste à l&apos;autre. Le message
+          reste rattaché à votre compte côté site, pour lutter contre les abus.
+        </p>
+        <p>
           Nous n&apos;envoyons aucun e-mail et ne demandons aucun accès à vos dépôts GitHub ni à vos
           données Google au-delà de votre profil.
         </p>
@@ -72,8 +85,9 @@ export default function PrivacyPage() {
           <li>Session : 30 jours au plus, effacée à la déconnexion.</li>
           <li>Compte : tant que vous ne le supprimez pas.</li>
           <li>
-            À la suppression du compte, vos données de profil, vos sessions et vos avis sont effacés
-            immédiatement. Vous pouvez aussi supprimer un seul avis depuis la fiche.
+            À la suppression du compte, vos données de profil, vos sessions, vos avis, vos listes et
+            vos commentaires sont effacés immédiatement. Vous pouvez aussi supprimer un seul avis
+            depuis la fiche, une liste depuis « Mes listes » et un commentaire depuis la liste.
           </li>
         </ul>
       </section>

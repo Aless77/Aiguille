@@ -4,6 +4,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { revalidateTag } from "next/cache";
 
 import { getSiteUrl } from "@/lib/site";
+import { COMMUNITY_TAG, LISTS_TAG } from "@/lib/wishlists/queries";
 
 import { configuredProviders } from "./providers";
 
@@ -22,13 +23,17 @@ function createAuth() {
     socialProviders: configuredProviders(),
     // Suppression du compte en libre-service (page /compte, droit à l'effacement du RGPD).
     // Better Auth l'exige sur une session récente (moins d'un jour) ; sinon, se reconnecter.
-    // Ses avis partent avec le compte (suppression en cascade) : notes recalculées.
+    // Ses avis, listes et commentaires partent avec le compte (suppression en cascade) : notes
+    // recalculées, pages de listes vidées.
     user: {
       deleteUser: {
         enabled: true,
         afterDelete: async () => {
           await refreshScores(getDb());
           revalidateTag("catalog", "max");
+          // Ses listes et commentaires disparaissent aussitôt des pages publiques.
+          revalidateTag(LISTS_TAG, { expire: 0 });
+          revalidateTag(COMMUNITY_TAG, { expire: 0 });
         },
       },
     },
