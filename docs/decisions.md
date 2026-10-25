@@ -21,6 +21,7 @@ pages en cache, pas de saut d'image, même repère visuel d'une visite à l'autr
 
 Le sélecteur de déclinaisons affiche une rangée de six vignettes, la suite étant repliée
 (« Voir les N autres déclinaisons »), la déclinaison ouverte restant toujours visible.
+
 ## 2026-10-25 – Listes de souhaits et communauté
 
 Un compte peut créer des listes de souhaits (20 au plus, 50 montres chacune) depuis la fiche d'une
