@@ -7,25 +7,14 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
-import { MOVEMENT_LABELS } from "@/lib/catalog/format";
+import { localize } from "@aiguille/db/i18n";
 import { type Facets } from "@/lib/catalog/queries";
 import { catalogParsers, catalogRange } from "@/lib/catalog/search-params";
-import {
-  type Sort,
-  type FacetOption,
-  TECHNICAL_FILTER_KEYS,
-  TECHNICAL_FILTER_LABELS,
-} from "@/lib/catalog/types";
+import { type Sort, type FacetOption, TECHNICAL_FILTER_KEYS } from "@/lib/catalog/types";
+import { useLocale } from "@/lib/i18n/client";
+import { format } from "@/lib/i18n/dictionary";
 import { cn } from "@/lib/utils";
 
-const SORT_LABELS: Record<Sort, string> = {
-  "prix-asc": "Prix croissant",
-  "prix-desc": "Prix décroissant",
-  note: "Meilleure Note Aiguille",
-  avis: "Mieux notées par la communauté",
-  nom: "Nom",
-  recents: "Plus récents",
-};
 const inputClass =
   "h-9 min-w-0 w-full rounded-lg border border-input bg-background px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
@@ -39,6 +28,11 @@ export function CatalogFilters({
   hiddenSorts?: Sort[];
   scoped?: boolean;
 }) {
+  const { locale, dict } = useLocale();
+  const c = dict.catalog;
+  const t = c.filters;
+  // Libellés de choix : complications traduites par packages/db, le reste par le dictionnaire.
+  const facetLabel = (label: string) => c.facets[label] ?? localize(label, locale);
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const [params, setParams] = useQueryStates(catalogParsers, { shallow: false, startTransition });
@@ -68,7 +62,7 @@ export function CatalogFilters({
   return (
     <div aria-busy={isPending} className="flex flex-col gap-5">
       <label className="flex flex-col gap-2 text-sm">
-        <span className="font-medium">Rechercher une montre</span>
+        <span className="font-medium">{t.search}</span>
         <span className="relative">
           <Search
             className="pointer-events-none absolute top-2.5 left-2.5 size-4 text-muted-foreground"
@@ -77,7 +71,7 @@ export function CatalogFilters({
           <input
             type="search"
             className={cn(inputClass, "pl-8")}
-            placeholder="Nom ou référence"
+            placeholder={t.searchPlaceholder}
             maxLength={120}
             value={params.recherche}
             onChange={(e) =>
@@ -85,9 +79,7 @@ export function CatalogFilters({
             }
           />
         </span>
-        <span className="text-xs text-muted-foreground">
-          Une référence avec ou sans points et tirets.
-        </span>
+        <span className="text-xs text-muted-foreground">{t.searchHint}</span>
       </label>
       <Button
         variant="outline"
@@ -97,14 +89,15 @@ export function CatalogFilters({
         onClick={() => setOpen((o) => !o)}
       >
         <SlidersHorizontal aria-hidden />
-        Filtres{activeCount > 0 && ` (${activeCount})`}
+        {t.toggle}
+        {activeCount > 0 && ` (${activeCount})`}
       </Button>
       <div
         id="filtres-catalogue"
         className={cn("flex-col gap-6 lg:flex", open ? "flex" : "hidden")}
       >
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-sm font-medium">Mouvement</legend>
+          <legend className="mb-2 text-sm font-medium">{t.movement}</legend>
           {facets.movements.map((m) => (
             <label key={m.value} className="flex items-center gap-2 text-sm">
               <Checkbox
@@ -113,7 +106,7 @@ export function CatalogFilters({
                   update({ mouvement: toggle(params.mouvement, m.value, on) })
                 }
               />
-              {MOVEMENT_LABELS[m.value]}
+              {c.movements[m.value]}
               <span className="text-muted-foreground">({m.count})</span>
             </label>
           ))}
@@ -121,8 +114,9 @@ export function CatalogFilters({
         {/* À l'ouverture mobile, remesurer les curseurs initialisés dans le panneau masqué. */}
         <RangeFilter
           key={`prix-${open}-${params.prixMin}-${params.prixMax}`}
-          title="Prix (€)"
-          unit="euros"
+          title={t.price}
+          name={t.priceName}
+          unit={t.euros}
           min={facets.priceMinCents === null ? 0 : Math.floor(facets.priceMinCents / 100)}
           max={facets.priceMaxCents === null ? 1000 : Math.ceil(facets.priceMaxCents / 100)}
           low={params.prixMin}
@@ -132,8 +126,9 @@ export function CatalogFilters({
         />
         <RangeFilter
           key={`diametre-${open}-${params.diametreMin}-${params.diametreMax}`}
-          title="Diamètre du boîtier (mm)"
-          unit="millimètres"
+          title={t.diameter}
+          name={t.diameterName}
+          unit={t.millimetres}
           min={Math.floor(facets.diameterMinMm ?? 20)}
           max={Math.ceil(facets.diameterMaxMm ?? 50)}
           low={params.diametreMin}
@@ -142,13 +137,13 @@ export function CatalogFilters({
           onCommit={(diametreMin, diametreMax) => update({ diametreMin, diametreMax })}
         />
         <label className="flex flex-col gap-2 text-sm">
-          <span className="font-medium">Trier par</span>
+          <span className="font-medium">{t.sortBy}</span>
           <select
             className={inputClass}
             value={params.tri}
             onChange={(e) => update({ tri: e.target.value as Sort })}
           >
-            {(Object.entries(SORT_LABELS) as [Sort, string][])
+            {(Object.entries(c.sorts) as [Sort, string][])
               .filter(([value]) => !hiddenSorts.includes(value))
               .map(([value, label]) => (
                 <option key={value} value={value}>
@@ -159,7 +154,7 @@ export function CatalogFilters({
         </label>
         {!scoped && (
           <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 text-sm font-medium">Marque</legend>
+            <legend className="mb-2 text-sm font-medium">{t.brand}</legend>
             {facets.brands.map((b) => (
               <label key={b.slug} className="flex items-center gap-2 text-sm">
                 <Checkbox
@@ -174,18 +169,18 @@ export function CatalogFilters({
         )}
         <details className="rounded-lg border p-3">
           <summary className="cursor-pointer text-sm font-medium">
-            Plus de filtres{advancedCount > 0 && ` (${advancedCount})`}
+            {t.more}
+            {advancedCount > 0 && ` (${advancedCount})`}
           </summary>
           <div className="mt-4 flex flex-col gap-5">
-            <p className="text-xs text-muted-foreground">
-              Caractéristiques publiées uniquement. Plusieurs choix possibles dans chaque rubrique.
-            </p>
+            <p className="text-xs text-muted-foreground">{t.moreHint}</p>
             {TECHNICAL_FILTER_KEYS.map(
               (key) =>
                 facets.technical[key].length > (key === "collection" ? 1 : 0) && (
                   <FacetChecklist
                     key={key}
-                    title={TECHNICAL_FILTER_LABELS[key]}
+                    title={c.technical[key]}
+                    labelOf={facetLabel}
                     options={facets.technical[key]}
                     selected={params[key]}
                     onChange={(value, checked) =>
@@ -195,35 +190,44 @@ export function CatalogFilters({
                 ),
             )}
             <NumberChoice
-              label="Étanchéité minimale"
+              label={t.water}
+              anyLabel={t.any}
               value={params.etancheiteMin}
               choices={[30, 50, 100, 200, 300, 500, 1000].map((value) => [
                 value,
-                `${value} m ou plus`,
+                format(t.waterChoice, { n: value }),
               ])}
               onChange={(etancheiteMin) => update({ etancheiteMin })}
             />
             <NumberChoice
-              label="Réserve de marche minimale"
+              label={t.reserve}
+              anyLabel={t.any}
               value={params.reserveMin}
-              choices={[24, 40, 60, 80, 120].map((value) => [value, `${value} h ou plus`])}
+              choices={[24, 40, 60, 80, 120].map((value) => [
+                value,
+                format(t.reserveChoice, { n: value }),
+              ])}
               onChange={(reserveMin) => update({ reserveMin })}
             />
             <NumberChoice
-              label="Garantie internationale minimale"
+              label={t.warranty}
+              anyLabel={t.any}
               value={params.garantieMin}
-              choices={[24, 36, 60].map((value) => [value, `${value / 12} ans ou plus`])}
+              choices={[24, 36, 60].map((value) => [
+                value,
+                format(t.warrantyChoice, { n: value / 12 }),
+              ])}
               onChange={(garantieMin) => update({ garantieMin })}
             />
             <label className="flex flex-col gap-2 text-sm">
-              Épaisseur maximale (mm)
+              {t.thickness}
               <input
                 className={inputClass}
                 type="number"
                 min={0}
                 step={0.1}
                 inputMode="decimal"
-                placeholder="Toutes"
+                placeholder={t.any}
                 key={`epaisseur-${params.epaisseurMax}`}
                 defaultValue={params.epaisseurMax ?? ""}
                 onBlur={(e) =>
@@ -235,14 +239,14 @@ export function CatalogFilters({
               />
             </label>
             <label className="flex flex-col gap-2 text-sm">
-              Entre-cornes (mm)
+              {t.lugWidth}
               <input
                 className={inputClass}
                 type="number"
                 min={0}
                 step={0.1}
                 inputMode="decimal"
-                placeholder="Toutes"
+                placeholder={t.any}
                 key={`entrecornes-${params.entrecornes}`}
                 defaultValue={params.entrecornes ?? ""}
                 onBlur={(e) =>
@@ -254,7 +258,7 @@ export function CatalogFilters({
               />
             </label>
             <label className="flex flex-col gap-2 text-sm">
-              Production
+              {t.production}
               <select
                 className={inputClass}
                 value={params.statut ?? ""}
@@ -269,9 +273,9 @@ export function CatalogFilters({
                   })
                 }
               >
-                <option value="">Toutes les références</option>
-                <option value="active">Encore produites</option>
-                <option value="arretee">Production arrêtée</option>
+                <option value="">{t.allReferences}</option>
+                <option value="active">{t.stillMade}</option>
+                <option value="arretee">{t.discontinued}</option>
               </select>
             </label>
             <label className="flex items-center gap-2 text-sm">
@@ -279,23 +283,20 @@ export function CatalogFilters({
                 checked={params.enStock}
                 onCheckedChange={(enStock) => update({ enStock })}
               />
-              En stock en France
+              {t.inStock}
             </label>
-            <p className="text-xs text-muted-foreground">
-              Stock au dernier relevé, chez au moins un vendeur suivi. Les valeurs absentes ne
-              satisfont pas un critère technique.
-            </p>
+            <p className="text-xs text-muted-foreground">{t.stockHint}</p>
           </div>
         </details>
         {activeCount > 0 && (
           <Button variant="outline" size="sm" onClick={() => setParams(null)}>
-            Effacer les filtres
+            {t.clear}
           </Button>
         )}
       </div>
       {isPending && (
         <p role="status" className="text-xs text-muted-foreground">
-          Mise à jour des résultats…
+          {t.updating}
         </p>
       )}
     </div>
@@ -304,11 +305,13 @@ export function CatalogFilters({
 
 function FacetChecklist({
   title,
+  labelOf,
   options,
   selected,
   onChange,
 }: {
   title: string;
+  labelOf: (label: string) => string;
   options: FacetOption[];
   selected: string[];
   onChange: (value: string, checked: boolean) => void;
@@ -330,7 +333,8 @@ function FacetChecklist({
               onCheckedChange={(checked) => onChange(option.value, checked)}
             />
             <span className="min-w-0 break-words">
-              {option.label} <span className="text-muted-foreground">({option.count})</span>
+              {labelOf(option.label)}{" "}
+              <span className="text-muted-foreground">({option.count})</span>
             </span>
           </label>
         ))}
@@ -341,11 +345,13 @@ function FacetChecklist({
 
 function NumberChoice({
   label,
+  anyLabel,
   value,
   choices,
   onChange,
 }: {
   label: string;
+  anyLabel: string;
   value: number | null;
   choices: [number, string][];
   onChange: (value: number | null) => void;
@@ -358,7 +364,7 @@ function NumberChoice({
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value === "" ? null : Number(e.target.value))}
       >
-        <option value="">Toutes</option>
+        <option value="">{anyLabel}</option>
         {choices.map(([number, text]) => (
           <option value={number} key={number}>
             {text}
@@ -372,6 +378,7 @@ function NumberChoice({
 /** Valeur locale pendant le glissement, requête serveur seulement au relâchement. */
 function RangeFilter({
   title,
+  name,
   unit,
   min,
   max,
@@ -381,7 +388,8 @@ function RangeFilter({
   onCommit,
 }: {
   title: string;
-  unit: "euros" | "millimètres";
+  name: string;
+  unit: string;
   min: number;
   max: number;
   low: number | null;
@@ -393,7 +401,8 @@ function RangeFilter({
   const lower = Math.min(min, validLow ?? min, validHigh ?? min);
   const upper = Math.max(max, validHigh ?? max, validLow ?? max, lower + step);
   const [draft, setDraft] = useState<number[]>([validLow ?? lower, validHigh ?? upper]);
-  const name = unit === "euros" ? "Prix" : "Diamètre";
+  const { dict } = useLocale();
+  const t = dict.catalog.filters;
   const commit = (index: 0 | 1, value: string) => {
     const candidate = value === "" ? null : Number(value);
     const [a, b] = catalogRange(
@@ -412,7 +421,7 @@ function RangeFilter({
         value={draft}
         className="py-2"
         aria-label={title}
-        thumbLabels={[`${name} minimum en ${unit}`, `${name} maximum en ${unit}`]}
+        thumbLabels={[format(t.thumbMin, { name, unit }), format(t.thumbMax, { name, unit })]}
         onValueChange={(value) => setDraft(Array.isArray(value) ? [...value] : [value])}
         onValueCommitted={(value) => {
           if (Array.isArray(value))
@@ -422,14 +431,14 @@ function RangeFilter({
       <div className="grid grid-cols-2 gap-2">
         {([0, 1] as const).map((index) => (
           <label key={index} className="flex min-w-0 flex-col gap-1 text-xs text-muted-foreground">
-            {index === 0 ? "Minimum" : "Maximum"}
+            {index === 0 ? t.minimum : t.maximum}
             <input
               type="number"
               min={0}
               step={step}
               inputMode="decimal"
               className={inputClass}
-              aria-label={`${name} ${index === 0 ? "minimum" : "maximum"} en ${unit}`}
+              aria-label={format(index === 0 ? t.thumbMin : t.thumbMax, { name, unit })}
               key={`${index}-${draft[index]}`}
               defaultValue={
                 (index === 0 ? validLow : validHigh) === null &&

@@ -8,6 +8,8 @@ import { getFacets, getWatchCards } from "@/lib/catalog/queries";
 import { loadCatalogParams, toFilter } from "@/lib/catalog/search-params";
 import { type CatalogFilter, type Sort, watchPath } from "@/lib/catalog/types";
 import { features } from "@/lib/features";
+import { format } from "@/lib/i18n/dictionary";
+import { getDictionary } from "@/lib/i18n/server";
 import { JsonLd, itemListJsonLd } from "@/lib/seo/json-ld";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -23,10 +25,11 @@ export async function CatalogBrowser({
   scope?: Scope;
   basePath?: string;
 }) {
-  const facets = await getFacets(scope);
+  const [facets, { dict }] = await Promise.all([getFacets(scope), getDictionary()]);
+  const t = dict.catalog.results;
   return (
     <div id="catalogue" className="grid scroll-mt-20 gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
-      <aside aria-label="Rechercher et filtrer les montres">
+      <aside aria-label={t.filtersLabel}>
         <Suspense>
           <CatalogFilters
             facets={facets}
@@ -35,7 +38,7 @@ export async function CatalogBrowser({
           />
         </Suspense>
       </aside>
-      <Suspense fallback={<p role="status">Chargement des montres…</p>}>
+      <Suspense fallback={<p role="status">{t.loading}</p>}>
         <CatalogResults searchParams={searchParams} scope={scope} basePath={basePath} />
       </Suspense>
     </div>
@@ -56,25 +59,26 @@ async function CatalogResults({
   // La marque du chemin prime aussi sur un éventuel paramètre hérité d'une autre page.
   if (scope.brandSlug) filter.brands = [];
   if (filter.sort && hiddenSorts().includes(filter.sort)) filter.sort = "prix-asc";
-  const { items, total, page, pageCount } = await getWatchCards(filter);
+  const [{ items, total, page, pageCount }, { dict, f, path }] = await Promise.all([
+    getWatchCards(filter),
+    getDictionary(),
+  ]);
+  const t = dict.catalog.results;
   return (
-    <section className="flex min-w-0 flex-col gap-6" aria-label="Résultats" aria-live="polite">
+    <section className="flex min-w-0 flex-col gap-6" aria-label={t.label} aria-live="polite">
       <p className="text-sm text-muted-foreground">
-        {total} montre{total > 1 ? "s" : ""}
-        {pageCount > 1 && ` · page ${page} sur ${pageCount}`}
+        {f.plural(t.count, total)}
+        {pageCount > 1 && format(t.page, { page, pages: pageCount })}
       </p>
       {items.length > 0 ? (
         <WatchGrid watches={items} />
       ) : (
-        <p className="py-12 text-center text-muted-foreground">
-          Aucune montre ne correspond à ces filtres. Essayez une autre référence ou élargissez vos
-          critères.
-        </p>
+        <p className="py-12 text-center text-muted-foreground">{t.empty}</p>
       )}
       <CatalogPagination params={params} page={page} pageCount={pageCount} basePath={basePath} />
       <JsonLd
         data={itemListJsonLd(
-          items.map((w) => ({ name: displayName(w.brandName, w.name), path: watchPath(w) })),
+          items.map((w) => ({ name: displayName(w.brandName, w.name), path: path(watchPath(w)) })),
         )}
       />
     </section>

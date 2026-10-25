@@ -1,19 +1,24 @@
-import { Link } from "@/lib/i18n/client";
+"use client";
 
 import { Badge } from "@/components/ui/badge";
-import { displayName, formatPrice, MOVEMENT_LABELS } from "@/lib/catalog/format";
+import { displayName } from "@/lib/catalog/format";
 import { type WatchCard as WatchCardData, watchPath } from "@/lib/catalog/types";
-
-import { features } from "@/lib/features";
+import { useFeatures } from "@/lib/features-client";
+import { Link, useLocale } from "@/lib/i18n/client";
+import { format } from "@/lib/i18n/dictionary";
 
 import { ScoreBadge } from "./score-badge";
 import { WatchImage } from "./watch-image";
 
+/** Carte d'une montre, utilisable dans les pages serveur comme dans les composants navigateur. */
 export function WatchCard({ watch, priority }: { watch: WatchCardData; priority?: boolean }) {
+  const { dict, f } = useLocale();
+  const { score } = useFeatures();
+  const t = dict.catalog;
   const name = displayName(watch.brandName, watch.name);
   const details = [
-    watch.movement ? MOVEMENT_LABELS[watch.movement] : null,
-    watch.diameterMm ? `${String(watch.diameterMm).replace(".", ",")} mm` : null,
+    watch.movement ? t.movements[watch.movement] : null,
+    watch.diameterMm ? f.mm(watch.diameterMm) : null,
   ].filter(Boolean);
 
   return (
@@ -23,7 +28,7 @@ export function WatchCard({ watch, priority }: { watch: WatchCardData; priority?
     >
       <WatchImage
         src={watch.imageUrl}
-        alt={`${name}, référence ${watch.reference}`}
+        alt={format(t.card.imageAlt, { name, reference: watch.reference })}
         priority={priority}
       />
       <div className="space-y-1 px-1">
@@ -33,13 +38,9 @@ export function WatchCard({ watch, priority }: { watch: WatchCardData; priority?
           <p className="text-sm text-muted-foreground">{details.join(" · ")}</p>
         )}
         <div className="flex items-center gap-2 pt-1">
-          <span className="font-semibold">
-            {formatPrice(watch.priceCents) ?? "Prix non communiqué"}
-          </span>
-          {watch.discontinued && <Badge variant="secondary">Plus produite</Badge>}
-          {watch.score !== null && features.score() && (
-            <ScoreBadge score={watch.score} className="ml-auto" />
-          )}
+          <span className="font-semibold">{f.price(watch.priceCents) ?? t.card.priceUnknown}</span>
+          {watch.discontinued && <Badge variant="secondary">{t.card.discontinued}</Badge>}
+          {watch.score !== null && score && <ScoreBadge score={watch.score} className="ml-auto" />}
         </div>
       </div>
     </Link>

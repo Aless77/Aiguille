@@ -4,11 +4,12 @@ import { useEffect, useRef } from "react";
 
 import { useIsDarkTheme } from "@/components/use-theme";
 import { type PriceSeries } from "@/lib/catalog/price-history";
+import { useLocale } from "@/lib/i18n/client";
 
 const COLORS = ["#2563eb", "#d97706", "#059669", "#db2777", "#7c3aed"];
 
-const euros = (cents: number) =>
-  new Intl.NumberFormat("fr-FR", {
+const euros = (cents: number, tag: string) =>
+  new Intl.NumberFormat(tag, {
     style: "currency",
     currency: "EUR",
     maximumFractionDigits: 0,
@@ -22,6 +23,7 @@ const euros = (cents: number) =>
 export function PriceChart({ series }: { series: PriceSeries[] }) {
   const container = useRef<HTMLDivElement>(null);
   const dark = useIsDarkTheme();
+  const { dict, f } = useLocale();
 
   useEffect(() => {
     const element = container.current;
@@ -63,7 +65,8 @@ export function PriceChart({ series }: { series: PriceSeries[] }) {
         legend: series.length > 1 ? { top: 0, textStyle: { color: text } } : undefined,
         tooltip: {
           trigger: "axis",
-          valueFormatter: (value: unknown) => (typeof value === "number" ? euros(value) : "—"),
+          valueFormatter: (value: unknown) =>
+            typeof value === "number" ? euros(value, f.tag) : "—",
         },
         xAxis: {
           type: "time",
@@ -75,7 +78,7 @@ export function PriceChart({ series }: { series: PriceSeries[] }) {
         yAxis: {
           type: "value",
           scale: true,
-          axisLabel: { color: text, formatter: (v: number) => euros(v) },
+          axisLabel: { color: text, formatter: (v: number) => euros(v, f.tag) },
           splitLine: { lineStyle: { color: grid } },
         },
         series: series.map((s) => ({
@@ -100,13 +103,13 @@ export function PriceChart({ series }: { series: PriceSeries[] }) {
       disposed = true;
       cleanup?.();
     };
-  }, [series, dark]);
+  }, [series, dark, f.tag]);
 
   return (
     <div
       ref={container}
       role="img"
-      aria-label="Graphique de l'évolution du prix (le détail figure dans le tableau ci-dessous)"
+      aria-label={dict.sections.history.chartLabel}
       className="h-64 w-full"
     />
   );

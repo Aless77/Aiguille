@@ -43,21 +43,10 @@ export const MOVEMENT_LABELS: Record<Movement, string> = {
   autre: "Autre",
 };
 
-/** Adjectif pour une phrase : « une montre automatique », « une montre à quartz ». */
-const MOVEMENT_PHRASES: Record<Movement, string> = {
-  automatique: "automatique",
-  manuel: "à remontage manuel",
-  quartz: "à quartz",
-  solaire: "solaire",
-  autre: "",
-};
-
 /** Nom affiché avec la marque, sans la répéter : « Tissot PRX 40mm », « Hamilton Khaki Field Mechanical ». */
 export function displayName(brandName: string, name: string): string {
   return name.toLowerCase().startsWith(brandName.toLowerCase()) ? name : `${brandName} ${name}`;
 }
-
-const formatMm = (mm: number) => `${String(mm).replace(".", ",")} mm`;
 
 export interface SummaryInput {
   brandName: string;
@@ -71,23 +60,63 @@ export interface SummaryInput {
   catalogPriceCents: number | null;
 }
 
+/** Modèles du résumé dans une langue (lib/i18n/dictionaries, clé watch.summary). */
+export interface SummaryTexts {
+  /** « La {name} (référence {reference}) est {kind}{diameter} ». */
+  intro: string;
+  kinds: Record<Movement, string> & { none: string };
+  diameter: string;
+  caliber: string;
+  water: string;
+  reserve: string;
+  price: string;
+}
+
+export const FRENCH_SUMMARY: SummaryTexts = {
+  intro: "La {name} (référence {reference}) est {kind}{diameter}",
+  kinds: {
+    automatique: "une montre automatique",
+    manuel: "une montre à remontage manuel",
+    quartz: "une montre à quartz",
+    solaire: "une montre solaire",
+    autre: "une montre",
+    none: "une montre",
+  },
+  diameter: " de {mm}",
+  caliber: "équipée du calibre {caliber}",
+  water: "étanche à {m} m",
+  reserve: "avec {h} heures de réserve de marche",
+  price: " Prix catalogue officiel relevé : {price}.",
+};
+
+const fill = (text: string, vars: Record<string, string | number>) =>
+  text.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
+
 /**
  * Résumé factuel rédigé à partir de nos données. On n'affiche pas le texte marketing des
  * marques : contenu protégé et dupliqué sur des centaines de sites (mauvais pour le SEO).
  */
-export function watchSummary(w: SummaryInput): string {
-  const facts: string[] = [];
-  const kind = w.movement ? MOVEMENT_PHRASES[w.movement] : "";
-  let first = `La ${displayName(w.brandName, w.name)} (référence ${w.reference}) est une montre${kind ? ` ${kind}` : ""}`;
-  if (w.diameterMm) first += ` de ${formatMm(w.diameterMm)}`;
-  facts.push(first);
-  if (w.caliber) facts.push(`équipée du calibre ${w.caliber}`);
-  if (w.waterResistanceM) facts.push(`étanche à ${w.waterResistanceM} m`);
-  if (w.powerReserveH) facts.push(`avec ${w.powerReserveH} heures de réserve de marche`);
+export function watchSummary(
+  w: SummaryInput,
+  texts: SummaryTexts = FRENCH_SUMMARY,
+  locale = "fr-FR",
+): string {
+  const mm = (n: number) => `${n.toLocaleString(locale, { maximumFractionDigits: 1 })} mm`;
+  const facts = [
+    fill(texts.intro, {
+      name: displayName(w.brandName, w.name),
+      reference: w.reference,
+      kind: texts.kinds[w.movement ?? "none"],
+      diameter: w.diameterMm ? fill(texts.diameter, { mm: mm(w.diameterMm) }) : "",
+    }),
+  ];
+  if (w.caliber) facts.push(fill(texts.caliber, { caliber: w.caliber }));
+  if (w.waterResistanceM) facts.push(fill(texts.water, { m: w.waterResistanceM }));
+  if (w.powerReserveH) facts.push(fill(texts.reserve, { h: w.powerReserveH }));
 
   let text = facts.join(", ") + ".";
-  const price = formatPrice(w.catalogPriceCents);
-  if (price) text += ` Prix catalogue officiel relevé : ${price}.`;
+  const price = formatPrice(w.catalogPriceCents, locale);
+  if (price) text += fill(texts.price, { price });
   return text;
 }
 

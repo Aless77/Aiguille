@@ -1,14 +1,16 @@
 import { familyOf } from "@aiguille/db/collection-families";
-import { Link } from "@/lib/i18n/client";
 import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { CatalogBrowser } from "@/components/catalog-browser";
-import { displayName, formatPrice, MOVEMENT_LABELS } from "@/lib/catalog/format";
+import { displayName } from "@/lib/catalog/format";
 import { getCollection, getCollections, getFacets } from "@/lib/catalog/queries";
 import { hasCatalogFilters, loadCatalogParams } from "@/lib/catalog/search-params";
 import { PLACEHOLDER_SLUG, withPlaceholder } from "@/lib/catalog/static-params";
-import { pageMetadata } from "@/lib/seo/metadata";
+import { Link } from "@/lib/i18n/client";
+import { format } from "@/lib/i18n/dictionary";
+import { getDictionary } from "@/lib/i18n/server";
+import { localizedMetadata } from "@/lib/seo/localized-metadata";
 import { cn } from "@/lib/utils";
 
 /**
@@ -31,18 +33,19 @@ export async function generateMetadata({
   searchParams,
 }: PageProps<"/[lang]/montres/[marque]/[collection]">) {
   const { marque, collection } = await params;
-  const c = await getCollection(marque, collection);
+  const [c, { dict, f }] = await Promise.all([getCollection(marque, collection), getDictionary()]);
   if (!c) return {};
+  const t = dict.catalog.collectionPage;
   const name = displayName(c.brandName, c.name);
   const range =
     c.minPriceCents !== null
       ? c.minPriceCents === c.maxPriceCents
-        ? ` à ${formatPrice(c.minPriceCents)}`
-        : ` de ${formatPrice(c.minPriceCents)} à ${formatPrice(c.maxPriceCents)}`
+        ? format(t.rangeSingle, { price: f.price(c.minPriceCents)! })
+        : format(t.range, { min: f.price(c.minPriceCents)!, max: f.price(c.maxPriceCents)! })
       : "";
-  return pageMetadata({
-    title: `${name} : tous les modèles et leurs prix`,
-    description: `${c.watchCount} références ${name}${range} (prix catalogue officiels). Comparez mouvements, diamètres et caractéristiques.`,
+  return localizedMetadata({
+    title: format(t.metaTitle, { name }),
+    description: format(t.metaDescription, { count: c.watchCount, name, range }),
     path: `/montres/${c.brandSlug}/${c.slug}`,
     index: !hasCatalogFilters(loadCatalogParams(await searchParams)),
   });
@@ -58,10 +61,12 @@ export default async function CollectionPage({
 
   const scope = { brandSlug: c.brandSlug, collectionSlug: c.slug };
   const family = familyOf(c.brandSlug, c.slug);
-  const [facets, brandCollections] = await Promise.all([
+  const [facets, brandCollections, { dict, f }] = await Promise.all([
     getFacets(scope),
     family ? getCollections(c.brandSlug) : Promise.resolve([]),
+    getDictionary(),
   ]);
+  const t = dict.catalog.collectionPage;
   // Collections de la même gamme officielle, dans l'ordre de la marque.
   const siblings = family
     ? family.collections.flatMap((slug) => brandCollections.filter((x) => x.slug === slug))
@@ -75,33 +80,41 @@ export default async function CollectionPage({
       <div className="space-y-4">
         <Breadcrumbs
           crumbs={[
-            { name: "Montres", path: "/montres" },
+            { name: dict.catalog.breadcrumb.watches, path: "/montres" },
             { name: c.brandName, path: `/montres/${c.brandSlug}` },
             { name: c.name },
           ]}
         />
         <h1 className="text-3xl font-semibold tracking-tight">{name}</h1>
         <p className="max-w-2xl text-muted-foreground">
-          {c.watchCount} référence{c.watchCount > 1 ? "s" : ""} {name}
+          {f.plural(t.references, c.watchCount, { name })}
           {c.minPriceCents !== null &&
-            `, de ${formatPrice(c.minPriceCents)} à ${formatPrice(c.maxPriceCents)}`}
+            format(t.priceRange, {
+              min: f.price(c.minPriceCents)!,
+              max: f.price(c.maxPriceCents)!,
+            })}
           {movements.length > 0 &&
-            `. Mouvements : ${movements.map((m) => MOVEMENT_LABELS[m].toLowerCase()).join(", ")}`}
+            format(t.movements, {
+              list: movements.map((m) => dict.catalog.movements[m].toLowerCase()).join(", "),
+            })}
           {facets.diameterMinMm !== null &&
-            `. Diamètres de ${facets.diameterMinMm.toLocaleString("fr-FR")} à ${facets.diameterMaxMm?.toLocaleString("fr-FR")} mm`}
+            format(t.diameters, {
+              min: f.number(facets.diameterMinMm),
+              max: f.number(facets.diameterMaxMm ?? facets.diameterMinMm),
+            })}
           .
         </p>
         {family && siblings.length > 1 && (
-          <nav aria-label={`Gamme ${family.name}`} className="space-y-2">
+          <nav aria-label={format(t.familyLabel, { name: family.name })} className="space-y-2">
             <p className="text-sm text-muted-foreground">
-              Gamme{" "}
+              {t.familyBefore}{" "}
               <Link
                 href={`/montres/${c.brandSlug}#gamme-${family.slug}`}
                 className="font-medium text-foreground underline underline-offset-4"
               >
                 {family.name}
               </Link>{" "}
-              chez {c.brandName} :
+              {format(t.familyAfter, { brand: c.brandName })}
             </p>
             <ul className="flex flex-wrap gap-2">
               {siblings.map((s) => (

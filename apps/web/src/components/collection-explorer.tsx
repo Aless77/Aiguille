@@ -4,7 +4,9 @@ import { Link } from "@/lib/i18n/client";
 
 import { OpenDetailsOnHash } from "@/components/open-details-on-hash";
 import { WatchImage } from "@/components/watch-image";
-import { formatPrice } from "@/lib/catalog/format";
+import { format, type Dictionary } from "@/lib/i18n/dictionary";
+import { type Formatters } from "@/lib/i18n/format";
+import { getDictionary } from "@/lib/i18n/server";
 import { type CollectionPreview, type CollectionSummary } from "@/lib/catalog/queries";
 
 /**
@@ -12,7 +14,7 @@ import { type CollectionPreview, type CollectionSummary } from "@/lib/catalog/qu
  * (packages/db/src/collection-families.ts). Chaque gamme se déplie au clic ; une carte par
  * collection avec une montre d'exemple. Tout est dans le HTML serveur, même replié (SEO).
  */
-export function CollectionExplorer({
+export async function CollectionExplorer({
   brandSlug,
   brandName,
   groups,
@@ -23,6 +25,8 @@ export function CollectionExplorer({
   groups: FamilyGroup<CollectionSummary>[];
   previews: CollectionPreview[];
 }) {
+  const { dict, f } = await getDictionary();
+  const t = dict.catalog.explorer;
   const imageOf = (slug: string) => previews.find((p) => p.slug === slug) ?? null;
   const hasFamilies = groups.some((g) => g.family);
   const total = groups.reduce((n, g) => n + g.collections.length, 0);
@@ -31,8 +35,8 @@ export function CollectionExplorer({
   const summary = (
     <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4 font-medium [&::-webkit-details-marker]:hidden">
       <span>
-        Explorer les {total} collections {brandName}
-        {hasFamilies && `, en ${groups.filter((g) => g.family).length} gammes`}
+        {format(t.summary, { count: total, brand: brandName })}
+        {hasFamilies && format(t.families, { count: groups.filter((g) => g.family).length })}
       </span>
       <ChevronDown
         className="size-5 shrink-0 text-muted-foreground transition-transform group-open/menu:rotate-180"
@@ -50,6 +54,8 @@ export function CollectionExplorer({
             brandSlug={brandSlug}
             items={groups.flatMap((g) => g.collections)}
             imageOf={imageOf}
+            t={t}
+            f={f}
           />
         </div>
         <OpenDetailsOnHash />
@@ -61,8 +67,7 @@ export function CollectionExplorer({
     <details id="collections" className="group/menu scroll-mt-20 rounded-xl border">
       {summary}
       <p className="px-4 pb-3 text-sm text-muted-foreground">
-        Gammes telles que {brandName} les présente sur son site. Cliquez sur une gamme pour voir ses
-        collections.
+        {format(t.familiesIntro, { brand: brandName })}
       </p>
       <div className="divide-y border-t">
         {groups.map(({ family, collections }) => {
@@ -84,13 +89,10 @@ export function CollectionExplorer({
                   ))}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-semibold">
-                    {family ? family.name : "Autres collections"}
-                  </span>
+                  <span className="block font-semibold">{family ? family.name : t.others}</span>
                   <span className="block text-sm text-muted-foreground">
-                    {collections.length} collection{collections.length > 1 ? "s" : ""} ·{" "}
-                    {watchCount} modèle{watchCount > 1 ? "s" : ""}
-                    {prices.length > 0 && ` · dès ${formatPrice(Math.min(...prices))}`}
+                    {f.plural(t.collections, collections.length)} · {f.plural(t.models, watchCount)}
+                    {prices.length > 0 && format(t.from, { price: f.price(Math.min(...prices))! })}
                   </span>
                 </span>
                 <ChevronDown
@@ -106,12 +108,18 @@ export function CollectionExplorer({
                     rel="nofollow noopener noreferrer"
                     className="inline-flex items-center gap-1 text-xs text-muted-foreground underline underline-offset-4"
                   >
-                    La gamme {family.name} sur le site {brandName}
+                    {format(t.familyLink, { name: family.name, brand: brandName })}
                     <ExternalLink className="size-3" aria-hidden />
-                    <span className="sr-only">(nouvel onglet)</span>
+                    <span className="sr-only">{dict.common.newTab}</span>
                   </a>
                 )}
-                <CollectionGrid brandSlug={brandSlug} items={collections} imageOf={imageOf} />
+                <CollectionGrid
+                  brandSlug={brandSlug}
+                  items={collections}
+                  imageOf={imageOf}
+                  t={t}
+                  f={f}
+                />
               </div>
             </details>
           );
@@ -126,10 +134,14 @@ function CollectionGrid({
   brandSlug,
   items,
   imageOf,
+  t,
+  f,
 }: {
   brandSlug: string;
   items: CollectionSummary[];
   imageOf: (slug: string) => CollectionPreview | null;
+  t: Dictionary["catalog"]["explorer"];
+  f: Formatters;
 }) {
   return (
     <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -143,13 +155,13 @@ function CollectionGrid({
             >
               <WatchImage
                 src={preview?.imageUrl ?? null}
-                alt={preview ? `Exemple : ${preview.name}` : c.name}
+                alt={preview ? format(t.example, { name: preview.name }) : c.name}
                 sizes="(min-width: 1024px) 15vw, (min-width: 640px) 25vw, 45vw"
               />
               <span className="block font-medium">{c.name}</span>
               <span className="block text-sm text-muted-foreground">
-                {c.watchCount} modèle{c.watchCount > 1 ? "s" : ""}
-                {c.minPriceCents !== null && ` · dès ${formatPrice(c.minPriceCents)}`}
+                {f.plural(t.models, c.watchCount)}
+                {c.minPriceCents !== null && format(t.from, { price: f.price(c.minPriceCents)! })}
               </span>
             </Link>
           </li>

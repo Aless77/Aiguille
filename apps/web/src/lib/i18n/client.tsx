@@ -1,14 +1,15 @@
 "use client";
 
 import NextLink from "next/link";
-import { type ComponentProps, createContext, useContext } from "react";
+import { type ComponentProps, createContext, useContext, useMemo } from "react";
 
 import { DEFAULT_LOCALE, type Locale, localizePath } from "./config";
 import { type Dictionary } from "./dictionary";
+import { formatters, type Formatters } from "./format";
 
 interface LocaleContext {
   locale: Locale;
-  t: Dictionary["client"];
+  dict: Dictionary;
 }
 
 const Context = createContext<LocaleContext | null>(null);
@@ -21,10 +22,15 @@ export function LocaleProvider({
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
 
-export function useLocale(): LocaleContext {
+/**
+ * Langue, dictionnaire complet (`dict`), textes des composants navigateur (`t`, raccourci de
+ * `dict.client`) et formats de la langue (`f`).
+ */
+export function useLocale(): LocaleContext & { t: Dictionary["client"]; f: Formatters } {
   const value = useContext(Context);
   if (!value) throw new Error("useLocale hors de LocaleProvider");
-  return value;
+  const f = useMemo(() => formatters(value.locale), [value.locale]);
+  return { ...value, t: value.dict.client, f };
 }
 
 /** Préfixe un chemin interne par la langue courante (« /montres » → « /en/montres »). */

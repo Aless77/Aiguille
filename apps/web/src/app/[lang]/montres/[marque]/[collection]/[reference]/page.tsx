@@ -40,7 +40,7 @@ import {
 import { PLACEHOLDER_SLUG, withPlaceholder } from "@/lib/catalog/static-params";
 import { isWatchIndexable, watchPath } from "@/lib/catalog/types";
 import { JsonLd, productJsonLd } from "@/lib/seo/json-ld";
-import { pageMetadata } from "@/lib/seo/metadata";
+import { localizedMetadata } from "@/lib/seo/localized-metadata";
 import { turnstileSiteKey } from "@/lib/reviews/turnstile";
 import { features } from "@/lib/features";
 import { LOCALE_NAMES, LOCALE_TAGS } from "@/lib/i18n/config";
@@ -70,9 +70,10 @@ export async function generateMetadata({ params }: Props) {
   const w = await getWatch(marque, collection, reference);
   if (!w) return {};
   const name = displayName(w.brandName, w.name);
-  return pageMetadata({
-    title: format((await getDictionary()).dict.watch.metaTitle, { name, reference: w.reference }),
-    description: watchSummary({ ...w, catalogPriceCents: w.priceCents }),
+  const { dict, f } = await getDictionary();
+  return localizedMetadata({
+    title: format(dict.watch.metaTitle, { name, reference: w.reference }),
+    description: watchSummary({ ...w, catalogPriceCents: w.priceCents }, dict.watch.summary, f.tag),
     path: watchPath(w),
     images: w.imageUrls.slice(0, 1),
     // Garde-fou contenu mince (docs/seo/strategie.md) : prix, mouvement et diamètre requis.
@@ -87,7 +88,7 @@ export default async function WatchPage({ params }: Props) {
   if (!source) notFound();
 
   // Fiche de la marque dans la langue affichée (repli : anglais, puis français), avec avertissement.
-  const { locale, dict } = await getDictionary();
+  const { locale, dict, path } = await getDictionary();
   const t = dict.watch;
   const tag = LOCALE_TAGS[locale];
   const translated = translateWatch(source, locale, await getWatchTranslations(source.id));
@@ -106,7 +107,7 @@ export default async function WatchPage({ params }: Props) {
   const name = displayName(w.brandName, w.name);
   const showScore = features.score();
   const showReviews = features.reviews();
-  const summary = watchSummary({ ...w, catalogPriceCents: w.priceCents });
+  const summary = watchSummary({ ...w, catalogPriceCents: w.priceCents }, t.summary, tag);
   const model = modelVariants<FamilyWatch>(
     w.brandSlug,
     w,
@@ -126,13 +127,15 @@ export default async function WatchPage({ params }: Props) {
     ]);
   const storeCount = storeCounts.find((c) => c.brandSlug === w.brandSlug)?.count ?? 0;
   const europePrices = buildEuropePrices(countryPrices, rates.unitsPerEur);
+  const official = dict.sections.officialSite;
   const history = buildPriceHistory(
     observations,
     w.brandName,
     w.lastSeenAt,
     `${w.brandSlug}-officiel`,
+    official,
   );
-  const offers = currentOffers(observations, w.brandName);
+  const offers = currentOffers(observations, w.brandName, official);
   const bestRetailer = offers
     .filter((o) => !o.official && o.availability !== "out_of_stock")
     .sort((a, b) => a.priceCents - b.priceCents)[0];
@@ -276,8 +279,7 @@ export default async function WatchPage({ params }: Props) {
             )}
           </div>
 
-          {/* Résumé rédigé en français (watchSummary) : affiché seulement en français. */}
-          {locale === "fr" && <p className="leading-relaxed">{summary}</p>}
+          <p className="leading-relaxed">{summary}</p>
         </div>
       </div>
 
@@ -296,6 +298,7 @@ export default async function WatchPage({ params }: Props) {
         watch={w}
         storeCount={storeCount}
         dict={dict}
+        locale={locale}
         labels={translated.labels}
         fallbackNotice={fallbackNotice}
       />
@@ -337,7 +340,7 @@ export default async function WatchPage({ params }: Props) {
           reference: w.reference,
           brandName: w.brandName,
           description: summary,
-          path: watchPath(w),
+          path: path(watchPath(w)),
           imageUrls: w.imageUrls,
           offers,
           reviews: showReviews

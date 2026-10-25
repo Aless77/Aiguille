@@ -1,7 +1,10 @@
 import { Check } from "lucide-react";
 
 import { WatchCard } from "@/components/watch-card";
-import { formatPrice } from "@/lib/catalog/format";
+import { localizeAdvantage } from "@aiguille/db/i18n";
+
+import { format } from "@/lib/i18n/dictionary";
+import { getDictionary } from "@/lib/i18n/server";
 import { type WatchAlternative } from "@/lib/catalog/queries";
 
 /**
@@ -9,7 +12,7 @@ import { type WatchAlternative } from "@/lib/catalog/queries";
  * Chaque alternative est au moins aussi bien équipée sur chaque point publié, de taille proche,
  * du même usage, et nettement moins chère.
  */
-export function AlternativesSection({
+export async function AlternativesSection({
   alternatives,
   priceCents,
 }: {
@@ -17,16 +20,15 @@ export function AlternativesSection({
   priceCents: number | null;
 }) {
   if (alternatives.length === 0 || priceCents === null) return null;
+  const { dict, f, locale } = await getDictionary();
+  const t = dict.sections.alternatives;
   return (
     <section aria-labelledby="alternatives-titre" className="space-y-4">
       <div className="space-y-1">
         <h2 id="alternatives-titre" className="text-2xl font-semibold tracking-tight">
-          Aussi bien équipées, pour moins cher
+          {t.title}
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Montres du même usage et de taille proche, au moins aussi bien équipées sur chaque point
-          technique publié. Le design et la finition restent une affaire de goût : à vous de voir.
-        </p>
+        <p className="text-sm text-muted-foreground">{t.intro}</p>
       </div>
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {alternatives.map((a) => (
@@ -37,19 +39,19 @@ export function AlternativesSection({
             <WatchCard watch={a.watch} />
             <div className="space-y-2 px-3 pb-2 text-sm">
               <p className="font-medium text-emerald-700 dark:text-emerald-400">
-                {formatPrice(a.savingCents)} de moins
+                {format(t.saving, { price: f.price(a.savingCents) ?? "" })}
               </p>
               {a.advantages.length > 0 ? (
                 <ul className="space-y-1">
                   {a.advantages.map((adv) => (
                     <li key={adv} className="flex gap-2">
                       <Check className="mt-0.5 size-4 shrink-0 text-emerald-600" aria-hidden />
-                      {adv}
+                      {localizeAdvantage(adv, locale)}
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-muted-foreground">Équipement équivalent.</p>
+                <p className="text-muted-foreground">{t.equivalent}</p>
               )}
             </div>
           </li>

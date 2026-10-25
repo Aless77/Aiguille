@@ -1,3 +1,6 @@
+import { pages } from "../messages/pages";
+import { sections } from "../messages/sections";
+import { catalog } from "../messages/catalog";
 import { type Dictionary } from "./fr";
 
 /** Anglais : langue de repli, donc complet (TypeScript refuse une clé manquante). */
@@ -64,6 +67,22 @@ export const en: Dictionary = {
     seeCollection: "See the whole collection",
     imageAlt: "{name}, reference {reference}",
     metaTitle: "{name} ({reference}): price and specifications",
+    summary: {
+      intro: "The {name} (reference {reference}) is {kind}{diameter}",
+      kinds: {
+        automatique: "an automatic watch",
+        manuel: "a hand-wound watch",
+        quartz: "a quartz watch",
+        solaire: "a solar watch",
+        autre: "a watch",
+        none: "a watch",
+      },
+      diameter: " measuring {mm}",
+      caliber: "fitted with the {caliber} calibre",
+      water: "water-resistant to {m} m",
+      reserve: "with a {h}-hour power reserve",
+      price: " Official list price found: {price}.",
+    },
   },
   variants: {
     label: "Variants of this model",
@@ -154,23 +173,10 @@ export const en: Dictionary = {
       Documents: "Documents",
       "Type de montre": "Watch type",
     },
-    values: {
-      Oui: "Yes",
-      Non: "No",
-      "Non mentionnée": "Not mentioned",
-      "Non mentionné": "Not mentioned",
-      "Oui, COSC": "Yes, COSC",
-      "Mécanique automatique": "Automatic mechanical",
-      "Mécanique à remontage manuel": "Hand-wound mechanical",
-      Quartz: "Quartz",
-      "Quartz solaire": "Solar quartz",
-      Autre: "Other",
-      "Détail de la garantie": "Warranty details",
-      "Tarifs de la marque": "Brand prices",
-      "Conseils de la marque": "Brand advice",
-      "Recommandations de la marque": "Brand recommendations",
-    },
   },
+  pages: pages.en,
+  catalog: catalog.en,
+  sections: sections.en,
   client: {
     signIn: "Sign in",
     signOut: "Sign out",
