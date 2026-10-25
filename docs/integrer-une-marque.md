@@ -55,6 +55,14 @@ Pour une nouvelle marque :
 Les libellés et valeurs sont normalisés en Unicode NFC (certaines marques écrivent des accents
 décomposés) : écrire les libellés tels qu'ils s'affichent.
 
+### Déclinaisons d'un modèle (`packages/db/src/variants.ts`)
+
+La fiche propose les autres cadrans, matières et bracelets du même modèle, et ses autres tailles.
+Le regroupement lit la partie « modèle » de la référence : ajouter à `MODEL_KEYS` le motif de la
+marque (par exemple `H32705` pour `H32705141` chez Hamilton), avec un test dans `variants.test.ts`.
+Vérifier sur le site de la marque que deux références au même préfixe sont bien le même modèle.
+Sans motif, la marque n'a simplement pas de sélecteur.
+
 ## 4. Renseigner les informations de marque (`packages/db/src/brand-info.ts`)
 
 Ce que les fiches ne donnent pas, **avec la page source et la date de vérification**. Pages à
