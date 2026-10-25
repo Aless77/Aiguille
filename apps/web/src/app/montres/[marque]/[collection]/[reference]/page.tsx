@@ -1,3 +1,4 @@
+import { familyOf } from "@aiguille/db/collection-families";
 import { reviewMean } from "@aiguille/db/rating";
 import { modelVariants } from "@aiguille/db/variants";
 import { ExternalLink } from "lucide-react";
@@ -116,6 +117,7 @@ export default async function WatchPage({ params }: Props) {
   const availability = w.discontinued ? null : (history.current?.availability ?? "unknown");
   const collectionName = w.collectionName ?? "Autres modèles";
   const collectionPath = `/montres/${w.brandSlug}/${w.collectionSlug}`;
+  const family = familyOf(w.brandSlug, w.collectionSlug);
 
   return (
     <div className="space-y-12">
@@ -147,6 +149,17 @@ export default async function WatchPage({ params }: Props) {
               <Link href={`/montres/${w.brandSlug}`} className="underline-offset-4 hover:underline">
                 {w.brandName}
               </Link>
+              {family && !sameName(family.name, collectionName) && (
+                <>
+                  <span aria-hidden>·</span>
+                  <Link
+                    href={`/montres/${w.brandSlug}#gamme-${family.slug}`}
+                    className="underline-offset-4 hover:underline"
+                  >
+                    Gamme {family.name}
+                  </Link>
+                </>
+              )}
               <span aria-hidden>·</span>
               <Link
                 href={collectionPath}
@@ -303,4 +316,10 @@ export default async function WatchPage({ params }: Props) {
       />
     </div>
   );
+}
+
+/** « PRX » et « PRX » : inutile de répéter la gamme quand elle porte le nom de la collection. */
+function sameName(a: string, b: string): boolean {
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return norm(a) === norm(b);
 }

@@ -1,3 +1,5 @@
+import { familyOf } from "@aiguille/db/collection-families";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
@@ -7,6 +9,7 @@ import { getCollection, getCollections, getFacets } from "@/lib/catalog/queries"
 import { hasCatalogFilters, loadCatalogParams } from "@/lib/catalog/search-params";
 import { PLACEHOLDER_SLUG, withPlaceholder } from "@/lib/catalog/static-params";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { cn } from "@/lib/utils";
 
 /**
  * Rendu bloquant assumé : params est lu hors <Suspense> pour que notFound() renvoie un vrai 404
@@ -54,7 +57,15 @@ export default async function CollectionPage({
   if (!c) notFound();
 
   const scope = { brandSlug: c.brandSlug, collectionSlug: c.slug };
-  const facets = await getFacets(scope);
+  const family = familyOf(c.brandSlug, c.slug);
+  const [facets, brandCollections] = await Promise.all([
+    getFacets(scope),
+    family ? getCollections(c.brandSlug) : Promise.resolve([]),
+  ]);
+  // Collections de la même gamme officielle, dans l'ordre de la marque.
+  const siblings = family
+    ? family.collections.flatMap((slug) => brandCollections.filter((x) => x.slug === slug))
+    : [];
   const name = displayName(c.brandName, c.name);
 
   const movements = facets.movements.map((m) => m.value);
@@ -80,6 +91,38 @@ export default async function CollectionPage({
             `. Diamètres de ${facets.diameterMinMm.toLocaleString("fr-FR")} à ${facets.diameterMaxMm?.toLocaleString("fr-FR")} mm`}
           .
         </p>
+        {family && siblings.length > 1 && (
+          <nav aria-label={`Gamme ${family.name}`} className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Gamme{" "}
+              <Link
+                href={`/montres/${c.brandSlug}#gamme-${family.slug}`}
+                className="font-medium text-foreground underline underline-offset-4"
+              >
+                {family.name}
+              </Link>{" "}
+              chez {c.brandName} :
+            </p>
+            <ul className="flex flex-wrap gap-2">
+              {siblings.map((s) => (
+                <li key={s.slug}>
+                  <Link
+                    href={`/montres/${c.brandSlug}/${s.slug}`}
+                    aria-current={s.slug === c.slug ? "page" : undefined}
+                    className={cn(
+                      "inline-flex rounded-full border px-3 py-1 text-sm transition-colors",
+                      s.slug === c.slug
+                        ? "border-foreground bg-foreground text-background"
+                        : "hover:bg-muted",
+                    )}
+                  >
+                    {s.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
       </div>
       <CatalogBrowser
         searchParams={searchParams}
