@@ -117,11 +117,11 @@ export function CatalogFilters({
           title={t.price}
           name={t.priceName}
           unit={t.euros}
-          min={facets.priceMinCents === null ? 0 : Math.floor(facets.priceMinCents / 100)}
-          max={facets.priceMaxCents === null ? 1000 : Math.ceil(facets.priceMaxCents / 100)}
+          min={facets.priceMinCents === null ? 0 : Math.floor(facets.priceMinCents / 5000) * 50}
+          max={facets.priceMaxCents === null ? 1000 : Math.ceil(facets.priceMaxCents / 5000) * 50}
           low={params.prixMin}
           high={params.prixMax}
-          step={1}
+          step={50}
           onCommit={(prixMin, prixMax) => update({ prixMin, prixMax })}
         />
         <RangeFilter
@@ -133,7 +133,7 @@ export function CatalogFilters({
           max={Math.ceil(facets.diameterMaxMm ?? 50)}
           low={params.diametreMin}
           high={params.diametreMax}
-          step={0.1}
+          step={1}
           onCommit={(diametreMin, diametreMax) => update({ diametreMin, diametreMax })}
         />
         <label className="flex flex-col gap-2 text-sm">
