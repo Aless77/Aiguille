@@ -81,7 +81,7 @@ jobs:
       # Une source cassée ne doit pas empêcher la collecte des autres.
       fail-fast: false
       matrix:
-        source: [tissot, hamilton, longines]
+        source: [tissot, hamilton, longines, citizen, seiko]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -105,6 +105,11 @@ jobs:
       - name: Boutiques agréées
         if: ${{ !cancelled() }}
         run: npm run scraper -- ${{ matrix.source }} --boutiques ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
+        env: *scraper-env
+      # Une langue officielle par nuit ; aucune assimilation d'une langue à un prix national.
+      - name: Traductions officielles complémentaires
+        if: ${{ !cancelled() }}
+        run: npm run scraper -- ${{ matrix.source }} --traductions auto ${{ inputs.limit && format('--limit {0}', inputs.limit) || '' }}
         env: *scraper-env
 
   # Revendeurs ensuite : leurs offres sont rattachées aux montres du catalogue (une nouvelle

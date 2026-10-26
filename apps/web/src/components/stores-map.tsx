@@ -7,6 +7,8 @@ import { useEffect, useRef } from "react";
 
 import { useIsDarkTheme } from "@/components/use-theme";
 import { type StoreBounds, storeMapsUrl } from "@/lib/catalog/stores";
+import { useLocale } from "@/lib/i18n/client";
+import { format } from "@/lib/i18n/dictionary";
 
 export interface StoreMapPoint {
   name: string;
@@ -46,6 +48,10 @@ export function StoresMap({
   const pointsRef = useRef(points);
   const boundsCallback = useRef(onBoundsChange);
   const dark = useIsDarkTheme();
+  const { dict } = useLocale();
+  const t = dict.community.stores;
+  // Textes lus par la carte, créée une seule fois (la langue ne change pas sans rechargement).
+  const texts = useRef({ ...t, newTab: dict.common.newTab });
   const darkRef = useRef(dark);
 
   // Changement de thème : nouveau fond de carte, en reprenant nos points et nos calques.
@@ -99,7 +105,7 @@ export function StoresMap({
         zoom: 3.4,
         attributionControl: { compact: true },
         locale: {
-          "Popup.Close": "Fermer la fiche de la boutique",
+          "Popup.Close": texts.current.closePopup,
           "NavigationControl.ZoomIn": "Zoomer",
           "NavigationControl.ZoomOut": "Dézoomer",
         },
@@ -199,7 +205,7 @@ export function StoresMap({
           })
             .setLngLat(feature.geometry.coordinates as [number, number])
             .setHTML(
-              `<div class="store-popup-details"><strong>${escapeHtml(name ?? "")}</strong><p>${escapeHtml(address ?? "")}</p><p>Boutique agréée ${escapeHtml(brand ?? "")}</p><p>Stock non garanti : contactez la boutique pour ce modèle.</p><a href="${escapeHtml(storeMapsUrl(name ?? "", address ?? ""))}" target="_blank" rel="noopener noreferrer">Voir sur Google Maps ↗<span class="sr-only"> (nouvel onglet)</span></a></div>`,
+              `<div class="store-popup-details"><strong>${escapeHtml(name ?? "")}</strong><p>${escapeHtml(address ?? "")}</p><p>${escapeHtml(format(texts.current.authorised, { brand: brand ?? "" }))}</p><p>${escapeHtml(texts.current.stockWarning)}</p><a href="${escapeHtml(storeMapsUrl(name ?? "", address ?? ""))}" target="_blank" rel="noopener noreferrer">${escapeHtml(texts.current.maps)}<span class="sr-only"> ${escapeHtml(texts.current.newTab)}</span></a></div>`,
             )
             .addTo(map);
         });
@@ -227,7 +233,7 @@ export function StoresMap({
     <div
       ref={container}
       role="region"
-      aria-label={`Carte des boutiques agréées (${points.length} résultats ; adresses sous la carte)`}
+      aria-label={format(t.mapLabel, { count: points.length })}
       className="h-[28rem] w-full overflow-hidden rounded-xl border bg-muted"
     />
   );

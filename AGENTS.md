@@ -54,8 +54,9 @@ code Next, lisez le guide correspondant dans `node_modules/next/dist/docs/` (dan
 
 Langues : toutes les pages sont sous `apps/web/src/app/[lang]` (français sans préfixe, réécrit par
 `proxy.ts`). Liens internes avec `Link` de `@/lib/i18n/client` (jamais `next/link`), écrits sans
-préfixe ; textes affichés tirés de `getDictionary()` (`lib/i18n/dictionaries`, français et anglais
-complets). Voir docs/decisions.md (25 octobre 2026).
+préfixe ; textes affichés tirés de `getDictionary()` / `useLocale()` (`lib/i18n/messages/*.ts`, cinq
+langues côte à côte ; pages longues : `content.tsx` à côté de la page). Aucun texte en dur dans les
+composants. Voir docs/decisions.md (25 octobre 2026).
 
 Pages dynamiques indexables (marque, collection, fiche) : même gabarit partout.
 

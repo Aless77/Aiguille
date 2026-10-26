@@ -14,6 +14,18 @@ const t = (en: string, de: string, it: string, es: string): Translations => ({ e
 
 /** Textes fixes, par texte français. */
 export const TEXTS: Record<string, Translations> = {
+  "verre et bracelet": t(
+    "crystal and strap",
+    "Glas und Armband",
+    "vetro e cinturino",
+    "cristal y correa",
+  ),
+  "bracelets non métalliques": t(
+    "non-metal straps",
+    "nichtmetallische Armbänder",
+    "cinturini non metallici",
+    "correas no metálicas",
+  ),
   // Mouvements (fiche technique).
   "Mécanique automatique": t(
     "Automatic mechanical",

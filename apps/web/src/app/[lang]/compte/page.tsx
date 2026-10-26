@@ -1,24 +1,28 @@
-import { Link } from "@/lib/i18n/client";
-
 import { AccountPanel } from "@/components/account-panel";
-import { pageMetadata } from "@/lib/seo/metadata";
+import { Link } from "@/lib/i18n/client";
+import { getDictionary } from "@/lib/i18n/server";
+import { localizedMetadata } from "@/lib/seo/localized-metadata";
 
-export const metadata = pageMetadata({
-  title: "Mon compte",
-  description: "Données conservées pour votre compte, déconnexion et suppression du compte.",
-  path: "/compte",
-  index: false,
-});
+export async function generateMetadata() {
+  const t = (await getDictionary()).dict.community.account;
+  return localizedMetadata({
+    title: t.metaTitle,
+    description: t.metaDescription,
+    path: "/compte",
+    index: false,
+  });
+}
 
-export default function AccountPage() {
+export default async function AccountPage() {
+  const t = (await getDictionary()).dict.community.account;
   return (
     <div className="mx-auto max-w-xl space-y-6 py-8">
-      <h1 className="text-3xl font-semibold tracking-tight">Mon compte</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">{t.title}</h1>
       <AccountPanel />
       <p className="text-sm text-muted-foreground">
-        Détails sur l&apos;usage de ces données :{" "}
+        {t.privacyIntro}{" "}
         <Link href="/confidentialite" className="underline underline-offset-4">
-          règles de confidentialité
+          {t.privacy}
         </Link>
         .
       </p>

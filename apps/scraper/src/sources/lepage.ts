@@ -1,9 +1,9 @@
 import { type CheerioAPI } from "cheerio";
 
 import { findProduct, parseAvailability } from "../lib/jsonld.ts";
-import { brandSlugFromName, type Offer } from "../lib/offer.ts";
+import { brandSlugFromName, validBrandReference, type Offer } from "../lib/offer.ts";
 import { fetchSitemapPages } from "../lib/sitemap.ts";
-import { referenceKey, toCents } from "../lib/text.ts";
+import { toCents } from "../lib/text.ts";
 import { type RetailerAdapter } from "./types.ts";
 
 /**
@@ -11,10 +11,7 @@ import { type RetailerAdapter } from "./types.ts";
  * (voir l'étude des revendeurs dans docs/sources.md).
  */
 const PRODUCT_URL =
-  /^https:\/\/www\.lepage\.fr\/fr\/\d+-montre-(tissot|hamilton|longines)-[a-z0-9-]+\.html$/;
-
-/** Première lettre des références de chaque marque : écarte une référence mal saisie. */
-const REFERENCE_PREFIX: Record<string, string> = { tissot: "T", hamilton: "H", longines: "L" };
+  /^https:\/\/www\.lepage\.fr\/fr\/\d+-montre-(tissot|hamilton|longines|citizen|seiko)-[a-z0-9-]+\.html$/;
 
 export function parseLepage($: CheerioAPI, url: string): Offer | null {
   const match = url.match(PRODUCT_URL);
@@ -25,7 +22,7 @@ export function parseLepage($: CheerioAPI, url: string): Offer | null {
   if (!product || !reference) return null;
 
   const brandSlug = brandSlugFromName(product.brand) ?? match[1]!;
-  if (!referenceKey(reference).startsWith(REFERENCE_PREFIX[brandSlug] ?? "")) return null;
+  if (brandSlug !== match[1] || !validBrandReference(brandSlug, reference)) return null;
 
   return {
     brandSlug,

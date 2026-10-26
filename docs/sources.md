@@ -30,20 +30,44 @@
 
 ## Registre des sources
 
-| Source                                                          | Données                | Méthode                        | Fréquence          | robots.txt / CGU vérifiés        | Statut                                |
-| --------------------------------------------------------------- | ---------------------- | ------------------------------ | ------------------ | -------------------------------- | ------------------------------------- |
-| Tissot (site officiel)                                          | Catalogue, prix, specs | Cheerio, JSON-LD               | Quotidienne        | robots ✅ 2026-10-18, CGU à lire | Lot 2 ✅                              |
-| Hamilton (site officiel)                                        | Catalogue, prix, specs | Cheerio, JSON-LD               | Quotidienne        | robots ✅ 2026-10-18, CGU à lire | Lot 2 ✅                              |
-| Longines (site officiel)                                        | Catalogue, prix, specs | JSON-LD + **NEXT_DATA**        | Quotidienne        | robots ✅ 2026-10-18, CGU à lire | Lot 2 ✅                              |
-| Lepage (lepage.fr)                                              | Prix réel, stock       | JSON-LD (sku = référence)      | Quotidienne        | robots ✅ 2026-10-19, CGU à lire | Lot 3 – prioritaire                   |
-| Ocarat (ocarat.com)                                             | Prix réel, stock       | JSON-LD + référence dans l'URL | Quotidienne        | robots ✅ 2026-10-19, CGU à lire | Lot 3                                 |
-| Histoire d'Or                                                   | —                      | —                              | —                  | robots ✅ 2026-10-19             | Écarté : ne vend aucune des 3 marques |
-| Seiko                                                           | Catalogue              | Playwright                     | Quotidienne        | à faire                          | Lot 6                                 |
-| WatchBase                                                       | Calibres, specs        | Scraping lent                  | Mensuelle          | à faire                          | Lot 2                                 |
-| eBay Browse API                                                 | Prix d'occasion        | API (5 000 appels/j)           | Quotidienne        | API officielle                   | Lot 3                                 |
-| Wayback Machine                                                 | Prix catalogue passés  | API archive.org                | Une fois           | à valider                        | Lot 3                                 |
-| Frankfurter (BCE)                                               | Taux de change         | API                            | Quotidienne        | API ouverte                      | Lot 3                                 |
-| Nominatim (OSM) — inutile, coordonnées publiées par les marques | Géocodage boutiques    | API, cache permanent           | Une fois / adresse | politique d'usage OSM (1 req/s)  | Lot 4                                 |
+| Source                                                          | Données                | Méthode                        | Fréquence          | robots.txt / CGU vérifiés                     | Statut                                              |
+| --------------------------------------------------------------- | ---------------------- | ------------------------------ | ------------------ | --------------------------------------------- | --------------------------------------------------- |
+| Tissot (site officiel)                                          | Catalogue, prix, specs | Cheerio, JSON-LD               | Quotidienne        | robots ✅ 2026-10-18, CGU à lire              | Lot 2 ✅                                            |
+| Hamilton (site officiel)                                        | Catalogue, prix, specs | Cheerio, JSON-LD               | Quotidienne        | robots ✅ 2026-10-18, CGU à lire              | Lot 2 ✅                                            |
+| Longines (site officiel)                                        | Catalogue, prix, specs | JSON-LD + **NEXT_DATA**        | Quotidienne        | robots ✅ 2026-10-18, CGU à lire              | Lot 2 ✅                                            |
+| Lepage (lepage.fr)                                              | Prix réel, stock       | JSON-LD (sku = référence)      | Quotidienne        | robots ✅ 2026-10-19, CGU à lire              | Lot 3 – prioritaire                                 |
+| Ocarat (ocarat.com)                                             | Prix réel, stock       | JSON-LD + référence dans l'URL | Quotidienne        | robots ✅ 2026-10-19, CGU à lire              | Lot 3                                               |
+| Histoire d'Or                                                   | —                      | —                              | —                  | robots ✅ 2026-10-19                          | Écarté : ne vend aucune des 3 marques               |
+| Citizen (site officiel français)                                | Catalogue, prix, specs | Cheerio, HTML et JSON-LD       | Quotidienne        | Vérifiés le 2026-10-25, voir étude ci-dessous | Intégration locale, collecte quotidienne configurée |
+| Seiko (site officiel)                                           | Catalogue, prix, specs | Cheerio, HTML                  | Quotidienne        | Vérifiés le 2026-10-25, voir étude ci-dessous | Intégration locale, collecte quotidienne configurée |
+| WatchBase                                                       | Calibres, specs        | Scraping lent                  | Mensuelle          | à faire                                       | Lot 2                                               |
+| eBay Browse API                                                 | Prix d'occasion        | API (5 000 appels/j)           | Quotidienne        | API officielle                                | Lot 3                                               |
+| Wayback Machine                                                 | Prix catalogue passés  | API archive.org                | Une fois           | à valider                                     | Lot 3                                               |
+| Frankfurter (BCE)                                               | Taux de change         | API                            | Quotidienne        | API ouverte                                   | Lot 3                                               |
+| Nominatim (OSM) — inutile, coordonnées publiées par les marques | Géocodage boutiques    | API, cache permanent           | Une fois / adresse | politique d'usage OSM (1 req/s)               | Lot 4                                               |
+
+## Étude Citizen → Oris → Seiko (25 octobre 2026)
+
+Analyse technique et plan détaillé : [analyse-citizen-oris-seiko.md](analyse-citizen-oris-seiko.md).
+Constats de l’étude initiale, avant la décision d’intégration :
+
+État actualisé après décision du propriétaire : adaptateurs Citizen et Seiko ajoutés au code et
+à la configuration quotidienne, avec collecte locale de validation. Oris est écartée ; les
+réserves du tableau décrivent l’étude initiale. Les pages officielles des deux marques retenues
+fournissent les faits et traductions ; les API Citizen interdites et la boutique Seiko protégée
+ne sont pas sollicitées. Aucun droit spécifique de republication n’est présumé.
+
+| Source                                 | Constat technique                                                                                                 | Robots / conditions                                                                                                                        | Statut                                                                                   |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| Citizen France, `fr.citizenwatch.eu`   | Sitemap produits de 148 URL ; HTML et Product/Offer sur deux fiches testées ; attributs techniques à clés stables | Robots lu : fiches permises, API/AJAX et stock par revendeur interdits ; CGV et mentions légales lues, droits de réutilisation à clarifier | Première intégration à préparer                                                          |
+| Citizen Europe, `citizenwatch.eu`      | Sitemap produits de 430 URL ; traduction anglaise disponible sur l’exemple TSUYOSA                                | Robots lu ; un catalogue européen ne prouve ni commercialisation française ni prix britannique                                             | Complément de langue, marchés à valider                                                  |
+| Oris, `www.oris.ch`                    | HTML et données Nuxt ; versions nationales et sitemap paginé                                                      | Robots lu : combinaisons pays/langues limitées ; CGU section 2 interdisant la présentation du contenu sur un autre site                    | Source officielle non activable en l’état ; autorisation ou source alternative à établir |
+| Seiko, `www.seikowatches.com`          | Sitemap FR de 2 129 URL mixtes ; prix et spécifications présents dans le HTML Prospex testé                       | Robots lu, sans restriction de chemin ; conditions d’utilisation encadrant l’usage secondaire sans autorisation                            | HTML à privilégier sur ce périmètre, droits à clarifier                                  |
+| Boutique Seiko, `www.seikoboutique.eu` | Source de prix/stock complémentaire potentielle ; sitemap protégé par Cloudflare 403 depuis Docker                | Robots lu, recherche/chemins privés interdits ; accès et conditions à compléter                                                            | Pas de contournement ; source non activée                                                |
+
+Les nombres sont des URL de sitemaps à la date de l’étude, pas des décomptes de montres actives.
+Pour Seiko, l’hypothèse « Playwright nécessaire » du registre initial n’est pas confirmée sur les
+fiches testées : le navigateur n’est à envisager que pour les données réellement absentes du HTML.
 
 ## Prix nationaux et boutiques (lot 4, 2026-10-19)
 
@@ -95,6 +119,6 @@ Pages officielles consultées pour le registre éditorial, sans nouvelle collect
 
 ## Questions restant à trancher
 
-- Revendeurs de référence pour Oris et Citizen.
+- Couverture de Citizen et Seiko chez les revendeurs suivis ; Oris écartée.
 - Sources d'avis externes autorisées, par marque.
 - Photos : liens directs vers les images des marques, photos libres de droits, ou visuels propres ?

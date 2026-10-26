@@ -115,6 +115,9 @@ const IGNORED = new Set([
   "Environnement",
   "Custom Tags",
   "Référence du bracelet XL",
+  "Références des déclinaisons",
+  "Modèle",
+  "EAN",
 ]);
 
 function rawReader(w: SheetInput, consumed: Set<string>) {
@@ -134,15 +137,21 @@ const yes = (v: string | null) => v !== null && /^(oui|yes)\b/i.test(v);
  * Fiche commune d'une montre. Libellés de lignes et titres de rubriques en français (clés
  * traduites par le site) ; valeurs, notes et conseils produits ici dans la langue demandée.
  */
-export function buildSpecSheet(w: SheetInput, locale: Locale = "fr"): SpecSheet {
+export function buildSpecSheet(
+  w: SheetInput,
+  locale: Locale = "fr",
+  factsSource: WatchSource = w,
+): SpecSheet {
   const { fr, mm, unit, dimensions } = formats(locale);
   const L = (text: string) => localize(text, locale);
   const P = PHRASES[locale];
   const consumed = new Set<string>();
   const raw = rawReader(w, consumed);
-  const m = extractMovementFacts(w);
-  const c = extractConstructionFacts(w);
-  const o = extractOwnershipFacts(w);
+  // Les faits restent analysés depuis le pivot français ; les valeurs affichées viennent de
+  // la traduction officielle. « Screw-down crown » ne doit pas effacer une couronne vissée.
+  const m = extractMovementFacts(factsSource);
+  const c = extractConstructionFacts(factsSource);
+  const o = extractOwnershipFacts(factsSource);
   const quartz = m.type === "quartz" || m.type === "solaire";
   const vintage =
     o.vintageYear !== null ||
@@ -204,6 +213,15 @@ export function buildSpecSheet(w: SheetInput, locale: Locale = "fr"): SpecSheet 
     "Date de production",
     "Mouvement · Pile",
     "Tension de la batterie",
+    "Matériau du boitier",
+    "Composition du boîtier",
+    "Composition du verre",
+    "Diamètre",
+    "Hauteur",
+    "Entrecorne",
+    "Largeur de la patte de fixation du bracelet",
+    "Dimensions du boîtier",
+    "Numéro du calibre",
   );
 
   // Pièces vintage Longines : la description est dans « Mouvement » (texte long).
@@ -217,21 +235,33 @@ export function buildSpecSheet(w: SheetInput, locale: Locale = "fr"): SpecSheet 
     "Mouvement · Fonction",
     "Fonctions principales",
     "Fonctions",
+    "Caractéristiques du calibre",
   );
   const chronograph = raw("Mouvement · Chronographe", "Mouvement · Fonctions du chronographe");
   const special = raw("Mouvement · Fonction spéciale", "Fonctions du mouvement");
 
   const movement: SheetRow[] = [
-    { label: "Type", value: m.type ? L(MOVEMENT_LABELS[m.type]) : null },
+    {
+      label: "Type",
+      value:
+        m.type === "autre"
+          ? (raw("Type de calibre") ?? L(MOVEMENT_LABELS.autre))
+          : m.type
+            ? L(MOVEMENT_LABELS[m.type])
+            : null,
+    },
     { label: "Calibre", value: m.caliber },
     { label: "Constructeur du mouvement", value: maker ? L(maker.value) : null },
     {
       label: "Réserve de marche",
-      value: quartz
-        ? L("Sans objet (quartz)")
-        : m.powerReserveH
-          ? P.hours(fr(m.powerReserveH))
-          : null,
+      value:
+        m.type === "solaire"
+          ? raw("Réserve de marche", "Autonomie", "Durée")
+          : quartz
+            ? L("Sans objet (quartz)")
+            : m.powerReserveH
+              ? P.hours(fr(m.powerReserveH))
+              : null,
     },
     {
       label: "Fréquence",
@@ -297,7 +327,7 @@ export function buildSpecSheet(w: SheetInput, locale: Locale = "fr"): SpecSheet 
 
   const tissotWidth = raw("Largeur de la boîte (mm)");
   const tissotLength = raw("Longueur de la boite (mm)");
-  const shape = raw("Boîtier · Forme");
+  const shape = raw("Boîtier · Forme", "Forme du boitier");
   const caseDimensions =
     dimensions(raw("Boîtier · Dimension", "Dimension du boîtier")) ??
     (tissotWidth && tissotLength && tissotWidth !== tissotLength
@@ -311,7 +341,7 @@ export function buildSpecSheet(w: SheetInput, locale: Locale = "fr"): SpecSheet 
     { label: "Épaisseur", value: mm(w.thicknessMm) },
     {
       label: "Corne à corne",
-      value: unit("mm")(raw("Boîtier · Hauteur corne à corne", "Lug to lug")),
+      value: unit("mm")(raw("Boîtier · Hauteur corne à corne", "Lug to lug", "Corne à corne")),
     },
     { label: "Entre-cornes", value: mm(w.lugWidthMm) },
     {
@@ -337,15 +367,18 @@ export function buildSpecSheet(w: SheetInput, locale: Locale = "fr"): SpecSheet 
     },
     { label: "Couronne vissée", value: c.screwDownCrown ? L("Oui") : L("Non mentionnée") },
     { label: "Étanchéité", value: w.waterResistanceM ? `${w.waterResistanceM} m` : null },
-    { label: "Particularités", value: raw("Boîtier · Spécificités", "Options de la boîte") },
-    { label: "Poids", value: unit("g")(raw("Boîtier · Poids", "Poids (g)")) },
+    {
+      label: "Particularités",
+      value: raw("Boîtier · Spécificités", "Options de la boîte", "Autres caractéristiques"),
+    },
+    { label: "Poids", value: unit("g")(raw("Boîtier · Poids", "Poids (g)", "Poids")) },
   ];
 
   const tissotDiamonds = raw("Diamants du cadran");
   const carats = raw("Nombre de carats");
   const dial: SheetRow[] = [
     { label: "Couleur", value: w.dialColor },
-    { label: "Index", value: raw("Cadran · Tour d'heures", "Type d'index") },
+    { label: "Index", value: raw("Cadran · Tour d'heures", "Type d'index", "Index de cadran") },
     { label: "Aiguilles", value: raw("Cadran · Aiguilles", "Cadran · Aiguilles du cadran") },
     {
       label: "Luminescence",
@@ -354,6 +387,7 @@ export function buildSpecSheet(w: SheetInput, locale: Locale = "fr"): SpecSheet 
           "Matière luminescente sur les aiguilles",
           "Matière luminescente sur la lunette",
           "Cadran · Spécificités",
+          "LumiBrite",
         ) ??
         (yes(raw("Super Luminova"))
           ? "Super-LumiNova"
@@ -399,7 +433,13 @@ export function buildSpecSheet(w: SheetInput, locale: Locale = "fr"): SpecSheet 
     { label: "Couleur", value: raw("Couleur du bracelet", "Bracelet · Couleur") },
     {
       label: "Boucle",
-      value: raw("Type de boucle", "Bracelet · Boucle", "Boucle (deuxième bracelet)"),
+      value: raw(
+        "Type de boucle",
+        "Bracelet · Boucle",
+        "Boucle (deuxième bracelet)",
+        "Caractéristiques du bracelet",
+        "Fermoir",
+      ),
     },
     { label: "Largeur à la boucle", value: unit("mm")(raw("Largeur de la boucle")) },
     {

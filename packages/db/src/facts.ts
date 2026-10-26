@@ -139,7 +139,9 @@ export function extractConstructionFacts(w: WatchSource): ConstructionFacts {
     crystalKnown: Boolean(w.crystal?.trim()),
     materialKnown: Boolean(material.trim()),
     antiReflective:
-      /anti-?reflet|antireflet/i.test(w.crystal ?? "") || yes(specs(w)["Anti-reflet"]),
+      /anti-?reflet|antireflet/i.test(
+        `${w.crystal ?? ""} ${specs(w)["Revêtement du verre"] ?? ""}`,
+      ) || yes(specs(w)["Anti-reflet"]),
     waterResistanceM: w.waterResistanceM,
     nobleMaterial: noble ? material : null,
     exhibitionCaseback:
@@ -150,7 +152,7 @@ export function extractConstructionFacts(w: WatchSource): ConstructionFacts {
     // Tissot : « Couronne et fond de boîte vissés ».
     screwDownCrown:
       yes(specs(w)["Couronne vissée"]) || /couronne( et fond de bo[iî]te)? viss[ée]/i.test(text),
-    luminescent: /luminova|luminescent/i.test(text),
+    luminescent: /luminova|luminescent|lumibrite/i.test(text),
     gemSet: /diamant/i.test(text),
     ceramicBezel: /lunette[^|]{0,40}c[ée]ramique|c[ée]ramique[^|]{0,20}lunette/i.test(text),
   };
@@ -198,7 +200,7 @@ export function extractOwnershipFacts(w: WatchSource): OwnershipFacts {
         `${specs(w)["Bracelet · Interchangeabilité"] ?? ""} ${specs(w)["Option du bracelet"] ?? ""} ${specs(w)["Easy Click"] ?? ""}`,
       ),
     deployantClasp: /d[ée]ployante|papillon/i.test(
-      `${specs(w)["Type de boucle"] ?? ""} ${specs(w)["Bracelet · Boucle"] ?? ""}`,
+      `${specs(w)["Type de boucle"] ?? ""} ${specs(w)["Bracelet · Boucle"] ?? ""} ${specs(w)["Fermoir"] ?? ""} ${specs(w)["Caractéristiques du bracelet"] ?? ""}`,
     ),
     chronographMechanism: [
       /roue [àa] colonnes?/i.test(chrono) && "Roue à colonnes",
@@ -241,7 +243,7 @@ export type Family = keyof typeof FAMILIES;
 const DIVER = /plong[ée]e|diver|hydroconquest|seastar|scuba|frogman|belowzero|legend diver/i;
 const PILOT = /aviation|pilot|spirit|x-wind|flieger|aviateur|khaki pilot/i;
 const DRESS =
-  /jazzmaster|american classic|le locle|carson|everytime|master collection|elegant|grande classique|dolcevita|record|flagship|heritage|conquest classic|primaluna|mini dolcevita|lady|classique|tradition|symphonette|evidenza|cl[ée]ment/i;
+  /jazzmaster|american classic|le locle|carson|everytime|master collection|elegant|grande classique|dolcevita|record|flagship|heritage|conquest classic|primaluna|mini dolcevita|lady|classique|tradition|symphonette|evidenza|cl[ée]ment|presage|king seiko|citizen l/i;
 
 /** Famille d'usage : une montre est comparée aux montres du même usage et du même prix. */
 export function family(w: WatchSource, m: MovementFacts, c: ConstructionFacts): Family {

@@ -39,6 +39,17 @@ describe("baseName", () => {
 });
 
 describe("modelVariants", () => {
+  it("utilise les liens constructeur Citizen sans supposer un préfixe de référence", () => {
+    const current = watch({ reference: "NJ0200-50Z", variantReferences: ["NJ0200-50W"] });
+    const linked = watch({ reference: "NJ0200-50W" });
+    const unrelated = watch({ reference: "NJ0200-50L" });
+    const result = modelVariants("citizen", current, [current, linked, unrelated]);
+    expect(result.variants.map((v) => v.watch.reference)).toEqual(["NJ0200-50W", "NJ0200-50Z"]);
+    expect(
+      modelVariants("seiko", watch({ reference: "SPB453J1" }), [watch({ reference: "SPB451J1" })])
+        .variants,
+    ).toEqual([]);
+  });
   const current = watch({ reference: "H32705141" });
   const black = watch({ reference: "H32705131", dialColor: "Noir", priceCents: 90_000 });
   const steel = watch({ reference: "H32705140", strapMaterial: "Acier" });

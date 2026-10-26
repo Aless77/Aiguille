@@ -1,4 +1,6 @@
 import { hamilton } from "./hamilton.ts";
+import { citizen } from "./citizen.ts";
+import { seiko } from "./seiko.ts";
 import { lepage } from "./lepage.ts";
 import { longines } from "./longines.ts";
 import { ocarat } from "./ocarat.ts";
@@ -13,6 +15,8 @@ export const sources: Record<string, SourceAdapter> = {
   tissot,
   hamilton,
   longines,
+  citizen,
+  seiko,
   lepage,
   ocarat,
 };

@@ -26,6 +26,53 @@ const row = (sheet: ReturnType<typeof buildSpecSheet>, group: string, label: str
   sheet.groups.find((g) => g.id === group)?.rows.find((r) => r.label === label);
 
 describe("buildSpecSheet", () => {
+  it("garde les faits du pivot français en affichant les valeurs officielles traduites", () => {
+    const source = base({
+      brandSlug: "seiko",
+      rawSpecs: {
+        "Autres caractéristiques": "Couronne vissée",
+        "Revêtement du verre": "Antireflet",
+      },
+    });
+    const translated = {
+      ...source,
+      crystal: "Sapphire crystal",
+      rawSpecs: {
+        "Autres caractéristiques": "Screw-down crown",
+        "Revêtement du verre": "Anti-reflective coating",
+      },
+    };
+    const sheet = buildSpecSheet(translated, "en", source);
+    expect(row(sheet, "boitier", "Couronne vissée")?.value).toBe("Yes");
+    expect(row(sheet, "boitier", "Verre")?.value).toContain("Sapphire crystal");
+    expect(row(sheet, "boitier", "Particularités")?.value).toBe("Screw-down crown");
+  });
+  it("affiche l'autonomie Eco-Drive et les caractéristiques Seiko dans les rubriques communes", () => {
+    const solar = buildSpecSheet(
+      base({
+        brandSlug: "citizen",
+        movement: "solaire",
+        powerReserveH: null,
+        rawSpecs: { "Réserve de marche": "180 jours" },
+      }),
+    );
+    expect(row(solar, "mouvement", "Réserve de marche")?.value).toBe("180 jours");
+    const seiko = buildSpecSheet(
+      base({
+        brandSlug: "seiko",
+        rawSpecs: {
+          LumiBrite: "Sur les aiguilles et les index",
+          "Corne à corne": "46.4 mm",
+          Poids: "168.0",
+          Fermoir: "Déployant",
+        },
+      }),
+    );
+    expect(row(seiko, "boitier", "Corne à corne")?.value).toBe("46,4 mm");
+    expect(row(seiko, "boitier", "Poids")?.value).toBe("168 g");
+    expect(row(seiko, "cadran", "Luminescence")?.value).toContain("aiguilles");
+    expect(row(seiko, "bracelet", "Boucle")?.value).toBe("Déployant");
+  });
   it("donne les mêmes rubriques et les mêmes lignes à toutes les marques", () => {
     const labels = (s: ReturnType<typeof buildSpecSheet>) =>
       s.groups.map((g) => [g.id, g.rows.map((r) => r.label)]);

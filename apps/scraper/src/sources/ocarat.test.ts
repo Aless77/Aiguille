@@ -27,6 +27,20 @@ const html = (product: Record<string, unknown> = {}) => `<html><head>
   })}</script></head><body></body></html>`;
 
 describe("parseOcarat", () => {
+  it("accepte Citizen avec le tiret de référence et Seiko avec son suffixe complet", () => {
+    expect(
+      parseOcarat(
+        load(html({ brand: { name: "Citizen" } })),
+        "https://ocarat.com/tsuyosa-nj0150-81e-citizen-88476.html",
+      ),
+    ).toMatchObject({ brandSlug: "citizen", reference: "NJ0150-81E" });
+    expect(
+      parseOcarat(
+        load(html({ brand: { name: "Seiko" } })),
+        "https://ocarat.com/prospex-spb453j1-seiko-123456.html",
+      ),
+    ).toMatchObject({ brandSlug: "seiko", reference: "SPB453J1" });
+  });
   it("lit la référence dans l'URL et l'offre dans le JSON-LD", () => {
     expect(offerSchema.parse(parseOcarat(load(html()), URL))).toEqual({
       brandSlug: "tissot",

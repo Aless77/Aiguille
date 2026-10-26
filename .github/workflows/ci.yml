@@ -54,6 +54,8 @@ jobs:
       FEATURE_SCORE: "true"
       FEATURE_REVIEWS: "true"
       FEATURE_COMMUNITY: "true"
+      # Français, anglais et allemand publiés : routage et traductions testés (e2e/langues.spec.ts).
+      LANGUAGES: "fr,en,de"
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7

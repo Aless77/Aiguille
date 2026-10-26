@@ -1,5 +1,4 @@
 import {
-  type Confidence,
   PILLAR_LABELS,
   PILLAR_WEIGHTS,
   type PillarId,
@@ -9,32 +8,14 @@ import {
 import { Link } from "@/lib/i18n/client";
 
 import { ReviewForm } from "@/components/review-form";
-import { ScoreBadge, scoreTone } from "@/components/score-badge";
-import { formatDate } from "@/lib/catalog/format";
+import { ScoreBadge } from "@/components/score-badge";
+import { scoreTone } from "@/lib/score-tone";
+import { format } from "@/lib/i18n/dictionary";
+import { getDictionary } from "@/lib/i18n/server";
 import { type WatchRating } from "@/lib/catalog/queries";
 import { cn } from "@/lib/utils";
 
-export const CONFIDENCE_LABELS: Record<Confidence, string> = {
-  low: "Confiance faible",
-  medium: "Confiance moyenne",
-  high: "Confiance élevée",
-};
-
-const AIGUILLE_HELP: Record<Confidence, string> = {
-  low: "Fiche de la marque incomplète ou peu de montres comparables : note indicative.",
-  medium: "Fiche assez complète, comparée à au moins 10 montres semblables.",
-  high: "Fiche complète, comparée à au moins 20 montres semblables.",
-};
-
-const COMMUNITY_HELP: Record<Confidence, string> = {
-  low: "Moins de 3 avis : à confirmer.",
-  medium: "Quelques avis concordants.",
-  high: "Au moins 10 avis.",
-};
-
 const CRITERIA = Object.keys(REVIEW_CRITERIA) as ReviewCriterion[];
-const decimal = (n: number) => n.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
-const ordinal = (n: number) => (n === 1 ? "1re" : `${n}e`);
 
 /** Note moyenne sur 5 d'un avis (critères notés seulement : le design peut manquer). */
 function reviewAverage(ratings: Record<ReviewCriterion, number | null>): number {
@@ -46,7 +27,7 @@ function reviewAverage(ratings: Record<ReviewCriterion, number | null>): number 
  * Deux évaluations côte à côte (lot 5) : la Note Aiguille, factuelle et calculée dans la
  * catégorie de la montre, et l'avis de la communauté. Rendu serveur : dans le HTML (SEO).
  */
-export function RatingSection({
+export async function RatingSection({
   watchId,
   rating,
   path,
@@ -63,6 +44,11 @@ export function RatingSection({
   showReviews: boolean;
 }) {
   const { score, reviews } = rating;
+  const { dict, f } = await getDictionary();
+  const t = dict.community.reviews;
+  const decimal = (n: number) => f.number(n);
+  const ordinal = (n: number) =>
+    n === 1 ? t.ordinalFirst : t.ordinalOther.replace("{n}", String(n));
   const averages = CRITERIA.map((c) => {
     const values = reviews.map((r) => r.ratings[c]).filter((v): v is number => v !== null);
     return {
@@ -74,19 +60,15 @@ export function RatingSection({
   return (
     <section id="note" aria-labelledby="note-titre" className="scroll-mt-20 space-y-10">
       <h2 id="note-titre" className="text-2xl font-semibold tracking-tight">
-        {showScore ? "Note et avis" : "Avis"}
+        {showScore ? t.titleWithScore : t.title}
       </h2>
 
       {/* ── Note Aiguille ─────────────────────────────────────────────────────────── */}
       {showScore && (
         <div className="space-y-5">
           <div className="space-y-1">
-            <h3 className="text-xl font-semibold tracking-tight">Note Aiguille</h3>
-            <p className="text-sm text-muted-foreground">
-              Notre évaluation, fondée sur les données publiées par la marque et toujours{" "}
-              <strong>dans son registre</strong> : la montre est comparée aux montres de même gamme
-              de prix et de même usage, pas à toutes les montres.
-            </p>
+            <h3 className="text-xl font-semibold tracking-tight">{t.scoreTitle}</h3>
+            <p className="text-sm text-muted-foreground">{t.scoreIntro}</p>
           </div>
 
           {score ? (
@@ -96,11 +78,14 @@ export function RatingSection({
                 <p className="text-sm font-medium">{score.categoryLabel}</p>
                 {score.categorySize > 1 && (
                   <p className="text-sm">
-                    {ordinal(score.categoryRank)} sur {score.categorySize} montres comparables
+                    {format(t.rank, {
+                      rank: ordinal(score.categoryRank),
+                      count: score.categorySize,
+                    })}
                   </p>
                 )}
                 <p className="text-sm text-muted-foreground">
-                  {CONFIDENCE_LABELS[score.confidence]} · {AIGUILLE_HELP[score.confidence]}
+                  {t.confidence[score.confidence]} · {t.scoreHelp[score.confidence]}
                 </p>
               </div>
 
@@ -111,7 +96,7 @@ export function RatingSection({
                     <li key={id} className="space-y-1.5">
                       <div className="flex items-baseline justify-between gap-4">
                         <span className="font-medium">
-                          {PILLAR_LABELS[id]}{" "}
+                          {t.pillars[id] ?? PILLAR_LABELS[id]}{" "}
                           <span className="text-sm font-normal text-muted-foreground">
                             ({PILLAR_WEIGHTS[id]} %)
                           </span>
@@ -135,15 +120,13 @@ export function RatingSection({
               </ul>
             </div>
           ) : (
-            <p className="text-muted-foreground">Note en cours de calcul.</p>
+            <p className="text-muted-foreground">{t.scorePending}</p>
           )}
 
           <p className="text-sm text-muted-foreground">
-            La Note Aiguille ne juge ni le design ni la finition, affaire de goût et
-            d&apos;expérience au poignet : c&apos;est le rôle des avis ci-dessous. Calcul détaillé
-            dans{" "}
+            {t.scoreDisclaimer}{" "}
             <Link href="/methodologie#note" className="underline underline-offset-4">
-              notre méthodologie
+              {t.methodology}
             </Link>
             .
           </p>
@@ -154,11 +137,8 @@ export function RatingSection({
       {showReviews && (
         <div className="space-y-5">
           <div className="space-y-1">
-            <h3 className="text-xl font-semibold tracking-tight">Avis de la communauté</h3>
-            <p className="text-sm text-muted-foreground">
-              Ce qu&apos;en pensent ceux qui la portent ou l&apos;ont essayée, notée par rapport à
-              ce qu&apos;on peut attendre à son prix.
-            </p>
+            <h3 className="text-xl font-semibold tracking-tight">{t.communityTitle}</h3>
+            <p className="text-sm text-muted-foreground">{t.communityIntro}</p>
           </div>
 
           {score?.reviewAverage != null && reviews.length > 0 ? (
@@ -168,20 +148,18 @@ export function RatingSection({
                   {decimal(score.reviewAverage)}
                   <span className="text-lg font-normal text-muted-foreground">/5</span>
                 </p>
-                <p className="text-sm font-medium">
-                  {reviews.length} avis {reviews.length > 1 ? "de visiteurs" : "d'un visiteur"}
-                </p>
+                <p className="text-sm font-medium">{f.plural(t.reviewCount, reviews.length)}</p>
                 {score.communityConfidence && (
                   <p className="text-sm text-muted-foreground">
-                    {CONFIDENCE_LABELS[score.communityConfidence]} ·{" "}
-                    {COMMUNITY_HELP[score.communityConfidence]}
+                    {t.confidence[score.communityConfidence]} ·{" "}
+                    {t.communityHelp[score.communityConfidence]}
                   </p>
                 )}
               </div>
               <dl className="grid max-w-xl grid-cols-[auto_1fr_auto] items-center gap-x-4 gap-y-2 text-sm">
                 {averages.map(({ criterion, average }) => (
                   <div key={criterion} className="contents">
-                    <dt>{REVIEW_CRITERIA[criterion]}</dt>
+                    <dt>{t.criteria[criterion]}</dt>
                     <div className="h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden>
                       <div
                         className="h-full rounded-full bg-foreground/70"
@@ -196,10 +174,7 @@ export function RatingSection({
               </dl>
             </div>
           ) : (
-            <p className="text-muted-foreground">
-              Pas encore d&apos;avis sur cette montre. Les notes d&apos;autres sites spécialisés
-              s&apos;ajouteront ici, avec un lien vers leur source.
-            </p>
+            <p className="text-muted-foreground">{t.none}</p>
           )}
 
           {reviews.length > 0 && (
@@ -222,8 +197,7 @@ export function RatingSection({
                     ) : null}
                     <span className="font-medium">{r.authorName}</span>
                     <span className="text-muted-foreground">
-                      {r.ownership === "owner" ? "Propriétaire" : "L'a essayée"} ·{" "}
-                      {formatDate(r.updatedAt)}
+                      {r.ownership === "owner" ? t.owner : t.tried} · {f.date(r.updatedAt)}
                     </span>
                     <span className="ml-auto font-semibold tabular-nums">
                       {decimal(reviewAverage(r.ratings))}/5
@@ -232,7 +206,7 @@ export function RatingSection({
                   {r.comment && <p className="leading-relaxed whitespace-pre-line">{r.comment}</p>}
                   <p className="text-xs text-muted-foreground">
                     {CRITERIA.filter((c) => r.ratings[c] !== null)
-                      .map((c) => `${REVIEW_CRITERIA[c]} ${r.ratings[c]}/5`)
+                      .map((c) => `${t.criteria[c]} ${r.ratings[c]}/5`)
                       .join(" · ")}
                   </p>
                 </li>

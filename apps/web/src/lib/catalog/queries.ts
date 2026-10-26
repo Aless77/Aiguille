@@ -76,6 +76,7 @@ function collectionCondition(slug: string): SQL | undefined {
 
 function filterConditions(f: CatalogFilter): SQL[] {
   const conditions: (SQL | undefined)[] = [
+    ne(brands.slug, "oris"),
     f.search ? catalogSearch(f.search) : undefined,
     f.brandSlug ? eq(brands.slug, f.brandSlug) : undefined,
     f.brands?.length ? inArray(brands.slug, f.brands) : undefined,
@@ -195,6 +196,7 @@ export async function getBrands(): Promise<BrandSummary[]> {
     })
     .from(brands)
     .leftJoin(watches, eq(watches.brandId, brands.id))
+    .where(ne(brands.slug, "oris"))
     .groupBy(brands.id)
     .orderBy(sql`count(${watches.id}) desc`, asc(brands.name));
 }
@@ -232,7 +234,7 @@ export async function getCollections(brandSlug?: string): Promise<CollectionSumm
     .from(watches)
     .innerJoin(brands, eq(brands.id, watches.brandId))
     .leftJoin(collections, eq(collections.id, watches.collectionId))
-    .where(brandSlug ? eq(brands.slug, brandSlug) : undefined)
+    .where(and(ne(brands.slug, "oris"), brandSlug ? eq(brands.slug, brandSlug) : undefined))
     .groupBy(brands.slug, brands.name, collections.slug, collections.name)
     .orderBy(sql`count(${watches.id}) desc`, asc(collections.name));
   return rows;
@@ -309,6 +311,7 @@ export async function getWatch(
 ): Promise<WatchDetail | null> {
   "use cache";
   cached();
+  if (brandSlug === "oris") return null;
   const [row] = await getDb()
     .select({
       ...cardColumns,
@@ -343,6 +346,7 @@ export interface FamilyWatch extends WatchCard {
   dialColor: string | null;
   caseMaterial: string | null;
   strapMaterial: string | null;
+  variantReferences: string[];
 }
 
 /** Montres de la même collection, pour en extraire les déclinaisons (packages/db/src/variants.ts). */
@@ -358,6 +362,9 @@ export async function getCollectionFamily(
       dialColor: watches.dialColor,
       caseMaterial: watches.caseMaterial,
       strapMaterial: watches.strapMaterial,
+      variantReferences: sql<
+        string[]
+      >`coalesce(string_to_array(${watches.rawSpecs}->>'Références des déclinaisons', ' | '), array[]::text[])`,
     })
     .from(watches)
     .innerJoin(brands, eq(brands.id, watches.brandId))
@@ -492,6 +499,7 @@ export async function getAllWatchPaths(): Promise<
     .from(watches)
     .innerJoin(brands, eq(brands.id, watches.brandId))
     .leftJoin(collections, eq(collections.id, watches.collectionId))
+    .where(ne(brands.slug, "oris"))
     .orderBy(asc(brands.slug), asc(watches.slug));
 }
 

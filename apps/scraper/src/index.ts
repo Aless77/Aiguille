@@ -7,6 +7,7 @@ import { SourceUnavailableError } from "./lib/availability.ts";
 import { type Country, countriesForDay, isCountry } from "./lib/countries.ts";
 import { runCountryPrices } from "./lib/country-prices.ts";
 import { runSource } from "./lib/crawl.ts";
+import { runTranslations } from "./lib/translations.ts";
 import { saveRates } from "./lib/rates.ts";
 import { runStores } from "./lib/stores.ts";
 import { revalidateSite } from "./lib/revalidate.ts";
@@ -23,12 +24,15 @@ import { type OfficialAdapter } from "./sources/types.ts";
  *   npm run scraper -- tissot --pays auto      pays du jour (rotation : chacun revu chaque semaine)
  *   npm run scraper -- taux                    taux de change BCE du jour
  *   npm run scraper -- longines --boutiques    boutiques agréées (par lots de 400, lot 4)
+ *   npm run scraper -- seiko --traductions en,de,it,es   traductions officielles, sans prix
+ *   npm run scraper -- citizen --traductions auto        une langue par jour
  */
 const { values, positionals } = parseArgs({
   options: {
     limit: { type: "string" },
     pays: { type: "string" },
     boutiques: { type: "boolean" },
+    traductions: { type: "string" },
   },
   allowPositionals: true,
 });
@@ -91,7 +95,24 @@ if (wantsRates) await attempt("taux", () => saveRates(db));
 
 for (const name of selected) {
   const adapter = sources[name]!;
-  if (values.boutiques) {
+  if (values.traductions) {
+    if (adapter.kind !== "official" || !adapter.translationLocales) {
+      console.log(`[${adapter.id}] pas de collecte de traductions indépendante : ignoré`);
+      continue;
+    }
+    const available = Object.keys(adapter.translationLocales);
+    const requested =
+      values.traductions === "auto"
+        ? [available[Math.floor(Date.now() / 86_400_000) % available.length]!]
+        : values.traductions.split(",");
+    for (const language of requested) {
+      await attempt(
+        `${adapter.id}@langue-${language}`,
+        () => runTranslations(db, adapter, language, { limit }),
+        adapter.id,
+      );
+    }
+  } else if (values.boutiques) {
     if (adapter.kind === "official" && adapter.stores) {
       await attempt(adapter.stores.id, () => runStores(db, adapter, { limit }));
     } else {
