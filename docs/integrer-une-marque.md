@@ -1,6 +1,7 @@
 # Intégrer une nouvelle marque
 
-Procédure à suivre pour chaque marque ajoutée au site (Oris, Seiko, Citizen au lot 6…). Objectif :
+Procédure à suivre pour chaque marque ajoutée au site (Citizen et Seiko ; Oris écartée, voir
+[decisions.md](decisions.md)). Objectif :
 que chaque fiche affiche les mêmes informations techniques, de garantie et d'entretien, et dise
 clairement « non communiqué » quand la marque ne publie pas une donnée. **On n'invente rien** :
 toute information vient d'une page publique, citée et datée.
@@ -61,7 +62,10 @@ La fiche propose les autres cadrans, matières et bracelets du même modèle, et
 Le regroupement lit la partie « modèle » de la référence : ajouter à `MODEL_KEYS` le motif de la
 marque (par exemple `H32705` pour `H32705141` chez Hamilton), avec un test dans `variants.test.ts`.
 Vérifier sur le site de la marque que deux références au même préfixe sont bien le même modèle.
-Sans motif, la marque n'a simplement pas de sélecteur.
+Un lien explicite du sélecteur officiel peut aussi établir ce rapprochement : Citizen conserve
+ses références liées dans `rawSpecs["Références des déclinaisons"]`. Sans motif vérifié ni lien
+explicite, aucun rapprochement n'est proposé (Seiko notamment). Ne pas déduire des déclinaisons
+à partir d'un titre ressemblant ou d'un calibre commun.
 
 ### Fiches dans d'autres langues (`translate` de l'adaptateur)
 
@@ -71,6 +75,12 @@ de ligne…), avec les mêmes libellés que `rawSpecs` pour la version français
 nationales relevées pour les prix (`locales`) fournissent alors les traductions sans requête de
 plus (`COUNTRY_LANGUAGES`). Sans `translate`, le site affiche la fiche en français, avec un
 avertissement. Exemple : `translateLongines`.
+
+Si une langue officielle existe sans marché national correspondant, utiliser
+`translationLocales` et `--traductions en,de,it,es` (ou `auto`, une langue par jour). Cette
+collecte n'écrit aucun prix : l'anglais européen Citizen ne prouve pas un prix britannique.
+Seules les langues réellement publiées sont déclarées ; aucun contenu de marque n'est traduit
+automatiquement. Les redirections vers un autre marché ou une autre langue sont rejetées.
 
 ### Gammes officielles (`packages/db/src/collection-families.ts`)
 

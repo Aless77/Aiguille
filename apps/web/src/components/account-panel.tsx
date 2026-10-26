@@ -1,6 +1,6 @@
 "use client";
 
-import { Link, useLocalePath } from "@/lib/i18n/client";
+import { Link, useLocale, useLocalePath } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -15,16 +15,21 @@ export function AccountPanel() {
   const { data, isPending } = authClient.useSession();
   const router = useRouter();
   const localize = useLocalePath();
+  const { dict, f } = useLocale();
+  const t = dict.community.account;
   const [state, setState] = useState<DeleteState>("idle");
 
-  if (isPending) return <p className="text-muted-foreground">Chargement…</p>;
+  if (isPending) return <p className="text-muted-foreground">{dict.community.misc.loading}</p>;
 
   if (!data) {
     return (
       <p>
-        Vous n&apos;êtes pas connecté.{" "}
-        <Link href="/connexion?retour=%2Fcompte" className="underline underline-offset-4">
-          Se connecter
+        {t.signedOut}{" "}
+        <Link
+          href={`/connexion?retour=${encodeURIComponent(localize("/compte"))}`}
+          className="underline underline-offset-4"
+        >
+          {t.signIn}
         </Link>
       </p>
     );
@@ -52,59 +57,53 @@ export function AccountPanel() {
   return (
     <div className="space-y-8">
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold tracking-tight">Données conservées</h2>
+        <h2 className="text-xl font-semibold tracking-tight">{t.data}</h2>
         <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
-          <dt className="text-muted-foreground">Nom</dt>
+          <dt className="text-muted-foreground">{t.name}</dt>
           <dd>{user.name}</dd>
-          <dt className="text-muted-foreground">E-mail</dt>
+          <dt className="text-muted-foreground">{t.email}</dt>
           <dd>{user.email}</dd>
-          <dt className="text-muted-foreground">Compte créé le</dt>
-          <dd>{new Date(user.createdAt).toLocaleDateString("fr-FR", { dateStyle: "long" })}</dd>
+          <dt className="text-muted-foreground">{t.createdAt}</dt>
+          <dd>{f.date(user.createdAt)}</dd>
         </dl>
-        <p className="text-sm text-muted-foreground">
-          Le nom et la photo viennent du service utilisé pour vous connecter (GitHub ou Google),
-          tels qu&apos;ils étaient lors de la création du compte.
-        </p>
+        <p className="text-sm text-muted-foreground">{t.dataNote}</p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold tracking-tight">Pays de provenance</h2>
+        <h2 className="text-xl font-semibold tracking-tight">{t.country}</h2>
         <CountryField value={user.country} />
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold tracking-tight">Supprimer mon compte</h2>
-        <p className="text-sm">
-          Votre profil, vos sessions, vos avis, vos listes de souhaits et vos commentaires sont
-          effacés immédiatement et définitivement.
-        </p>
+        <h2 className="text-xl font-semibold tracking-tight">{t.delete}</h2>
+        <p className="text-sm">{t.deleteText}</p>
         {state === "idle" && (
           <Button variant="destructive" onClick={() => setState("confirm")}>
-            Supprimer mon compte
+            {t.delete}
           </Button>
         )}
         {(state === "confirm" || state === "pending") && (
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-sm font-medium">Confirmer la suppression définitive ?</span>
+            <span className="text-sm font-medium">{t.confirm}</span>
             <Button variant="destructive" disabled={state === "pending"} onClick={deleteAccount}>
-              {state === "pending" ? "Suppression…" : "Oui, supprimer"}
+              {state === "pending" ? t.deleting : t.yesDelete}
             </Button>
             <Button variant="ghost" disabled={state === "pending"} onClick={() => setState("idle")}>
-              Annuler
+              {t.cancel}
             </Button>
           </div>
         )}
         {state === "stale" && (
           <div role="alert" className="space-y-3 rounded-lg border p-3 text-sm">
-            <p>Par sécurité, reconnectez-vous puis revenez ici pour supprimer votre compte.</p>
+            <p>{t.stale}</p>
             <Button variant="outline" onClick={reconnect}>
-              Me reconnecter
+              {t.reconnect}
             </Button>
           </div>
         )}
         {state === "failed" && (
           <p role="alert" className="text-sm text-destructive">
-            La suppression a échoué. Réessayez dans un instant.
+            {t.failed}
           </p>
         )}
       </section>

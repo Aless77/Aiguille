@@ -7,10 +7,14 @@ import { StoresMap } from "@/components/stores-map";
 import { Button } from "@/components/ui/button";
 import { type StorePoint } from "@/lib/catalog/queries";
 import { type StoreBounds, searchStores, storeAddress, storesInBounds } from "@/lib/catalog/stores";
+import { useLocale } from "@/lib/i18n/client";
+import { format } from "@/lib/i18n/dictionary";
 
 const PAGE_SIZE = 6;
 
 export function StoresExplorer({ stores }: { stores: StorePoint[] }) {
+  const { dict, f } = useLocale();
+  const t = dict.community.stores;
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
   const [bounds, setBounds] = useState<StoreBounds | null>(null);
@@ -50,16 +54,16 @@ export function StoresExplorer({ stores }: { stores: StorePoint[] }) {
     <section aria-labelledby="recherche-boutiques" className="flex flex-col gap-5">
       <div className="flex flex-col gap-3 rounded-xl border bg-card p-5 text-card-foreground">
         <h2 id="recherche-boutiques" className="text-xl font-semibold">
-          Trouver une boutique
+          {t.find}
         </h2>
         <label htmlFor="store-search" className="text-sm font-medium">
-          Pays, ville, code postal ou adresse
+          {t.searchLabel}
         </label>
         <div className="flex flex-wrap items-center gap-3">
           <input
             id="store-search"
             type="search"
-            placeholder="Ex. : France, Lyon, 69002, rue de la Paix…"
+            placeholder={t.searchPlaceholder}
             aria-describedby="store-search-help"
             aria-controls="store-results"
             value={query}
@@ -79,18 +83,16 @@ export function StoresExplorer({ stores }: { stores: StorePoint[] }) {
                 setBounds(null);
               }}
             >
-              Effacer la recherche
+              {t.clear}
             </Button>
           )}
         </div>
         <p id="store-search-help" className="text-sm text-muted-foreground">
-          Recherchez parmi les adresses répertoriées. La carte et la liste se mettent à jour
-          ensemble.
+          {t.searchHelp}
         </p>
       </div>
       <p role="status" className="text-sm text-muted-foreground">
-        {filtered.length} boutique{filtered.length > 1 ? "s" : ""} trouvée
-        {filtered.length > 1 ? "s" : ""}
+        {f.plural(t.found, filtered.length)}
       </p>
       <StoresMap points={points} onBoundsChange={updateBounds} resetView={resetView} />
       <section
@@ -101,11 +103,9 @@ export function StoresExplorer({ stores }: { stores: StorePoint[] }) {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex flex-col gap-1">
             <h2 id="store-results-title" className="text-xl font-semibold">
-              Boutiques dans la zone affichée
+              {t.inArea}
             </h2>
-            <p className="text-sm text-muted-foreground">
-              Zoomez ou déplacez la carte pour affiner cette liste.
-            </p>
+            <p className="text-sm text-muted-foreground">{t.inAreaHelp}</p>
           </div>
           {visible.length < filtered.length && (
             <Button
@@ -116,46 +116,44 @@ export function StoresExplorer({ stores }: { stores: StorePoint[] }) {
                 setResetView((value) => value + 1);
               }}
             >
-              Revenir à tous les résultats
+              {t.showAll}
             </Button>
           )}
         </div>
         {visible.length > 0 && (
           <p aria-live="polite" className="text-sm text-muted-foreground">
-            Boutiques {start + 1} à {Math.min(start + PAGE_SIZE, visible.length)} sur{" "}
-            {visible.length} dans cette zone
+            {format(t.range, {
+              from: start + 1,
+              to: Math.min(start + PAGE_SIZE, visible.length),
+              total: visible.length,
+            })}
           </p>
         )}
         {filtered.length === 0 ? (
-          <p className="rounded-xl border p-6 text-muted-foreground">
-            Aucune boutique ne correspond à cette recherche. Essayez une autre ville, un code postal
-            ou un pays.
-          </p>
+          <p className="rounded-xl border p-6 text-muted-foreground">{t.noMatch}</p>
         ) : visible.length === 0 ? (
-          <p className="rounded-xl border p-6 text-muted-foreground">
-            Aucune boutique répertoriée dans cette zone. Dézoomez ou revenez à tous les résultats.
-          </p>
+          <p className="rounded-xl border p-6 text-muted-foreground">{t.noneInArea}</p>
         ) : (
           <StoresList stores={visible.slice(start, start + PAGE_SIZE)} />
         )}
         {pageCount > 1 && (
-          <nav aria-label="Pages des boutiques" className="flex items-center justify-between gap-3">
+          <nav aria-label={t.pages} className="flex items-center justify-between gap-3">
             <Button
               variant="outline"
               disabled={currentPage === 0}
               onClick={() => setPage((value) => value - 1)}
             >
-              Précédent
+              {t.previous}
             </Button>
             <span className="text-sm text-muted-foreground">
-              Page {currentPage + 1} sur {pageCount}
+              {format(t.page, { page: currentPage + 1, count: pageCount })}
             </span>
             <Button
               variant="outline"
               disabled={currentPage + 1 >= pageCount}
               onClick={() => setPage((value) => value + 1)}
             >
-              Suivant
+              {t.next}
             </Button>
           </nav>
         )}

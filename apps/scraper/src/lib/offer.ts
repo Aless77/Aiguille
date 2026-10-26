@@ -6,7 +6,22 @@ const BRAND_SLUGS: Record<string, string> = {
   hamilton: "hamilton",
   "hamilton watch": "hamilton",
   longines: "longines",
+  citizen: "citizen",
+  seiko: "seiko",
 };
+
+/** Références constructeur complètes ; les références Seiko abrégées ne sont pas rapprochées. */
+export function validBrandReference(brand: string, reference: string): boolean {
+  const key = reference.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const patterns: Record<string, RegExp> = {
+    tissot: /^T\d/,
+    hamilton: /^H\d/,
+    longines: /^L\d/,
+    citizen: /^[A-Z]{2}\d{6}[A-Z]{1,2}$/,
+    seiko: /^[A-Z]{2,5}\d{2,4}[A-Z]\d$/,
+  };
+  return patterns[brand]?.test(key) ?? false;
+}
 
 /** Nom de marque d'un revendeur → slug de notre catalogue, ou `undefined` si non suivie. */
 export function brandSlugFromName(name: string | undefined): string | undefined {

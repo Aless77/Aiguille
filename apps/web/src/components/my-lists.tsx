@@ -1,13 +1,14 @@
 "use client";
 
 import { Check, Link2, Trash2 } from "lucide-react";
-import { Link } from "@/lib/i18n/client";
+import { Link, useLocale, useLocalePath } from "@/lib/i18n/client";
+import { format } from "@/lib/i18n/dictionary";
 import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/client";
-import { formatDate } from "@/lib/catalog/format";
-import { TITLE_MAX, type Visibility, VISIBILITIES, VISIBILITY_LABELS } from "@/lib/wishlists/input";
+
+import { TITLE_MAX, type Visibility, VISIBILITIES } from "@/lib/wishlists/input";
 
 export interface OwnList {
   shareId: string;
@@ -30,6 +31,10 @@ export async function fetchOwnLists(watchId?: number): Promise<OwnList[]> {
 /** Listes du compte connecté, lues côté navigateur (page /listes, jamais en cache). */
 export function MyLists() {
   const { data: session, isPending } = authClient.useSession();
+  const { dict, f } = useLocale();
+  const t = dict.community.lists;
+  const loading = dict.community.misc.loading;
+  const localize = useLocalePath();
   const [lists, setLists] = useState<OwnList[] | null>(null);
   const [title, setTitle] = useState("");
   const [visibility, setVisibility] = useState<Visibility>("private");
@@ -49,7 +54,7 @@ export function MyLists() {
     };
   }, [userId]);
 
-  if (isPending) return <p className="text-muted-foreground">Chargement…</p>;
+  if (isPending) return <p className="text-muted-foreground">{loading}</p>;
   if (!session) {
     return (
       <p className="rounded-xl border p-4">
@@ -58,9 +63,9 @@ export function MyLists() {
           rel="nofollow"
           className="font-medium underline underline-offset-4"
         >
-          Connectez-vous
+          {t.signInToCreate}
         </Link>{" "}
-        avec Google ou GitHub pour créer vos listes de souhaits et les partager.
+        {t.signInToCreateEnd}
       </p>
     );
   }
@@ -74,7 +79,7 @@ export function MyLists() {
     });
     if (!response.ok) {
       const data = (await response.json().catch(() => ({}))) as { error?: string };
-      setError(data.error ?? "Une erreur est survenue, réessayez.");
+      setError(data.error ?? dict.community.misc.genericError);
     }
     await load();
     return response.ok;
@@ -90,18 +95,18 @@ export function MyLists() {
         }}
       >
         <label className="min-w-56 flex-1 space-y-1 text-sm">
-          <span className="font-medium">Nouvelle liste</span>
+          <span className="font-medium">{t.newList}</span>
           <input
             required
             value={title}
             maxLength={TITLE_MAX}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Ma première automatique, Idées cadeau…"
+            placeholder={t.newListPlaceholder}
             className="w-full rounded-md border bg-background px-3 py-2"
           />
         </label>
         <label className="space-y-1 text-sm">
-          <span className="font-medium">Visibilité</span>
+          <span className="font-medium">{t.visibilityLabel}</span>
           <select
             value={visibility}
             onChange={(e) => setVisibility(e.target.value as Visibility)}
@@ -109,7 +114,7 @@ export function MyLists() {
           >
             {VISIBILITIES.map((v) => (
               <option key={v} value={v}>
-                {VISIBILITY_LABELS[v].label}
+                {t.visibility[v].label}
               </option>
             ))}
           </select>
@@ -120,13 +125,12 @@ export function MyLists() {
             checked={anonymous}
             onChange={(e) => setAnonymous(e.target.checked)}
           />
-          Anonyme
+          {t.anonymous}
         </label>
-        <Button type="submit">Créer</Button>
+        <Button type="submit">{t.create}</Button>
         <p className="w-full text-xs text-muted-foreground">
-          {VISIBILITY_LABELS[visibility].help}
-          {anonymous &&
-            " Sans votre nom ni votre photo : vous apparaissez comme « Auteur de la liste »."}
+          {t.visibility[visibility].help}
+          {anonymous && t.anonymousHelp}
         </p>
       </form>
 
@@ -137,12 +141,9 @@ export function MyLists() {
       )}
 
       {lists === null ? (
-        <p className="text-muted-foreground">Chargement…</p>
+        <p className="text-muted-foreground">{loading}</p>
       ) : lists.length === 0 ? (
-        <p className="text-muted-foreground">
-          Pas encore de liste. Créez-en une ici, ou depuis le bouton « Ajouter à une liste »
-          d&apos;une fiche montre.
-        </p>
+        <p className="text-muted-foreground">{t.empty}</p>
       ) : (
         <ul className="divide-y rounded-xl border">
           {lists.map((l) => (
@@ -155,12 +156,12 @@ export function MyLists() {
                   {l.title}
                 </Link>
                 <p className="text-sm text-muted-foreground">
-                  {l.watchCount} montre{l.watchCount > 1 ? "s" : ""} · modifiée le{" "}
-                  {formatDate(l.updatedAt)}
+                  {f.plural(t.watches, l.watchCount)}
+                  {format(t.updatedOn, { date: f.date(l.updatedAt) })}
                 </p>
               </div>
               <select
-                aria-label={`Visibilité de « ${l.title} »`}
+                aria-label={format(t.visibilityOf, { title: l.title })}
                 value={l.visibility}
                 onChange={(e) =>
                   void request(`/api/listes/${l.shareId}`, "PATCH", { visibility: e.target.value })
@@ -169,7 +170,7 @@ export function MyLists() {
               >
                 {VISIBILITIES.map((v) => (
                   <option key={v} value={v}>
-                    {VISIBILITY_LABELS[v].label}
+                    {t.visibility[v].label}
                   </option>
                 ))}
               </select>
@@ -177,14 +178,14 @@ export function MyLists() {
                 <input
                   type="checkbox"
                   checked={l.anonymous}
-                  aria-label={`« ${l.title} » publiée anonymement`}
+                  aria-label={format(t.anonymousOf, { title: l.title })}
                   onChange={(e) =>
                     void request(`/api/listes/${l.shareId}`, "PATCH", {
                       anonymous: e.target.checked,
                     })
                   }
                 />
-                Anonyme
+                {t.anonymous}
               </label>
               {l.visibility !== "private" && (
                 <Button
@@ -192,22 +193,22 @@ export function MyLists() {
                   size="sm"
                   onClick={async () => {
                     await navigator.clipboard.writeText(
-                      `${window.location.origin}/listes/${l.shareId}`,
+                      `${window.location.origin}${localize(`/listes/${l.shareId}`)}`,
                     );
                     setCopied(l.shareId);
                     setTimeout(() => setCopied(null), 2000);
                   }}
                 >
                   {copied === l.shareId ? <Check aria-hidden /> : <Link2 aria-hidden />}
-                  {copied === l.shareId ? "Lien copié" : "Copier le lien"}
+                  {copied === l.shareId ? t.copied : t.copy}
                 </Button>
               )}
               <Button
                 variant="ghost"
                 size="sm"
-                aria-label={`Supprimer « ${l.title} »`}
+                aria-label={format(t.deleteOf, { title: l.title })}
                 onClick={() => {
-                  if (window.confirm(`Supprimer « ${l.title} » et les avis reçus ?`)) {
+                  if (window.confirm(format(t.confirmDelete, { title: l.title }))) {
                     void request(`/api/listes/${l.shareId}`, "DELETE");
                   }
                 }}

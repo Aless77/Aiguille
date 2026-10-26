@@ -2,7 +2,7 @@ import { CheerioCrawler, type CheerioCrawlingContext, Configuration } from "@cra
 
 import { USER_AGENT } from "../config.ts";
 import { SourceUnavailableError, createCircuitBreaker } from "./availability.ts";
-import { createThrottle } from "./throttle.ts";
+import { throttleDomain } from "./throttle.ts";
 
 interface PoliteCrawlerOptions {
   /** Délai minimal entre deux requêtes (4 s, ou le Crawl-delay du site s'il est plus long). */
@@ -23,15 +23,22 @@ export interface PoliteCrawler {
   run(requests: CrawlRequests): Promise<void>;
 }
 
+/** Une redirection ne doit pas rattacher le prix ou la traduction d'une autre référence. */
+export function isRequestedPage(requested: string, loaded: string): boolean {
+  const expected = new URL(requested);
+  const actual = new URL(loaded);
+  const path = (url: URL) => url.pathname.replace(/\/+$/, "").toLowerCase();
+  return expected.origin === actual.origin && path(expected) === path(actual);
+}
+
 /**
  * Crawler conforme aux règles de collecte (docs/sources.md) : une requête à la fois, délai
- * minimal garanti par throttle(), User-Agent identifiable, aucun en-tête imitant un navigateur.
+ * minimal partagé par domaine, User-Agent identifiable, aucun en-tête imitant un navigateur.
  * robots.txt est vérifié en amont par fetchRobots (Crawlee le lirait avec un User-Agent de
  * navigateur). Disjoncteur : après CIRCUIT_BREAKER_THRESHOLD erreurs serveur d'affilée, on cesse
  * de solliciter un site en panne ou en maintenance.
  */
 export function createPoliteCrawler(options: PoliteCrawlerOptions): PoliteCrawler {
-  const throttle = createThrottle(options.delaySecs * 1000);
   const breaker = createCircuitBreaker();
   /** Compte l'échec ; au seuil, arrête le crawler (plus aucune requête vers ce site). */
   const recordFailure = (context: CheerioCrawlingContext, error: Error): boolean => {
@@ -46,15 +53,15 @@ export function createPoliteCrawler(options: PoliteCrawlerOptions): PoliteCrawle
   const crawler: CheerioCrawler = new CheerioCrawler(
     {
       // maxRequestsPerMinute seul autorise des rafales, et sameDomainDelaySecs remet les
-      // requêtes en fin de file (~1 requête/minute) : le délai est donc géré par throttle().
+      // requêtes en fin de file (~1 requête/minute) : le délai est donc géré par throttleDomain().
       maxConcurrency: 1,
       maxRequestRetries: 2,
       requestHandlerTimeoutSecs: 60,
       useSessionPool: false,
       ignoreHttpErrorStatusCodes: options.ignoreHttpErrorStatusCodes,
       preNavigationHooks: [
-        async (_ctx, gotOptions) => {
-          await throttle();
+        async (context, gotOptions) => {
+          await throttleDomain(context.request.url, options.delaySecs * 1000);
           gotOptions.useHeaderGenerator = false;
           gotOptions.headers = { ...gotOptions.headers, "user-agent": USER_AGENT };
         },

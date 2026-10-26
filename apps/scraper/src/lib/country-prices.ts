@@ -5,7 +5,7 @@ import { z } from "zod";
 import { DOMAIN_DELAY_SECS } from "../config.ts";
 import { type OfficialAdapter } from "../sources/types.ts";
 import { COUNTRIES, type Country } from "./countries.ts";
-import { createPoliteCrawler } from "./http.ts";
+import { createPoliteCrawler, isRequestedPage } from "./http.ts";
 import { findProduct, parseAvailability } from "./jsonld.ts";
 import { Persister } from "./persist.ts";
 import { fetchRobots } from "./robots.ts";
@@ -23,7 +23,15 @@ export type CountryPrice = z.infer<typeof countryPriceSchema>;
  * Prix national lu dans le JSON-LD de la fiche. `null` si la page n'est pas une fiche, ou si la
  * devise n'est pas celle du pays : redirection vers un autre marché, à ne pas confondre.
  */
-export function parseCountryPrice($: CheerioAPI, country: Country): CountryPrice | null {
+export function parseCountryPrice(
+  $: CheerioAPI,
+  country: Country,
+  read?: () => unknown,
+): CountryPrice | null {
+  if (read) {
+    const parsed = countryPriceSchema.safeParse(read());
+    return parsed.success && parsed.data.currency === COUNTRIES[country] ? parsed.data : null;
+  }
   const product = findProduct($);
   if (!product?.priceCurrency) return null;
   if (product.priceCurrency.toUpperCase() !== COUNTRIES[country]) return null;
@@ -95,13 +103,22 @@ export async function runCountryPrices(
           stats.notSold++;
           return;
         }
+        const loadedUrl = request.loadedUrl ?? request.url;
+        if (!isRequestedPage(request.url, loadedUrl)) {
+          stats.errors++;
+          return;
+        }
         // La version nationale sert aussi de traduction de la fiche (même requête, aucune de plus).
         const language = COUNTRY_LANGUAGES[country];
-        const translation = language ? adapter.translate?.($, request.url) : null;
+        const translation = language ? adapter.translate?.($, loadedUrl) : null;
         if (language && translation) {
           await persister.saveTranslation(watchId, language, translation, request.url);
         }
-        const price = parseCountryPrice($, country);
+        const price = parseCountryPrice(
+          $,
+          country,
+          adapter.countryPrice ? () => adapter.countryPrice!($, loadedUrl) : undefined,
+        );
         if (!price) {
           // Sans Product : fiche retirée de ce marché. Avec une autre devise : redirection.
           if (findProduct($)) stats.errors++;

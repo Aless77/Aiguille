@@ -16,6 +16,7 @@ import { type Dictionary, format, translateLabel } from "@/lib/i18n/dictionary";
  */
 export function SpecSheetSection({
   watch: w,
+  source,
   storeCount,
   dict,
   labels = {},
@@ -23,6 +24,7 @@ export function SpecSheetSection({
   locale,
 }: {
   watch: WatchDetail;
+  source?: WatchDetail;
   storeCount: number;
   dict: Dictionary;
   labels?: Record<string, string>;
@@ -31,7 +33,7 @@ export function SpecSheetSection({
 }) {
   const t = dict.specSheet;
   const unknown = dict.common.unknown;
-  const sheet = buildSpecSheet({ ...w, storeCount }, locale);
+  const sheet = buildSpecSheet({ ...w, storeCount }, locale, source);
   const vintage = sheet.groups.some((g) => g.id === "historique");
 
   return (

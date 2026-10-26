@@ -1,3 +1,4 @@
+import { community } from "../messages/community";
 import { pages } from "../messages/pages";
 import { sections } from "../messages/sections";
 import { catalog } from "../messages/catalog";
@@ -128,6 +129,7 @@ export const fr = {
   pages: pages.fr,
   catalog: catalog.fr,
   sections: sections.fr,
+  community: community.fr,
   client: {
     signIn: "Se connecter",
     signOut: "Se déconnecter",

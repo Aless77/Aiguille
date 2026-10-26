@@ -59,9 +59,13 @@ Reste pour boucler le lot 4 :
   `limit 1` ou build Vercel).
 - **Pays de provenance** des comptes (demandé après la première connexion, `npm run db:pays`).
 - **Multilingue** (FR, EN, DE, IT, ES) : routage `app/[lang]`, dictionnaires, repli anglais,
-  fiches Longines traduites depuis les versions nationales. Activer avec `LANGUAGES`. Reste à
-  traduire : catalogue, filtres, pages de contenu, offres, historique, avis ; libellés IT/ES de
-  la fiche technique ; `translate` pour Tissot et Hamilton.
+  fiches Longines traduites depuis les versions nationales. Activer avec `LANGUAGES`.
+  **Tout le site est traduit** (25 octobre) : catalogue, fiche, avis, listes, communauté, compte,
+  connexion, boutiques, prix en Europe, méthodologie et confidentialité (version française
+  faisant foi), textes produits par `packages/db` (`i18n.ts`, testé), sitemap et hreflang prêts.
+  Restent en français : messages d'erreur renvoyés par l'API, détails des piliers de la note
+  (masquée), pseudonymes anonymes des listes ; `translate` pour Tissot et Hamilton. Langues
+  secondaires toujours non indexées (`INDEXABLE_LOCALES`). E2E avec `LANGUAGES=fr,en,de`.
 - **Reprise multilingue du 25 octobre** : travail local existant conservé (accueil, catalogue,
   filtres, pagination, nouveautés, collections, offres, historique, alternatives et libellés de
   fiche technique). Pages « À propos », « Prix en Europe » et page introuvable désormais reliées
@@ -128,11 +132,63 @@ Suivre [deploiement.md](deploiement.md) et les choix de [decisions.md](decisions
 
 Le propriétaire gère les commits, PR et fusions. Les agents restent sur la branche courante.
 
+## Citizen et Seiko – intégration locale du 25 octobre 2026
+
+- **Catalogue** : 148 Citizen (148 URL françaises) et 447 Seiko (463 URL candidates), en plus
+  des 1 573 montres existantes. Source officielle en HTML ; prix présents pour 148 Citizen et
+  428 Seiko. Les fiches sans prix restent utiles et non indexables. Aucun changement de schéma.
+- **Fonctions communes** : marques/collections/fiches, recherche et filtres, historique des prix,
+  offres revendeurs, nouveautés, garanties et entretien, alternatives et calcul des notes.
+  Citizen : déclinaisons établies par les liens officiels ; Seiko : aucun regroupement supposé.
+  Navigation adaptée aux cinq marques. Oris retirée des pages publiques et du seed ; sa ligne
+  vide historique reste conservée en base, sans contenu affiché.
+- **Collecte quotidienne configurée** : France, prix nationaux disponibles, traductions
+  officielles en rotation. Citizen : France/Allemagne pour les prix, anglais/allemand pour les
+  traductions ; Seiko : France/Allemagne/Italie/Espagne/Royaume-Uni, quatre langues secondaires.
+  Les essais de langues et de pays portent sur de petits lots : la couverture complète se
+  remplira progressivement après activation du workflow contenant ces modifications.
+- **Fiabilité** : références complètes, rejets des fausses fiches et des redirections vers une
+  autre référence ; solaire conservé en jours/mois, sans conversion en heures mécaniques.
+  Type Citizen « Mécanique » seul : remontage non déterminé, jamais supposé manuel.
+- **Limites sourcées** : stock officiel Seiko inconnu, boutique protégée non collectée ; pas de
+  stock par boutique ni de nouvelles adresses agréées pour ces deux marques. Couleur du cadran
+  absente des tableaux collectés ; matériau du bracelet Seiko souvent non publié. Fabricant du
+  mouvement, fabrication et tarifs de révision non établis : non communiqué, sans extrapolation
+  à toute la marque. Rapport `db:couverture` exécuté après le relevé complet.
+- **Périmètre de livraison** : code et base locale uniquement ; aucun déploiement, aucune
+  écriture sur la base distante et aucune invalidation du site de production.
+- **Vérifications** : `npm run check` réussi sur l'état partagé du dépôt (293 tests), build
+  de production réussi avec FR/EN/DE/IT/ES (12 011 pages). Playwright dans Docker, plugin Browser
+  absent : 24 pages vérifiées à 1 280 et 393 px, recherche Citizen, déclinaisons, fiche solaire
+  (180 jours), référence Seiko complète et offre Lepage, traductions Seiko dans les quatre
+  langues secondaires, Oris en vraie 404. Aucun débordement ni erreur d'hydratation sur ces
+  parcours ; captures relues. Prix/specs et JSON-LD Product confirmés dans le HTML serveur ;
+  sitemap avec Citizen/Seiko, sans Oris. Essais de prix étrangers : Citizen DE (5/5) ; Seiko
+  DE/IT/GB (2/5 chacun), ES (1/5), les autres fiches absentes/inexploitables sur ces marchés.
+  Traductions indépendantes : Citizen EN/DE (5/5 chacun), Seiko EN (2/5, trois absences).
+  La totalité des références et langues étrangères n'a pas été collectée pendant cette validation.
+
 ## Ensuite
+
+- **Décision du 25 octobre : Citizen et Seiko retenues, Oris écartée.** Oris ne doit plus être
+  annoncée sur le site. Ses conditions publiées interdisent la réutilisation du contenu sur un
+  autre site ; aucune demande ni aucun refus individuel reçus. L’étude ci-dessous reste
+  historique ; son étape Oris est annulée. Voir [decisions.md](decisions.md).
+
+- **Étude historique nouvelles marques (25 octobre, avant intégration)** : ordre demandé Citizen → Oris → Seiko. Analyse et
+  plan d’intégration dans [analyse-citizen-oris-seiko.md](analyse-citizen-oris-seiko.md), registre
+  des sources complété. Citizen : 148 URL produits françaises, clés techniques pour traductions,
+  autonomie solaire à traiter sans confusion jours/heures. Oris : source officielle techniquement
+  exploitable mais CGU restrictives, autorisation ou source revendeur à établir. Seiko : prix et
+  caractéristiques accessibles en HTML sur l’échantillon, vigilance sur les références complètes
+  et les fausses 404 en HTTP 200 ; boutique protégée en local. Aucune nouvelle source activée,
+  aucune montre importée pendant l’étude. Prochaine étape : adaptateur Citizen sur un petit lot,
+  après clarification de la réutilisation des contenus, puis faits/fiche technique, traductions,
+  déclinaisons, revendeurs et validation de tous les parcours existants.
 
 - **Lot 5** : comptes, anti-spam, avis par critère et note explicable sur 100. Sources externes
   autorisées et poids des trois piliers encore à trancher.
-- **Lot 6** : comparateur, exploration prix/note, Oris, Seiko et Citizen.
+- **Lot 6** : comparateur, exploration prix/note ; Citizen et Seiko intégrées localement ci-dessus.
 - **Lot 7**, optionnel : alertes de baisse de prix et analyse des avis.
 
 Pour les messages de console liés aux extensions et à Docker, voir

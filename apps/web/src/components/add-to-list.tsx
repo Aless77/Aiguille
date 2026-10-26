@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Heart, Plus } from "lucide-react";
-import { Link } from "@/lib/i18n/client";
+import { Link, useLocale } from "@/lib/i18n/client";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -17,6 +17,8 @@ import { cn } from "@/lib/utils";
  */
 export function AddToList({ watchId }: { watchId: number }) {
   const { data: session, isPending } = authClient.useSession();
+  const { dict, f } = useLocale();
+  const t = dict.community.lists;
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [lists, setLists] = useState<OwnList[] | null>(null);
@@ -61,7 +63,7 @@ export function AddToList({ watchId }: { watchId: number }) {
         className="inline-flex items-center gap-2 text-sm underline underline-offset-4"
       >
         <Heart className="size-4" aria-hidden />
-        Se connecter pour l&apos;ajouter à une liste de souhaits
+        {t.addSignIn}
       </Link>
     );
   }
@@ -77,7 +79,7 @@ export function AddToList({ watchId }: { watchId: number }) {
     });
     if (!response.ok) {
       const data = (await response.json().catch(() => ({}))) as { error?: string };
-      setError(data.error ?? "Une erreur est survenue, réessayez.");
+      setError(data.error ?? dict.community.misc.genericError);
     }
     await load();
     return response.ok;
@@ -96,12 +98,12 @@ export function AddToList({ watchId }: { watchId: number }) {
         }}
       >
         <Heart className={cn(inLists > 0 && "fill-current")} aria-hidden />
-        {inLists > 0 ? `Dans ${inLists} liste${inLists > 1 ? "s" : ""}` : "Ajouter à une liste"}
+        {inLists > 0 ? f.plural(t.inLists, inLists) : t.add}
       </Button>
       {open && (
         <div className="absolute left-0 z-20 mt-2 w-72 space-y-3 rounded-xl border bg-background p-3 shadow-lg">
           {lists === null ? (
-            <p className="text-sm text-muted-foreground">Chargement…</p>
+            <p className="text-sm text-muted-foreground">{dict.community.misc.loading}</p>
           ) : (
             lists.length > 0 && (
               <ul className="max-h-60 space-y-1 overflow-y-auto">
@@ -146,17 +148,17 @@ export function AddToList({ watchId }: { watchId: number }) {
               value={title}
               maxLength={TITLE_MAX}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Nouvelle liste"
-              aria-label="Nom de la nouvelle liste"
+              placeholder={t.newList}
+              aria-label={t.newListName}
               className="min-w-0 flex-1 rounded-md border bg-background px-2 py-1 text-sm"
             />
-            <Button type="submit" size="sm" aria-label="Créer la liste avec cette montre">
+            <Button type="submit" size="sm" aria-label={t.createWithWatch}>
               <Plus aria-hidden />
             </Button>
           </form>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <Link href="/listes" className="block text-xs underline underline-offset-4">
-            Gérer et partager mes listes
+            {t.manage}
           </Link>
         </div>
       )}

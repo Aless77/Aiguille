@@ -1,3 +1,4 @@
+import { community } from "../messages/community";
 import { pages } from "../messages/pages";
 import { sections } from "../messages/sections";
 import { catalog } from "../messages/catalog";
@@ -170,6 +171,7 @@ export const de: PartialDictionary = {
   pages: pages.de,
   catalog: catalog.de,
   sections: sections.de,
+  community: community.de,
   client: {
     signIn: "Anmelden",
     signOut: "Abmelden",

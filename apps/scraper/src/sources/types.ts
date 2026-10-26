@@ -27,6 +27,17 @@ export interface OfficialAdapter extends BaseAdapter {
    * stable : affichage du site dans d'autres langues (packages/db/src/translations.ts).
    */
   translate?($: CheerioAPI, url: string): WatchTranslationData | null;
+  /** Langues officielles indépendantes d'un marché de prix (ex. anglais européen Citizen). */
+  translationLocales?: Partial<Record<"en" | "de" | "it" | "es", string>>;
+  /** Prix national rendu dans le HTML si la marque ne fournit pas de Product JSON-LD. */
+  countryPrice?(
+    $: CheerioAPI,
+    url: string,
+  ): {
+    priceCents: number | undefined;
+    currency: string;
+    availability: "in_stock" | "out_of_stock" | "preorder" | "unknown";
+  } | null;
   /**
    * Versions nationales du site (lot 4, prix par pays). Un pays absent n'a pas de version
    * nationale propre (redirection vers un site « international ») : il n'est pas relevé.

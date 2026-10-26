@@ -1,13 +1,18 @@
+"use client";
+
 import { type StorePoint } from "@/lib/catalog/queries";
-import { COUNTRY_INFO } from "@/lib/catalog/europe-prices";
 import { storeAddress, storeKey, storeMapsUrl } from "@/lib/catalog/stores";
+import { useLocale } from "@/lib/i18n/client";
+import { format } from "@/lib/i18n/dictionary";
 
 /**
  * Adresses et liens rendus en HTML dès le chargement, accessibles sans la carte.
  */
 export function StoresList({ stores }: { stores: StorePoint[] }) {
+  const { dict, f } = useLocale();
+  const t = dict.community.stores;
   return (
-    <ul aria-label="Résultats des boutiques" className="grid gap-3 sm:grid-cols-2">
+    <ul aria-label={t.results} className="grid gap-3 sm:grid-cols-2">
       {stores.map((store) => (
         <li
           key={storeKey(store)}
@@ -17,11 +22,13 @@ export function StoresList({ stores }: { stores: StorePoint[] }) {
             <p className="text-sm font-medium">
               {store.city}{" "}
               <span className="font-normal text-muted-foreground">
-                · {COUNTRY_INFO[store.country]?.name ?? store.country}
+                · {f.country(store.country)}
               </span>
             </p>
             <h3 className="font-semibold">{store.name}</h3>
-            <p className="text-xs text-muted-foreground">Boutique agréée {store.brandName}</p>
+            <p className="text-xs text-muted-foreground">
+              {format(t.authorised, { brand: store.brandName })}
+            </p>
           </div>
           <p className="text-sm text-muted-foreground">{storeAddress(store)}</p>
           <a
@@ -29,9 +36,9 @@ export function StoresList({ stores }: { stores: StorePoint[] }) {
             target="_blank"
             rel="noopener noreferrer"
             className="mt-auto text-sm font-medium underline underline-offset-4"
-            aria-label={`Voir ${store.name} à ${store.city} sur Google Maps (nouvel onglet)`}
+            aria-label={format(t.mapsLabel, { name: store.name, city: store.city })}
           >
-            Voir sur Google Maps ↗
+            {t.maps}
           </a>
         </li>
       ))}

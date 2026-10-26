@@ -1,7 +1,8 @@
 "use client";
 
 import { REVIEW_CRITERIA, type ReviewCriterion } from "@aiguille/db/rating";
-import { Link } from "@/lib/i18n/client";
+import { format } from "@/lib/i18n/dictionary";
+import { Link, useLocale, useLocalePath } from "@/lib/i18n/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 
@@ -12,7 +13,6 @@ import { COMMENT_MAX, type OwnReview, reviewInput } from "@/lib/reviews/input";
 import { cn } from "@/lib/utils";
 
 const CRITERIA = Object.keys(REVIEW_CRITERIA) as ReviewCriterion[];
-const STAR_LABELS = ["", "Très décevant", "Décevant", "Correct", "Bien", "Excellent"];
 
 type Ratings = Partial<Record<ReviewCriterion, number>>;
 type Status =
@@ -36,6 +36,10 @@ export function ReviewForm({
   turnstileSiteKey: string | null;
 }) {
   const { data: session, isPending } = authClient.useSession();
+  const { locale, dict } = useLocale();
+  const t = dict.community.reviews.form;
+  const criteria = dict.community.reviews.criteria;
+  const localize = useLocalePath();
   const router = useRouter();
   const [loaded, setLoaded] = useState(false);
   const [existing, setExisting] = useState<OwnReview | null>(null);
@@ -79,17 +83,14 @@ export function ReviewForm({
   if (!session) {
     return (
       <div id="avis" className="scroll-mt-20 space-y-2 rounded-xl border p-4">
-        <p className="font-medium">Vous possédez ou avez essayé cette montre ?</p>
-        <p className="text-sm text-muted-foreground">
-          Donnez votre avis en une minute : il rejoint l&apos;avis de la communauté affiché sur
-          cette fiche.
-        </p>
+        <p className="font-medium">{t.signedOutTitle}</p>
+        <p className="text-sm text-muted-foreground">{t.signedOutText}</p>
         <Link
-          href={`/connexion?retour=${encodeURIComponent(`${path}#avis`)}`}
+          href={`/connexion?retour=${encodeURIComponent(`${localize(path)}#avis`)}`}
           rel="nofollow"
           className="inline-block text-sm font-medium underline underline-offset-4"
         >
-          Se connecter pour donner mon avis
+          {t.signIn}
         </Link>
       </div>
     );
@@ -109,13 +110,15 @@ export function ReviewForm({
       setStatus({
         kind: "error",
         message: missing.length
-          ? `Notez aussi : ${missing.map((c) => REVIEW_CRITERIA[c].toLowerCase()).join(", ")}.`
-          : (parsed.error.issues[0]?.message ?? "Avis incomplet."),
+          ? format(t.missing, { list: missing.map((c) => criteria[c].toLowerCase()).join(", ") })
+          : locale === "fr"
+            ? (parsed.error.issues[0]?.message ?? t.incomplete)
+            : t.incomplete,
       });
       return;
     }
     if (turnstileSiteKey && !turnstileToken) {
-      setStatus({ kind: "error", message: "Patientez pendant la vérification anti-robot." });
+      setStatus({ kind: "error", message: t.waitCaptcha });
       return;
     }
     setStatus({ kind: "sending" });
@@ -131,7 +134,11 @@ export function ReviewForm({
     } | null;
     resetTurnstile.current();
     if (!response?.ok || !body?.ok) {
-      setStatus({ kind: "error", message: body?.error ?? "Envoi impossible : réessayez." });
+      // Messages de l'API rédigés en français : message générique dans les autres langues.
+      setStatus({
+        kind: "error",
+        message: locale === "fr" ? (body?.error ?? t.sendFailed) : t.sendFailed,
+      });
       return;
     }
     setExisting({
@@ -150,7 +157,7 @@ export function ReviewForm({
       () => null,
     );
     if (!response?.ok) {
-      setStatus({ kind: "error", message: "Suppression impossible : réessayez." });
+      setStatus({ kind: "error", message: t.deleteFailed });
       return;
     }
     setExisting(null);
@@ -170,25 +177,21 @@ export function ReviewForm({
       aria-busy={!loaded || sending}
     >
       <div className="space-y-1">
-        <h3 className="text-xl font-semibold tracking-tight">
-          {existing ? "Modifier mon avis" : "Donner mon avis"}
-        </h3>
+        <h3 className="text-xl font-semibold tracking-tight">{existing ? t.edit : t.give}</h3>
         <p className="text-sm text-muted-foreground">
-          Publié avec votre nom ({session.user.name}). Un seul avis par montre, modifiable à tout
-          moment.
+          {format(t.publishedAs, { name: session.user.name })}
         </p>
       </div>
 
       <fieldset className="space-y-3">
-        <legend className="mb-1 font-medium">Vos notes, de 1 à 5</legend>
-        <p className="text-sm text-muted-foreground">
-          Notez-la <strong>par rapport à ce qu&apos;on peut attendre à son prix</strong> : une
-          excellente montre à 400 € mérite 5/5, sans la comparer à une montre de luxe.
-        </p>
+        <legend className="mb-1 font-medium">{t.ratings}</legend>
+        <p className="text-sm text-muted-foreground">{t.ratingsHint}</p>
         {CRITERIA.map((c) => (
           <StarRating
             key={c}
-            label={REVIEW_CRITERIA[c]}
+            label={criteria[c]}
+            stars={t.stars}
+            starLabel={t.star}
             value={ratings[c] ?? 0}
             onChange={(v) => setRatings((r) => ({ ...r, [c]: v }))}
           />
@@ -196,11 +199,11 @@ export function ReviewForm({
       </fieldset>
 
       <fieldset className="space-y-2">
-        <legend className="mb-2 font-medium">Vous…</legend>
+        <legend className="mb-2 font-medium">{t.you}</legend>
         {(
           [
-            ["owner", "possédez cette montre"],
-            ["tried", "l'avez essayée (en boutique, chez un proche…)"],
+            ["owner", t.owner],
+            ["tried", t.tried],
           ] as const
         ).map(([value, label]) => (
           <label key={value} className="flex items-center gap-2 text-sm">
@@ -219,7 +222,7 @@ export function ReviewForm({
 
       <div className="space-y-2">
         <label htmlFor={`commentaire-${watchId}`} className="font-medium">
-          Commentaire <span className="font-normal text-muted-foreground">(facultatif)</span>
+          {t.comment} <span className="font-normal text-muted-foreground">{t.optional}</span>
         </label>
         <textarea
           id={`commentaire-${watchId}`}
@@ -227,11 +230,11 @@ export function ReviewForm({
           onChange={(e) => setComment(e.target.value)}
           maxLength={COMMENT_MAX}
           rows={4}
-          placeholder="Ce qui vous plaît, ce qui vous déçoit, au quotidien…"
+          placeholder={t.commentPlaceholder}
           className="w-full rounded-lg border bg-background p-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         />
         <p className="text-xs text-muted-foreground">
-          {comment.length}/{COMMENT_MAX} caractères. Pas de lien ni de donnée personnelle.
+          {format(t.characters, { count: comment.length, max: COMMENT_MAX })}
         </p>
       </div>
 
@@ -245,11 +248,11 @@ export function ReviewForm({
 
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" disabled={sending || !loaded}>
-          {sending ? "Envoi…" : existing ? "Mettre à jour mon avis" : "Publier mon avis"}
+          {sending ? t.sending : existing ? t.update : t.publish}
         </Button>
         {existing && (
           <Button type="button" variant="ghost" disabled={sending} onClick={remove}>
-            Supprimer mon avis
+            {t.delete}
           </Button>
         )}
       </div>
@@ -257,11 +260,10 @@ export function ReviewForm({
       <div aria-live="polite" className="text-sm">
         {status.kind === "saved" && (
           <p className="text-emerald-700 dark:text-emerald-400">
-            Merci ! Votre avis est {status.updated ? "mis à jour" : "publié"}. La note de la fiche
-            se met à jour dans quelques instants.
+            {status.updated ? t.updated : t.saved}
           </p>
         )}
-        {status.kind === "deleted" && <p>Votre avis a été supprimé.</p>}
+        {status.kind === "deleted" && <p>{t.deleted}</p>}
         {status.kind === "error" && (
           <p role="alert" className="text-destructive">
             {status.message}
@@ -275,10 +277,14 @@ export function ReviewForm({
 /** Cinq boutons radio « étoiles » accessibles au clavier (flèches) et aux lecteurs d'écran. */
 function StarRating({
   label,
+  stars,
+  starLabel,
   value,
   onChange,
 }: {
   label: string;
+  stars: string[];
+  starLabel: string;
   value: number;
   onChange: (value: number) => void;
 }) {
@@ -305,7 +311,7 @@ function StarRating({
               checked={value === n}
               onChange={() => onChange(n)}
               className="peer sr-only"
-              aria-label={`${n} sur 5 : ${STAR_LABELS[n]}`}
+              aria-label={format(starLabel, { n, label: stars[n] ?? "" })}
             />
             <svg
               viewBox="0 0 24 24"
@@ -324,7 +330,7 @@ function StarRating({
           </label>
         ))}
       </div>
-      <span className="text-xs text-muted-foreground">{shown ? STAR_LABELS[shown] : ""}</span>
+      <span className="text-xs text-muted-foreground">{shown ? stars[shown] : ""}</span>
     </div>
   );
 }

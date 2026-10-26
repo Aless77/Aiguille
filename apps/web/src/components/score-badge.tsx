@@ -1,12 +1,8 @@
-import { cn } from "@/lib/utils";
+"use client";
 
-/** Couleur d'une note sur 100 : vert (très bonne) → orange (faible). */
-export function scoreTone(score: number): string {
-  if (score >= 75) return "bg-emerald-600 text-white dark:bg-emerald-500 dark:text-emerald-950";
-  if (score >= 60) return "bg-lime-600 text-white dark:bg-lime-400 dark:text-lime-950";
-  if (score >= 45) return "bg-amber-500 text-amber-950 dark:bg-amber-400";
-  return "bg-orange-600 text-white dark:bg-orange-500 dark:text-orange-950";
-}
+import { useLocale } from "@/lib/i18n/client";
+import { scoreTone } from "@/lib/score-tone";
+import { cn } from "@/lib/utils";
 
 /** Pastille « 72/100 », lisible par un lecteur d'écran (« Note : 72 sur 100 »). */
 export function ScoreBadge({
@@ -18,6 +14,7 @@ export function ScoreBadge({
   size?: "sm" | "lg";
   className?: string;
 }) {
+  const t = useLocale().dict.community.misc;
   return (
     <span
       className={cn(
@@ -27,11 +24,11 @@ export function ScoreBadge({
         className,
       )}
     >
-      <span className="sr-only">Note : </span>
+      <span className="sr-only">{t.scoreLabel}</span>
       {score}
       <span className={cn("font-normal opacity-80", size === "lg" ? "text-lg" : "text-[0.7em]")}>
         <span aria-hidden>/100</span>
-        <span className="sr-only"> sur 100</span>
+        <span className="sr-only">{t.outOf100}</span>
       </span>
     </span>
   );
