@@ -9,6 +9,7 @@ import { Link } from "@/lib/i18n/client";
 import { enabledLocales } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/server";
 import { siteConfig } from "@/lib/site";
+import { cn } from "@/lib/utils";
 
 export async function SiteHeader() {
   const brands = (await getBrands()).filter((b) => b.watchCount > 0);
@@ -17,14 +18,22 @@ export async function SiteHeader() {
 
   return (
     <header className="border-b">
-      <div className="mx-auto flex min-h-14 w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2 lg:flex-nowrap lg:py-0">
+      <div
+        className={cn(
+          "mx-auto flex min-h-14 w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2",
+          brands.length <= 3 && "lg:flex-nowrap lg:py-0",
+        )}
+      >
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
           <Watch className="size-5" aria-hidden />
           {siteConfig.name}
         </Link>
         <nav
           aria-label={t.label}
-          className="order-3 flex w-full items-center gap-4 overflow-x-auto pb-1 text-sm lg:order-none lg:w-auto lg:overflow-visible lg:pb-0"
+          className={cn(
+            "order-3 flex w-full items-center gap-4 overflow-x-auto pb-1 text-sm",
+            brands.length <= 3 && "lg:order-none lg:w-auto lg:overflow-visible lg:pb-0",
+          )}
         >
           <Link
             href="/montres"

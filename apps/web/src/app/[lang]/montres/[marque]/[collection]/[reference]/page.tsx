@@ -13,7 +13,7 @@ import { AddToList } from "@/components/add-to-list";
 import { AlternativesSection } from "@/components/alternatives-section";
 import { PriceHistorySection } from "@/components/price-history-section";
 import { SpecSheetSection } from "@/components/spec-sheet-section";
-import { CONFIDENCE_LABELS, RatingSection } from "@/components/rating-section";
+import { RatingSection } from "@/components/rating-section";
 import { ScoreBadge } from "@/components/score-badge";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -88,7 +88,7 @@ export default async function WatchPage({ params }: Props) {
   if (!source) notFound();
 
   // Fiche de la marque dans la langue affichée (repli : anglais, puis français), avec avertissement.
-  const { locale, dict, path } = await getDictionary();
+  const { locale, dict, f, path } = await getDictionary();
   const t = dict.watch;
   const tag = LOCALE_TAGS[locale];
   const translated = translateWatch(source, locale, await getWatchTranslations(source.id));
@@ -110,7 +110,7 @@ export default async function WatchPage({ params }: Props) {
   const summary = watchSummary({ ...w, catalogPriceCents: w.priceCents }, t.summary, tag);
   const model = modelVariants<FamilyWatch>(
     w.brandSlug,
-    w,
+    { ...w, variantReferences: source.rawSpecs["Références des déclinaisons"]?.split(" | ") ?? [] },
     await getCollectionFamily(w.brandSlug, w.collectionSlug),
   );
   // Les déclinaisons déjà dans le sélecteur ne sont pas reproposées dans « Autres modèles ».
@@ -216,15 +216,29 @@ export default async function WatchPage({ params }: Props) {
               <ScoreBadge score={rating.score.score} />
               <span className="text-sm">
                 <span className="block font-medium">
-                  Note Aiguille ·{" "}
-                  {rating.score.categoryRank > 0 && rating.score.categorySize > 1
-                    ? `${rating.score.categoryRank === 1 ? "1re" : `${rating.score.categoryRank}e`} sur ${rating.score.categorySize}`
-                    : CONFIDENCE_LABELS[rating.score.confidence].toLowerCase()}
+                  {format(dict.community.reviews.snippetScore, {
+                    rank:
+                      rating.score.categoryRank > 0 && rating.score.categorySize > 1
+                        ? format(dict.community.reviews.rank, {
+                            rank:
+                              rating.score.categoryRank === 1
+                                ? dict.community.reviews.ordinalFirst
+                                : dict.community.reviews.ordinalOther.replace(
+                                    "{n}",
+                                    String(rating.score.categoryRank),
+                                  ),
+                            count: rating.score.categorySize,
+                          })
+                        : dict.community.reviews.confidence[rating.score.confidence].toLowerCase(),
+                  })}
                 </span>
                 <span className="block text-muted-foreground">
                   {rating.score.reviewAverage != null && rating.reviews.length
-                    ? `Communauté : ${rating.score.reviewAverage.toLocaleString("fr-FR", { maximumFractionDigits: 1 })}/5 (${rating.reviews.length} avis)`
-                    : "Pas encore d'avis de la communauté"}
+                    ? format(dict.community.reviews.snippetCommunity, {
+                        average: f.number(rating.score.reviewAverage),
+                        count: rating.reviews.length,
+                      })
+                    : dict.community.reviews.snippetNone}
                 </span>
               </span>
             </a>
@@ -295,6 +309,7 @@ export default async function WatchPage({ params }: Props) {
       )}
 
       <SpecSheetSection
+        source={source}
         watch={w}
         storeCount={storeCount}
         dict={dict}

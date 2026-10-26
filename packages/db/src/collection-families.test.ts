@@ -55,6 +55,8 @@ describe("familyCoverage", () => {
     expect(check?.unassigned).toEqual(["nouvelle-collection"]);
     expect(check?.unknown).toContain("hydroconquest");
     expect(familyCoverage("hamilton", ["jazzmaster"])).toEqual({ unassigned: [], unknown: [] });
-    expect(familyCoverage("seiko", ["presage"])).toBeNull();
+    expect(familyCoverage("seiko", ["presage"])).toEqual({ unassigned: [], unknown: [] });
+    expect(familyCoverage("citizen", ["tsuyosa"])).toEqual({ unassigned: [], unknown: [] });
+    expect(familyCoverage("marque-inconnue", ["collection"])).toBeNull();
   });
 });

@@ -4,6 +4,8 @@ import { Watch } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
+import { useLocale } from "@/lib/i18n/client";
+import { format } from "@/lib/i18n/dictionary";
 import { cn } from "@/lib/utils";
 
 /**
@@ -25,6 +27,7 @@ export function WatchImage({
   className?: string;
 }) {
   const [failed, setFailed] = useState(false);
+  const t = useLocale().dict.community.misc;
   const img = useRef<HTMLImageElement>(null);
 
   // Une image en erreur avant l'hydratation n'a pas déclenché onError : on le vérifie ici.
@@ -49,11 +52,11 @@ export function WatchImage({
       ) : (
         <div
           role="img"
-          aria-label={failed ? `${alt} (photo indisponible)` : alt}
+          aria-label={failed ? format(t.photoUnavailableAlt, { alt }) : alt}
           className="flex size-full flex-col items-center justify-center gap-2 text-muted-foreground"
         >
           <Watch className="size-10" aria-hidden />
-          {failed && <span className="text-xs">Photo indisponible</span>}
+          {failed && <span className="text-xs">{t.photoUnavailable}</span>}
         </div>
       )}
     </div>

@@ -29,6 +29,15 @@ const html = (product: Record<string, unknown>) => `<html><head>
   })}</script></head><body></body></html>`;
 
 describe("parseLepage", () => {
+  it("rapproche une Seiko complète et rejette la référence abrégée", () => {
+    const url = "https://www.lepage.fr/fr/23357-montre-seiko-prospex-spb453j1.html";
+    expect(
+      parseLepage(load(html({ sku: "SPB453J1", mpn: "SPB453J1", brand: { name: "Seiko" } })), url),
+    ).toMatchObject({ brandSlug: "seiko", reference: "SPB453J1" });
+    expect(
+      parseLepage(load(html({ sku: "SPB453", mpn: "SPB453", brand: { name: "Seiko" } })), url),
+    ).toBeNull();
+  });
   it("extrait une offre valide avec la référence de la marque", () => {
     expect(offerSchema.parse(parseLepage(load(html({})), URL))).toEqual({
       brandSlug: "hamilton",

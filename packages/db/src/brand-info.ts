@@ -99,6 +99,64 @@ export interface BrandInfo {
 const AUDIT = "2026-10-24";
 
 export const BRAND_INFO: Record<string, BrandInfo> = {
+  citizen: {
+    warranty: {
+      value: {
+        months: 36,
+        extended: [],
+        page: "https://de.citizenwatch.eu/de/info/support/garantieleistungen/",
+        excludes: [
+          "verre et bracelet",
+          "durée de vie de la pile",
+          "accidents et mauvaise utilisation",
+          "intervention par une personne non agréée",
+        ],
+      },
+      source: "https://de.citizenwatch.eu/de/info/support/garantieleistungen/",
+      checkedAt: "2026-10-25",
+    },
+    service: null,
+    madeIn: null,
+    care: null,
+    group: null,
+    movementMakers: [],
+  },
+  seiko: {
+    warranty: {
+      value: {
+        months: 36,
+        extended: [],
+        page: "https://www.seikowatches.com/fr-fr/customerservice/faq/catalog-and-guarantee-3",
+        excludes: [
+          "usure normale",
+          "durée de vie de la pile",
+          "accidents et mauvaise utilisation",
+          "bracelets non métalliques",
+        ],
+      },
+      source: "https://www.seikowatches.com/fr-fr/customerservice/faq/catalog-and-guarantee-3",
+      checkedAt: "2026-10-25",
+    },
+    service: {
+      value: {
+        prices: [],
+        battery: null,
+        fullServiceInterval: null,
+        partialServiceInterval: null,
+        waterResistanceCheck: null,
+        batteryLife: null,
+        serviceWarrantyMonths: 12,
+        spareParts: null,
+        free: [],
+      },
+      source: "https://www.seikoboutique.eu/fr/fr/content/46-garantie-et-sav",
+      checkedAt: "2026-10-25",
+    },
+    madeIn: null,
+    care: null,
+    group: null,
+    movementMakers: [],
+  },
   tissot: {
     warranty: {
       value: {

@@ -3,6 +3,50 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-10-25 – Citizen et Seiko intégrées, Oris écartée
+
+Le propriétaire retient Citizen et Seiko et demande de retirer Oris du site. Ce choix remplace
+le périmètre initial de six marques : cinq marques retenues, avec Tissot, Hamilton et Longines.
+Oris reste uniquement dans les notes historiques. Son intégration est écartée car les
+[conditions d’utilisation publiées par Oris, section 2](https://www.oris.ch/fr-FR/terms-use)
+interdisent la réutilisation et la présentation du contenu sur un autre site. **Aucune demande
+d’autorisation n’a été envoyée et aucun refus individuel n’a été reçu.** Les données d’un
+revendeur ne suffisent pas à lever les questions de droits et d’exactitude identifiées dans l’étude.
+La ligne de marque vide éventuellement déjà semée est conservée en base, exclue de l’affichage
+et des nouvelles installations ; aucune suppression de données n’est nécessaire.
+
+Citizen et Seiko : extraction des faits des pages officielles en HTML, sans appel aux API
+interdites et sans description commerciale recopiée. Les images restent des liens directs,
+selon le choix déjà consigné pour les marques existantes. Les conditions de réutilisation
+restent documentées dans le registre des sources ; aucune autorisation spécifique n’est revendiquée.
+
+- Citizen : périmètre français du sitemap du distributeur officiel, références complètes,
+  caractéristiques par identifiant de ligne et déclinaisons établies par les liens du sélecteur.
+- Seiko : fiches françaises du sitemap officiel, validation du contenu pour écarter les fausses
+  404 en HTTP 200, référence complète distincte du H1 abrégé, prix national lu dans le HTML.
+  La disponibilité reste inconnue sur le catalogue institutionnel. La boutique protégée n’est
+  pas collectée ; aucun contournement du 403.
+- **Autonomie solaire** : conserver la valeur et son unité dans `rawSpecs`, l’afficher dans la
+  fiche technique ; ne pas remplir `powerReserveH`, réservé aux heures de réserve mécanique
+  pour ces deux adaptateurs. Un filtre sur les heures de réserve ne doit pas interpréter 180
+  jours comme 180 heures. Pas de modification du schéma ni de conversion approximative des mois.
+- **Langue et marché** : collecte `--traductions en,de,it,es` indépendante des prix, lorsqu’une
+  version officielle existe. `auto` relève une langue par nuit, avec rotation ; l’anglais
+  européen Citizen ne devient pas un prix britannique. Les langues absentes gardent le repli
+  explicite existant. Pas de traduction générée des valeurs des marques.
+- **Déclinaisons** : un lien explicite du site constructeur peut compléter les motifs de
+  référence existants ; aucun regroupement Seiko par simple préfixe ou calibre.
+- **Fiabilité des fiches** : une redirection vers une autre référence est refusée pour les prix
+  nationaux et traductions. Les faits techniques sont reconnus depuis le pivot français, même
+  lorsque les valeurs affichées proviennent d'une autre langue officielle. Chez Citizen,
+  « Mécanique » seul ne prouve pas un remontage manuel ; la mention Eco-Drive dans les
+  caractéristiques suffit à identifier le solaire. Les dimensions nulles ou hors des bornes
+  admises restent dans les données brutes sans invalider toute la fiche.
+- Tarifs d’entretien et pays de fabrication non établis : « non communiqué ». Garantie
+  internationale Citizen/Seiko : trois ans selon les conditions sourcées ; garantie d’une
+  révision complète Seiko : un an. Les intervalles spécifiques d’un calibre ne sont pas
+  étendus à toute la marque.
+
 ## 2026-10-25 – Gammes officielles au-dessus des collections
 
 Les collections sont regroupées en gammes uniquement quand la marque le fait sur son site,
@@ -82,9 +126,14 @@ dire »), jamais d'adresse ; validé côté serveur (hook Better Auth). Usage : 
   sert aussi de traduction, sans requête de plus (`watch_translations`, valeurs rangées par clé
   stable, la version française servant de pivot). Langue absente : version anglaise, puis
   française, avec un avertissement sur la fiche. Longines d'abord (`translate` de l'adaptateur).
-- **Traduit dans ce lot** : en-tête, pied de page, menu du compte, demande du pays, fiche montre
-  (sauf note, avis, offres, historique et prix européens) et fiche technique. Le reste du site
-  s'affiche encore en français dans les autres langues.
+- **Traduit** : tout le site depuis le 25 octobre (voir docs/suivi.md pour les exceptions). Textes
+  de l'interface dans `lib/i18n/messages/*.ts` (un fichier par thème, cinq langues côte à côte),
+  pages longues dans un module `content.tsx` à côté de la page, textes produits par `packages/db`
+  (fiche technique, informations de marque, conseils, comparaisons) dans `packages/db/src/i18n.ts`,
+  dont un test exige la traduction de chaque texte de marque. Confidentialité : la version
+  française fait foi.
+- **Indexation** : passer une langue dans `INDEXABLE_LOCALES` suffit (hreflang et sitemap suivent).
+  À faire quand les fiches des marques sont collectées dans cette langue.
 
 ## 2026-10-25 – Sélecteur de déclinaisons sur la fiche montre
 

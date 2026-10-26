@@ -1,3 +1,6 @@
+import { DOMAIN_DELAY_SECS } from "../config.ts";
+import { throttleDomain } from "./throttle.ts";
+
 /**
  * Site en panne, en maintenance ou qui nous demande de ralentir : on arrête de le solliciter
  * (docs/sources.md, « Disjoncteur »). Erreur distincte d'une source cassée : elle est journalisée
@@ -73,6 +76,7 @@ export async function fetchFromSource(
   init: { headers: Record<string, string> },
 ): Promise<Response> {
   let response: Response;
+  await throttleDomain(url, DOMAIN_DELAY_SECS * 1000);
   try {
     response = await fetch(url, init);
   } catch (error) {

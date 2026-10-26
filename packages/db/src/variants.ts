@@ -5,10 +5,11 @@
  *
  * Le regroupement s'appuie sur la structure des références, propre à chaque marque : la partie
  * « modèle » est commune à toutes les déclinaisons, le reste code le cadran, la matière ou le
- * bracelet. Nouvelle marque : ajouter son motif à MODEL_KEYS (docs/integrer-une-marque.md).
+ * bracelet. Des liens explicites du sélecteur officiel peuvent aussi établir ce rapprochement
+ * (Citizen). Nouvelle marque : voir docs/integrer-une-marque.md.
  */
 
-/** Partie « modèle » de la référence, par marque. Sans motif, la montre n'a pas de déclinaisons. */
+/** Partie « modèle » de la référence, par marque ; les liens officiels restent une autre preuve. */
 export const MODEL_KEYS: Record<string, RegExp> = {
   // T137.407.11.041.00 : modèle T137.407, puis boîtier/bracelet et cadran.
   tissot: /^(T\d{3}\.\d{3})\.\d{2}\.\d{3}\.\d{2}$/i,
@@ -43,6 +44,8 @@ export interface VariantCandidate {
   strapMaterial: string | null;
   priceCents: number | null;
   discontinued: boolean;
+  /** Références liées par le sélecteur de la marque, si publiées. */
+  variantReferences?: string[];
 }
 
 export interface Variant<T extends VariantCandidate> {
@@ -87,7 +90,7 @@ function byAvailabilityThenPrice(a: VariantCandidate, b: VariantCandidate): numb
 /**
  * Déclinaisons de `current` parmi `candidates` (même marque, même collection) : même modèle de
  * référence et même diamètre. Tailles : autres modèles portant le même nom une fois la taille
- * retirée. Rien n'est renvoyé pour une montre seule ou sans motif de référence (pièces vintage).
+ * retirée, ou références liées par le sélecteur officiel. Rien n'est renvoyé sans preuve de lien.
  */
 export function modelVariants<T extends VariantCandidate>(
   brandSlug: string,
@@ -95,13 +98,19 @@ export function modelVariants<T extends VariantCandidate>(
   candidates: T[],
 ): ModelVariants<T> {
   const key = modelKey(brandSlug, current.reference);
-  if (!key) return { variants: [], sizes: [] };
   const others = candidates.filter((c) => c.slug !== current.slug);
+  const normalize = (reference: string) => reference.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const linked = (candidate: T) =>
+    current.variantReferences?.some((r) => normalize(r) === normalize(candidate.reference)) ||
+    candidate.variantReferences?.some((r) => normalize(r) === normalize(current.reference));
+  if (!key && !others.some(linked)) return { variants: [], sizes: [] };
 
   const siblings = [
     current,
     ...others.filter(
-      (c) => modelKey(brandSlug, c.reference) === key && c.diameterMm === current.diameterMm,
+      (c) =>
+        (linked(c) || (key !== null && modelKey(brandSlug, c.reference) === key)) &&
+        c.diameterMm === current.diameterMm,
     ),
   ].sort(byAvailabilityThenPrice);
   const differing = DISTINCTIVE.filter(([field]) =>
@@ -127,7 +136,8 @@ export function modelVariants<T extends VariantCandidate>(
   const bySize = new Map<number, T[]>();
   for (const c of others) {
     if (c.diameterMm == null || c.diameterMm === current.diameterMm) continue;
-    if (!modelKey(brandSlug, c.reference) || baseName(c.name) !== base) continue;
+    if (!linked(c) && (!key || !modelKey(brandSlug, c.reference) || baseName(c.name) !== base))
+      continue;
     bySize.set(c.diameterMm, [...(bySize.get(c.diameterMm) ?? []), c]);
   }
   // Pour chaque taille, la déclinaison la plus proche : même cadran si possible, puis disponible.

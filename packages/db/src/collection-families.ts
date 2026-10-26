@@ -26,6 +26,19 @@ export interface BrandFamilies {
 }
 
 export const COLLECTION_FAMILIES: Record<string, BrandFamilies> = {
+  // Menus officiels : lignes de produits à plat, sans gamme supérieure inventée.
+  citizen: {
+    source: "https://fr.citizenwatch.eu/fr/",
+    checkedAt: "2026-10-25",
+    complete: false,
+    families: [],
+  },
+  seiko: {
+    source: "https://www.seikowatches.com/fr-fr/products",
+    checkedAt: "2026-10-25",
+    complete: false,
+    families: [],
+  },
   // Menu « Montres » : cinq univers, chacun listant ses collections.
   longines: {
     source: "https://www.longines.com/fr/watches",

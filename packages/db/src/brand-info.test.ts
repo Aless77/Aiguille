@@ -9,6 +9,12 @@ import {
 } from "./brand-info.ts";
 
 describe("warrantyFor", () => {
+  it("lit les garanties officielles Citizen et Seiko sans supposer leur pays de fabrication", () => {
+    expect(warrantyFor("citizen", null)?.months).toBe(36);
+    expect(warrantyFor("seiko", null)?.months).toBe(36);
+    expect(BRAND_INFO.citizen?.madeIn).toBeNull();
+    expect(BRAND_INFO.seiko?.madeIn).toBeNull();
+  });
   it("préfère la garantie de la fiche, avec la page de détail de la marque", () => {
     expect(warrantyFor("tissot", 36)).toMatchObject({
       months: 36,

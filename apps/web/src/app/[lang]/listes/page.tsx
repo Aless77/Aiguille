@@ -1,30 +1,32 @@
-import { Link } from "@/lib/i18n/client";
-
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { MyLists } from "@/components/my-lists";
-import { pageMetadata } from "@/lib/seo/metadata";
+import { Link } from "@/lib/i18n/client";
+import { getDictionary } from "@/lib/i18n/server";
+import { localizedMetadata } from "@/lib/seo/localized-metadata";
 
-export const metadata = pageMetadata({
-  title: "Mes listes de souhaits",
-  description:
-    "Créez des listes de montres, partagez-les par lien ou publiez-les dans la communauté.",
-  path: "/listes",
-  index: false,
-});
+export async function generateMetadata() {
+  const t = (await getDictionary()).dict.community.lists;
+  return localizedMetadata({
+    title: t.myListsTitle,
+    description: t.myListsMetaDescription,
+    path: "/listes",
+    index: false,
+  });
+}
 
-export default function MyListsPage() {
+export default async function MyListsPage() {
+  const t = (await getDictionary()).dict.community.lists;
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <Breadcrumbs crumbs={[{ name: "Mes listes" }]} />
+      <Breadcrumbs crumbs={[{ name: t.myLists }]} />
       <div className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Mes listes de souhaits</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">{t.myListsTitle}</h1>
         <p className="text-muted-foreground">
-          Rassemblez les montres qui vous tentent. Gardez une liste pour vous, envoyez son lien à un
-          proche (pas besoin de compte pour la voir) ou publiez-la dans la{" "}
+          {t.myListsIntro}{" "}
           <Link href="/communaute" className="underline underline-offset-4">
-            communauté
+            {t.community}
           </Link>{" "}
-          pour recueillir des avis.
+          {t.myListsIntroEnd}
         </p>
       </div>
       <MyLists />

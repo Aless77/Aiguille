@@ -5,7 +5,19 @@ import { log } from "@crawlee/cheerio";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { CIRCUIT_BREAKER_THRESHOLD, SourceUnavailableError } from "./availability.ts";
-import { createPoliteCrawler } from "./http.ts";
+import { createPoliteCrawler, isRequestedPage } from "./http.ts";
+
+describe("isRequestedPage", () => {
+  const url = "https://www.seikowatches.com/fr-fr/products/prospex/spb453j1";
+  it("accepte une barre finale ou la casse de référence sans changer de fiche", () => {
+    expect(isRequestedPage(url, `${url.toUpperCase()}/?tracking=1`)).toBe(true);
+  });
+  it("rejette un autre marché, domaine ou modèle même si la devise est identique", () => {
+    expect(isRequestedPage(url, url.replace("fr-fr", "de-de"))).toBe(false);
+    expect(isRequestedPage(url, url.replace("spb453j1", "spb451j1"))).toBe(false);
+    expect(isRequestedPage(url, url.replace("www.seikowatches.com", "example.com"))).toBe(false);
+  });
+});
 
 let server: Server | undefined;
 
@@ -26,6 +38,7 @@ async function siteAnswering(status: (n: number) => number) {
 }
 
 afterEach(async () => {
+  if (!server) return;
   await new Promise((resolve) => server?.close(resolve));
   server = undefined;
 });

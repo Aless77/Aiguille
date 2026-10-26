@@ -1,5 +1,8 @@
 import { VenetianMask } from "lucide-react";
 import { Link } from "@/lib/i18n/client";
+import { type Dictionary, format } from "@/lib/i18n/dictionary";
+import { type Formatters } from "@/lib/i18n/format";
+import { getDictionary } from "@/lib/i18n/server";
 import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
@@ -15,20 +18,14 @@ import {
 } from "@/components/list-viewer";
 import { Badge } from "@/components/ui/badge";
 import { WatchCard } from "@/components/watch-card";
-import { displayName, formatDate, formatPrice } from "@/lib/catalog/format";
+import { displayName } from "@/lib/catalog/format";
 import { PLACEHOLDER_SLUG } from "@/lib/catalog/static-params";
 import { watchPath } from "@/lib/catalog/types";
 import { turnstileSiteKey } from "@/lib/reviews/turnstile";
-import { pageMetadata } from "@/lib/seo/metadata";
+import { localizedMetadata } from "@/lib/seo/localized-metadata";
 import { cn } from "@/lib/utils";
-import {
-  COMMENTS_PER_LIST,
-  isPublic,
-  listBudget,
-  SHARE_ID_PATTERN,
-  VISIBILITY_LABELS,
-} from "@/lib/wishlists/input";
-import { OWNER_LABEL } from "@/lib/wishlists/present";
+import { COMMENTS_PER_LIST, isPublic, listBudget, SHARE_ID_PATTERN } from "@/lib/wishlists/input";
+import { ANONYMOUS_OWNER, OWNER_LABEL } from "@/lib/wishlists/present";
 import { getList, type ListComment, type Person } from "@/lib/wishlists/queries";
 
 type Props = PageProps<"/[lang]/listes/[liste]">;
@@ -50,18 +47,24 @@ async function publicList(value: string) {
 }
 
 export async function generateMetadata({ params }: Props) {
-  const list = await publicList((await params).liste);
+  const [list, { dict }] = await Promise.all([publicList((await params).liste), getDictionary()]);
   if (!list) return {};
+  const t = dict.community.lists;
   const visible = isPublic(list.visibility);
-  return pageMetadata({
+  const count = list.items.length;
+  return localizedMetadata({
     title: !visible
-      ? "Liste privée"
+      ? t.privateTitle
       : list.anonymous
-        ? `${list.title}, une liste anonyme`
-        : `${list.title}, la liste de ${list.owner.name}`,
+        ? format(t.anonymousTitle, { title: list.title })
+        : format(t.ownedTitle, { title: list.title, name: list.owner.name }),
     description: visible
-      ? `${list.items.length} montre${list.items.length > 1 ? "s" : ""} sélectionnée${list.items.length > 1 ? "s" : ""} ${list.anonymous ? "anonymement" : `par ${list.owner.name}`} sur Aiguille${list.description ? ` : ${list.description}` : "."}`
-      : "Liste de souhaits privée.",
+      ? format(count === 1 ? t.metaDescription.one : t.metaDescription.other, {
+          count,
+          by: list.anonymous ? t.byAnonymous : format(t.byName, { name: list.owner.name }),
+          description: list.description ? ` : ${list.description}` : ".",
+        })
+      : t.privateDescription,
     path: `/listes/${list.shareId}`,
     images: visible ? list.items.flatMap((i) => i.imageUrl ?? []).slice(0, 1) : [],
     index: false,
@@ -69,6 +72,8 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function ListPage({ params }: Props) {
+  const { dict, f } = await getDictionary();
+  const t = dict.community.lists;
   const list = await publicList((await params).liste);
   if (!list) notFound();
 
@@ -76,7 +81,7 @@ export default async function ListPage({ params }: Props) {
     return (
       <ListViewerProvider shareId={list.shareId}>
         <div className="space-y-6">
-          <Breadcrumbs crumbs={[{ name: "Mes listes", path: "/listes" }, { name: "Liste" }]} />
+          <Breadcrumbs crumbs={[{ name: t.myLists, path: "/listes" }, { name: t.list }]} />
           <PrivateListContent shareId={list.shareId} />
         </div>
       </ListViewerProvider>
@@ -98,33 +103,41 @@ export default async function ListPage({ params }: Props) {
           <Breadcrumbs
             crumbs={
               community
-                ? [{ name: "Communauté", path: "/communaute" }, { name: list.title }]
+                ? [
+                    { name: dict.community.communityPage.title, path: "/communaute" },
+                    { name: list.title },
+                  ]
                 : [{ name: list.title }]
             }
           />
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">
-                {VISIBILITY_LABELS[list.visibility].label} · mise à jour le{" "}
-                {formatDate(list.updatedAt)}
+                {t.visibility[list.visibility].label}
+                {format(t.updated, { date: f.date(list.updatedAt) })}
               </p>
               <h1 className="text-3xl font-semibold tracking-tight">{list.title}</h1>
               {list.anonymous ? (
                 <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
                   <VenetianMask className="size-4" aria-hidden />
-                  Liste publiée anonymement
+                  {t.publishedAnonymously}
                 </span>
               ) : (
-                <Author person={list.owner} prefix="Liste de" />
+                <Author person={list.owner} prefix={t.listOf} t={t} />
               )}
             </div>
             <ShareListButton title={list.title} />
           </div>
           {list.description && <p className="max-w-2xl leading-relaxed">{list.description}</p>}
           <p className="text-sm text-muted-foreground">
-            {budget.count} montre{budget.count > 1 ? "s" : ""}
+            {f.plural(t.watches, budget.count)}
             {budget.count > 0 &&
-              ` · ${formatPrice(budget.totalCents)} au total (prix catalogue officiels${budget.unknownPrices ? `, ${budget.unknownPrices} prix non communiqué${budget.unknownPrices > 1 ? "s" : ""}` : ""})`}
+              format(t.total, {
+                price: f.price(budget.totalCents) ?? "",
+                unknown: budget.unknownPrices
+                  ? f.plural(t.unknownPrices, budget.unknownPrices)
+                  : "",
+              })}
           </p>
           <ListOwnerBar
             shareId={list.shareId}
@@ -141,7 +154,7 @@ export default async function ListPage({ params }: Props) {
                 <div className="flex items-center justify-between gap-2 px-1 text-sm">
                   {community && commentsByWatch.get(w.slug) ? (
                     <a href="#avis" className="text-muted-foreground underline underline-offset-4">
-                      {commentsByWatch.get(w.slug)} avis
+                      {format(t.reviewsCount, { count: commentsByWatch.get(w.slug) ?? 0 })}
                     </a>
                   ) : (
                     <span />
@@ -152,27 +165,27 @@ export default async function ListPage({ params }: Props) {
             ))}
           </ul>
         ) : (
-          <p className="text-muted-foreground">Cette liste ne contient encore aucune montre.</p>
+          <p className="text-muted-foreground">{t.emptyList}</p>
         )}
 
         {community ? (
           <section id="avis" aria-labelledby="avis-titre" className="scroll-mt-20 space-y-4">
             <h2 id="avis-titre" className="text-2xl font-semibold tracking-tight">
-              Avis de la communauté ({list.commentCount})
+              {format(t.communityReviews, { count: list.commentCount })}
             </h2>
             {list.comments.length > 0 ? (
               <ul className="space-y-4">
                 {list.comments.map((c) => (
                   <li key={c.id} className="space-y-3">
-                    <Message comment={c} shareId={list.shareId} />
+                    <Message comment={c} shareId={list.shareId} t={t} f={f} />
                     {c.replies.length > 0 && (
                       <ul
-                        aria-label={`Réponses à ${c.author.name}`}
+                        aria-label={format(t.repliesTo, { name: c.author.name })}
                         className="ml-4 space-y-3 border-l-2 pl-4 sm:ml-8"
                       >
                         {c.replies.map((r) => (
                           <li key={r.id}>
-                            <Message comment={r} shareId={list.shareId} />
+                            <Message comment={r} shareId={list.shareId} t={t} f={f} />
                           </li>
                         ))}
                       </ul>
@@ -189,13 +202,11 @@ export default async function ListPage({ params }: Props) {
                 ))}
               </ul>
             ) : (
-              <p className="text-muted-foreground">
-                Pas encore d&apos;avis : soyez le premier à commenter cette sélection.
-              </p>
+              <p className="text-muted-foreground">{t.noReviews}</p>
             )}
             {list.commentCount >= COMMENTS_PER_LIST ? (
               <p className="rounded-xl border p-4 text-sm text-muted-foreground">
-                Cette discussion a atteint {COMMENTS_PER_LIST} messages : elle est close.
+                {format(t.closed, { count: COMMENTS_PER_LIST })}
               </p>
             ) : (
               <ListCommentForm
@@ -209,10 +220,7 @@ export default async function ListPage({ params }: Props) {
             )}
           </section>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            Liste partagée par lien : elle n&apos;apparaît pas dans la communauté. Son auteur peut
-            l&apos;y publier pour recevoir des avis.
-          </p>
+          <p className="text-sm text-muted-foreground">{t.linkOnly}</p>
         )}
       </div>
     </ListViewerProvider>
@@ -220,7 +228,19 @@ export default async function ListPage({ params }: Props) {
 }
 
 /** Un avis ou une réponse. Les messages de l'auteur de la liste sont signalés. */
-function Message({ comment: c, shareId }: { comment: ListComment; shareId: string }) {
+type ListTexts = Dictionary["community"]["lists"];
+
+function Message({
+  comment: c,
+  shareId,
+  t,
+  f,
+}: {
+  comment: ListComment;
+  shareId: string;
+  t: ListTexts;
+  f: Formatters;
+}) {
   return (
     <article
       className={cn(
@@ -229,11 +249,11 @@ function Message({ comment: c, shareId }: { comment: ListComment; shareId: strin
       )}
     >
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-        <Author person={c.author} />
-        <span className="text-muted-foreground">{formatDate(c.createdAt)}</span>
+        <Author person={c.author} t={t} />
+        <span className="text-muted-foreground">{f.date(c.createdAt)}</span>
         {c.watch && (
           <span className="text-muted-foreground">
-            à propos de{" "}
+            {t.aboutWatch}{" "}
             <Link href={watchPath(c.watch)} className="underline underline-offset-4">
               {displayName(c.watch.brandName, c.watch.name)}
             </Link>
@@ -248,7 +268,14 @@ function Message({ comment: c, shareId }: { comment: ListComment; shareId: strin
   );
 }
 
-function Author({ person, prefix }: { person: Person; prefix?: string }) {
+function Author({ person, prefix, t }: { person: Person; prefix?: string; t: ListTexts }) {
+  // Libellés d'auteur produits côté données en français (lib/wishlists/present.ts).
+  const name =
+    person.name === OWNER_LABEL
+      ? t.ownerLabel
+      : person.name === ANONYMOUS_OWNER
+        ? t.anonymousOwner
+        : person.name;
   return (
     <span className="inline-flex flex-wrap items-center gap-2 text-sm">
       {person.image ? (
@@ -278,13 +305,13 @@ function Author({ person, prefix }: { person: Person; prefix?: string }) {
       {person.name !== OWNER_LABEL && (
         <span>
           {prefix ? `${prefix} ` : ""}
-          <span className="font-medium">{person.name}</span>
+          <span className="font-medium">{name}</span>
         </span>
       )}
       {/* L'auteur de la liste est signalé partout dans la discussion. */}
-      {person.listAuthor && !prefix && <Badge>{OWNER_LABEL}</Badge>}
+      {person.listAuthor && !prefix && <Badge>{t.ownerLabel}</Badge>}
       {person.anonymous && !person.listAuthor && (
-        <span className="text-xs text-muted-foreground">(anonyme)</span>
+        <span className="text-xs text-muted-foreground">{t.anonymousTag}</span>
       )}
     </span>
   );

@@ -1,3 +1,4 @@
+import { community } from "../messages/community";
 import { pages } from "../messages/pages";
 import { sections } from "../messages/sections";
 import { catalog } from "../messages/catalog";
@@ -177,6 +178,7 @@ export const en: Dictionary = {
   pages: pages.en,
   catalog: catalog.en,
   sections: sections.en,
+  community: community.en,
   client: {
     signIn: "Sign in",
     signOut: "Sign out",

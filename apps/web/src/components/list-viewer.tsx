@@ -1,7 +1,8 @@
 "use client";
 
 import { Check, Link2, Reply, Share2, Trash2 } from "lucide-react";
-import { Link, useLocalePath } from "@/lib/i18n/client";
+import { Link, useLocale, useLocalePath } from "@/lib/i18n/client";
+import { format } from "@/lib/i18n/dictionary";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 
@@ -10,12 +11,7 @@ import { Button } from "@/components/ui/button";
 import { WatchGrid } from "@/components/watch-card";
 import { authClient } from "@/lib/auth/client";
 import { type WatchCard } from "@/lib/catalog/types";
-import {
-  COMMENT_MAX,
-  type Visibility,
-  VISIBILITIES,
-  VISIBILITY_LABELS,
-} from "@/lib/wishlists/input";
+import { COMMENT_MAX, type Visibility, VISIBILITIES } from "@/lib/wishlists/input";
 
 /**
  * Parties interactives d'une liste partagée (/listes/…). La page est rendue côté serveur et en
@@ -89,7 +85,12 @@ export function ListViewerProvider({
 
 const useViewer = () => useContext(ViewerContext);
 
-async function send(url: string, method: string, body?: unknown): Promise<string | null> {
+async function send(
+  url: string,
+  method: string,
+  body?: unknown,
+  fallback = "Une erreur est survenue, réessayez.",
+): Promise<string | null> {
   const response = await fetch(url, {
     method,
     headers: body ? { "Content-Type": "application/json" } : undefined,
@@ -97,12 +98,13 @@ async function send(url: string, method: string, body?: unknown): Promise<string
   });
   if (response.ok) return null;
   const data = (await response.json().catch(() => ({}))) as { error?: string };
-  return data.error ?? "Une erreur est survenue, réessayez.";
+  return data.error ?? fallback;
 }
 
 /** Copie le lien de la liste (ou ouvre le partage natif sur mobile). */
 export function ShareListButton({ title }: { title: string }) {
   const [copied, setCopied] = useState(false);
+  const t = useLocale().dict.community.lists;
   return (
     <Button
       variant="outline"
@@ -119,7 +121,7 @@ export function ShareListButton({ title }: { title: string }) {
       }}
     >
       {copied ? <Check aria-hidden /> : <Share2 aria-hidden />}
-      {copied ? "Lien copié" : "Partager"}
+      {copied ? t.copied : t.share}
     </Button>
   );
 }
@@ -137,14 +139,15 @@ export function ListOwnerBar({
   const { owner, reload } = useViewer();
   const router = useRouter();
   const localize = useLocalePath();
+  const t = useLocale().dict.community.lists;
   const [error, setError] = useState<string | null>(null);
   if (!owner) return null;
 
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-muted/40 p-3 text-sm">
-      <span className="font-medium">Votre liste</span>
+      <span className="font-medium">{t.yourList}</span>
       <label className="flex items-center gap-2">
-        <span className="text-muted-foreground">Visibilité</span>
+        <span className="text-muted-foreground">{t.visibilityLabel}</span>
         <select
           className="rounded-md border bg-background px-2 py-1"
           defaultValue={visibility}
@@ -155,12 +158,12 @@ export function ListOwnerBar({
         >
           {VISIBILITIES.map((v) => (
             <option key={v} value={v}>
-              {VISIBILITY_LABELS[v].label}
+              {t.visibility[v].label}
             </option>
           ))}
         </select>
       </label>
-      <label className="flex items-center gap-2" title={ANONYMITY_HELP}>
+      <label className="flex items-center gap-2" title={t.anonymityHelp}>
         <input
           type="checkbox"
           defaultChecked={anonymous}
@@ -172,24 +175,24 @@ export function ListOwnerBar({
             reload();
           }}
         />
-        Publier anonymement
+        {t.publishAnonymously}
       </label>
       <Link href="/listes" className="underline underline-offset-4">
-        Toutes mes listes
+        {t.allMyLists}
       </Link>
       <Button
         variant="ghost"
         size="sm"
         className="ml-auto text-destructive"
         onClick={async () => {
-          if (!window.confirm("Supprimer cette liste et les avis reçus ?")) return;
+          if (!window.confirm(t.confirmDeleteThis)) return;
           const failed = await send(`/api/listes/${shareId}`, "DELETE");
           if (failed) setError(failed);
           else router.push(localize("/listes"));
         }}
       >
         <Trash2 aria-hidden />
-        Supprimer la liste
+        {t.deleteList}
       </Button>
       {error && <p className="w-full text-destructive">{error}</p>}
     </div>
@@ -199,6 +202,7 @@ export function ListOwnerBar({
 /** Retirer une montre de la liste (auteur seulement). */
 export function RemoveFromListButton({ shareId, watchId }: { shareId: string; watchId: number }) {
   const { owner } = useViewer();
+  const t = useLocale().dict.community.lists;
   const router = useRouter();
   if (!owner) return null;
   return (
@@ -212,7 +216,7 @@ export function RemoveFromListButton({ shareId, watchId }: { shareId: string; wa
       }}
     >
       <Trash2 aria-hidden />
-      Retirer
+      {t.remove}
     </Button>
   );
 }
@@ -228,19 +232,20 @@ export function DeleteCommentButton({
   const { owner, ownCommentIds, reload } = useViewer();
   const router = useRouter();
   const own = ownCommentIds.includes(commentId);
+  const t = useLocale().dict.community.lists;
   if (!own && !owner) return null;
   return (
     <button
       type="button"
       className="text-xs text-muted-foreground underline underline-offset-4"
       onClick={async () => {
-        if (!window.confirm(own ? "Supprimer votre avis ?" : "Masquer cet avis ?")) return;
+        if (!window.confirm(own ? t.confirmDeleteOwn : t.confirmHide)) return;
         await send(`/api/listes/${shareId}/commentaires?id=${commentId}`, "DELETE");
         router.refresh();
         reload();
       }}
     >
-      {own ? "Supprimer" : "Masquer"}
+      {own ? t.deleteComment : t.hideComment}
     </button>
   );
 }
@@ -258,6 +263,7 @@ export function ReplyButton({
   turnstileSiteKey: string | null;
 }) {
   const [open, setOpen] = useState(false);
+  const t = useLocale().dict.community.lists;
   return (
     <div className="space-y-2">
       {!open && (
@@ -267,7 +273,7 @@ export function ReplyButton({
           onClick={() => setOpen(true)}
         >
           <Reply className="size-3.5" aria-hidden />
-          Répondre
+          {t.reply}
         </button>
       )}
       {open && (
@@ -292,15 +298,12 @@ function AnonymityChoice({
   onChange: (anonymous: boolean) => void;
 }) {
   const { owner, list } = useViewer();
+  const t = useLocale().dict.community.lists;
   if (owner && list?.anonymous) {
-    return (
-      <p className="text-xs text-muted-foreground">
-        Liste anonyme : vous apparaissez comme « Auteur de la liste », sans votre nom.
-      </p>
-    );
+    return <p className="text-xs text-muted-foreground">{t.anonymousListNote}</p>;
   }
   return (
-    <label className="flex items-start gap-2 text-sm" title={ANONYMITY_HELP}>
+    <label className="flex items-start gap-2 text-sm" title={t.anonymityHelp}>
       <input
         type="checkbox"
         className="mt-1"
@@ -308,19 +311,14 @@ function AnonymityChoice({
         onChange={(e) => onChange(e.target.checked)}
       />
       <span>
-        {owner ? "Écrire sans mon nom" : "Écrire anonymement"}
+        {owner ? t.writeWithoutName : t.writeAnonymously}
         <span className="block text-xs text-muted-foreground">
-          {owner
-            ? "Vous apparaîtrez comme « Auteur de la liste », sans nom ni photo."
-            : "Sous un pseudonyme propre à cette liste : ni votre nom ni votre photo."}
+          {owner ? t.ownerAnonymousHelp : t.anonymousPseudonymHelp}
         </span>
       </span>
     </label>
   );
 }
-
-const ANONYMITY_HELP =
-  "Votre compte reste connu du site (anti-abus), mais les autres membres ne voient ni votre nom ni votre photo.";
 
 /** Formulaire d'avis (ou de réponse) sur une liste publiée dans la communauté. */
 export function ListCommentForm({
@@ -338,6 +336,8 @@ export function ListCommentForm({
   onDone?: () => void;
 }) {
   const { reload, anonymity } = useViewer();
+  const { dict } = useLocale();
+  const t = dict.community.lists;
   const { data: session, isPending } = authClient.useSession();
   const pathname = usePathname();
   const router = useRouter();
@@ -362,9 +362,9 @@ export function ListCommentForm({
           rel="nofollow"
           className="font-medium underline underline-offset-4"
         >
-          Connectez-vous
+          {t.signInToCreate}
         </Link>{" "}
-        pour {parent ? "répondre" : "donner votre avis sur cette liste"}.
+        {parent ? t.signInToReply : t.signInToComment}
       </p>
     );
   }
@@ -377,7 +377,7 @@ export function ListCommentForm({
       onSubmit={async (e) => {
         e.preventDefault();
         if (turnstileSiteKey && !token) {
-          setStatus({ kind: "error", message: "Validez la vérification anti-robot." });
+          setStatus({ kind: "error", message: t.validateCaptcha });
           return;
         }
         setStatus({ kind: "sending" });
@@ -404,7 +404,7 @@ export function ListCommentForm({
     >
       <label className="block space-y-1 text-sm">
         <span className="font-medium">
-          {parent ? `Votre réponse à ${parent.authorName}` : "Votre avis"}
+          {parent ? format(t.replyTo, { name: parent.authorName }) : t.yourReview}
         </span>
         <textarea
           required
@@ -412,24 +412,20 @@ export function ListCommentForm({
           onChange={(e) => setBody(e.target.value)}
           maxLength={COMMENT_MAX}
           rows={parent ? 3 : 4}
-          placeholder={
-            parent
-              ? "Votre réponse…"
-              : "Ce que vous pensez de cette sélection, une montre à ajouter, un conseil…"
-          }
+          placeholder={parent ? t.replyPlaceholder : t.commentPlaceholder}
           className="w-full rounded-md border bg-background p-2"
         />
       </label>
       <AnonymityChoice checked={anonymous} onChange={setAnonymous} />
       {watches.length > 0 && (
         <label className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="text-muted-foreground">À propos de</span>
+          <span className="text-muted-foreground">{t.about}</span>
           <select
             value={watchId}
             onChange={(e) => setWatchId(e.target.value)}
             className="rounded-md border bg-background px-2 py-1"
           >
-            <option value="">toute la liste</option>
+            <option value="">{t.wholeList}</option>
             {watches.map((w) => (
               <option key={w.id} value={w.id}>
                 {w.label}
@@ -443,21 +439,19 @@ export function ListCommentForm({
       )}
       <div className="flex items-center gap-3">
         <Button type="submit" size={parent ? "sm" : "default"} disabled={status.kind === "sending"}>
-          {parent ? "Répondre" : "Publier mon avis"}
+          {parent ? t.reply : t.publish}
         </Button>
         {parent && (
           <Button type="button" variant="ghost" size="sm" onClick={onDone}>
-            Annuler
+            {t.cancel}
           </Button>
         )}
         <p role="status" className="text-sm">
-          {status.kind === "sent" && "Merci, votre avis est publié."}
+          {status.kind === "sent" && t.sent}
           {status.kind === "error" && <span className="text-destructive">{status.message}</span>}
         </p>
       </div>
-      <p className="text-xs text-muted-foreground">
-        Message public. Pas de lien ; restez courtois.
-      </p>
+      <p className="text-xs text-muted-foreground">{t.publicNote}</p>
     </form>
   );
 }
@@ -465,13 +459,12 @@ export function ListCommentForm({
 /** Liste privée : visible par son auteur seulement, lue côté navigateur. */
 export function PrivateListContent({ shareId }: { shareId: string }) {
   const { owner, list, loaded } = useViewer();
-  if (!loaded) return <p className="text-sm text-muted-foreground">Chargement…</p>;
+  const { dict } = useLocale();
+  const t = dict.community.lists;
+  if (!loaded)
+    return <p className="text-sm text-muted-foreground">{dict.community.misc.loading}</p>;
   if (!owner || !list) {
-    return (
-      <p className="rounded-xl border p-4">
-        Cette liste est privée : seul son auteur peut la voir.
-      </p>
-    );
+    return <p className="rounded-xl border p-4">{t.privateOnly}</p>;
   }
   return (
     <div className="space-y-4">
@@ -479,14 +472,12 @@ export function PrivateListContent({ shareId }: { shareId: string }) {
       <ListOwnerBar shareId={shareId} visibility="private" anonymous={list.anonymous} />
       <p className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link2 className="size-4" aria-hidden />
-        Liste privée : choisissez « Partagée par lien » pour l&apos;envoyer à quelqu&apos;un.
+        {t.privateHint}
       </p>
       {list.items.length > 0 ? (
         <WatchGrid watches={list.items} />
       ) : (
-        <p className="text-muted-foreground">
-          Aucune montre pour l&apos;instant : ajoutez-en depuis les fiches.
-        </p>
+        <p className="text-muted-foreground">{t.noWatchYet}</p>
       )}
     </div>
   );
