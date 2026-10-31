@@ -1,3 +1,4 @@
+import { access } from "../messages/access";
 import { community } from "../messages/community";
 import { pages } from "../messages/pages";
 import { sections } from "../messages/sections";
@@ -8,6 +9,7 @@ import { catalog } from "../messages/catalog";
  * avec un avertissement. Variables entre accolades : « {brand} », remplacées par `format`.
  */
 export const fr = {
+  access: access.fr,
   common: {
     unknown: "Non communiqué",
     newTab: "(nouvel onglet)",

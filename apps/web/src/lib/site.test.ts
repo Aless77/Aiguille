@@ -27,8 +27,8 @@ describe("getSiteUrl", () => {
 });
 
 describe("isIndexable", () => {
-  it("n'autorise l'indexation qu'en production", () => {
-    expect(isIndexable({ VERCEL_ENV: "production" })).toBe(true);
+  it("interdit l'indexation du site privé, y compris en production", () => {
+    expect(isIndexable({ VERCEL_ENV: "production" })).toBe(false);
     expect(isIndexable({ VERCEL_ENV: "preview" })).toBe(false);
     expect(isIndexable({})).toBe(false);
   });

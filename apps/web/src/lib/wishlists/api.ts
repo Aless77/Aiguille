@@ -1,4 +1,4 @@
-import { getAuth } from "@/lib/auth/server";
+import { approvedSession } from "@/lib/auth/access";
 import { features } from "@/lib/features";
 
 import { SHARE_ID_PATTERN } from "./input";
@@ -9,7 +9,7 @@ export const apiError = (status: number, message: string) =>
   Response.json({ error: message }, { status });
 
 export async function currentUserId(request: Request): Promise<string | null> {
-  const session = await getAuth().api.getSession({ headers: request.headers });
+  const session = await approvedSession(request.headers);
   return session?.user.id ?? null;
 }
 

@@ -257,6 +257,28 @@ export const users = pgTable("users", {
 
 export type User = typeof users.$inferSelect;
 
+/** L'authentification seule ne donne aucun accès au site : validation manuelle obligatoire. */
+export const accessRequests = pgTable("access_requests", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  motivation: text("motivation").notNull(),
+  origin: text("origin").notNull(),
+  interestedBrands: text("interested_brands").notNull(),
+  status: text("status", { enum: ["pending", "approved", "rejected"] })
+    .notNull()
+    .default("pending"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+});
+
+/** Compteurs partagés entre les instances pour limiter les tentatives administrateur. */
+export const adminLoginAttempts = pgTable("admin_login_attempts", {
+  key: text("key").primaryKey(),
+  attempts: integer("attempts").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+});
+
 /** Session ouverte (cookie). Supprimée à la déconnexion ou à expiration. */
 export const sessions = pgTable(
   "sessions",

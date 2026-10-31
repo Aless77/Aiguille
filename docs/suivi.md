@@ -1,5 +1,25 @@
 # Point de reprise
 
+## Accès privé (31 octobre 2026)
+
+Demandes d'accès et administration réalisées dans le code ; migration `0011` appliquée localement.
+Catalogue et pages de contenu réservés aux comptes approuvés ; les anciens comptes doivent aussi
+faire une demande. Plus d'indexation, sitemap vide. Voir [acces-prive.md](acces-prive.md).
+Avant mise en ligne : appliquer la migration de production, configurer `ADMIN_USERNAME`,
+`ADMIN_PASSWORD` et `BETTER_AUTH_SECRET`, puis vérifier le parcours OAuth et la validation réelle.
+Les décisions SEO précédentes sont remplacées pour ce mode privé.
+Administration discrète : aucun lien public ; adresse privée définie dans `ADMIN_ACCESS_PATH`.
+L'ancienne entrée `/administration` renvoie 404 sans redirection.
+Correctif du mode développement : la page de demande lit les en-têtes de requête avant
+d'initialiser Better Auth, pour éviter une lecture d'horloge pendant le prérendu. Les pages de
+demande et de connexion administrateur ont été ouvertes sans erreur dans le navigateur local.
+Connexion avec `test/test` vérifiée dans le navigateur de développement : administration,
+catalogue et déconnexion fonctionnent. Un mot de passe court reste refusé hors développement local.
+Validation locale : `npm run check` réussi (311 tests), build de production réussi et 6 tests
+Playwright réussis sur ordinateur et mobile (visiteur bloqué, connexion/déconnexion administrateur,
+demande, acceptation et révocation). Captures du formulaire et de l'administration inspectées.
+Les essais créent puis suppriment leurs comptes fictifs. OAuth externe non testé dans ce parcours.
+
 Mis à jour le 19 octobre 2026 à partir du bilan du propriétaire. Les données locales et les
 services distants doivent être vérifiés avant de considérer un lot comme livré en ligne.
 

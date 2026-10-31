@@ -29,11 +29,12 @@ export function getSiteUrl(env: Env = process.env): string {
 }
 
 /**
- * Seule la production est indexable : les previews Vercel et le local ne doivent jamais
- * apparaître dans les moteurs (contenu dupliqué).
+ * Site privé sur décision du propriétaire (31 octobre 2026) : aucune indexation,
+ * même en production. Signature conservée pour les consommateurs existants.
  */
 export function isIndexable(env: Env = process.env): boolean {
-  return env.VERCEL_ENV === "production";
+  void env;
+  return false;
 }
 
 /** Construit une URL absolue à partir d'un chemin (« /montres/tissot »). */
