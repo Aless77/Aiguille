@@ -7,6 +7,7 @@ import { Link } from "@/lib/i18n/client";
 import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { CatalogStepper } from "@/components/catalog-stepper";
 import { EuropePricesSection } from "@/components/europe-prices-section";
 import { OffersSection } from "@/components/offers-section";
 import { AddToList } from "@/components/add-to-list";
@@ -152,6 +153,7 @@ export default async function WatchPage({ params }: Props) {
 
   return (
     <div className="space-y-12">
+      <CatalogStepper />
       <Breadcrumbs
         crumbs={[
           { name: t.watches, path: "/montres" },

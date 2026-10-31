@@ -2,18 +2,18 @@ import { Suspense } from "react";
 
 import { CatalogFilters } from "@/components/catalog-filters";
 import { CatalogPagination } from "@/components/catalog-pagination";
+import { CatalogTrailMarker } from "@/components/catalog-trail-marker";
 import { WatchGrid } from "@/components/watch-card";
+import { browseFilter, type CatalogScope, hiddenSorts } from "@/lib/catalog/browse-filter";
 import { displayName } from "@/lib/catalog/format";
 import { getFacets, getWatchCards } from "@/lib/catalog/queries";
-import { loadCatalogParams, toFilter } from "@/lib/catalog/search-params";
-import { type CatalogFilter, type Sort, watchPath } from "@/lib/catalog/types";
-import { features } from "@/lib/features";
+import { loadCatalogParams } from "@/lib/catalog/search-params";
+import { PAGE_SIZE, watchPath } from "@/lib/catalog/types";
 import { format } from "@/lib/i18n/dictionary";
 import { getDictionary } from "@/lib/i18n/server";
 import { JsonLd, itemListJsonLd } from "@/lib/seo/json-ld";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
-type Scope = Pick<CatalogFilter, "brandSlug" | "collectionSlug">;
 
 /** Un même catalogue dans toutes les listes ; le chemin de la page fixe son périmètre. */
 export async function CatalogBrowser({
@@ -22,7 +22,7 @@ export async function CatalogBrowser({
   basePath = "/montres",
 }: {
   searchParams: SearchParams;
-  scope?: Scope;
+  scope?: CatalogScope;
   basePath?: string;
 }) {
   const [facets, { dict }] = await Promise.all([getFacets(scope), getDictionary()]);
@@ -51,16 +51,12 @@ async function CatalogResults({
   basePath,
 }: {
   searchParams: SearchParams;
-  scope: Scope;
+  scope: CatalogScope;
   basePath: string;
 }) {
   const params = loadCatalogParams(await searchParams);
-  const filter = { ...toFilter(params), ...scope };
-  // La marque du chemin prime aussi sur un éventuel paramètre hérité d'une autre page.
-  if (scope.brandSlug) filter.brands = [];
-  if (filter.sort && hiddenSorts().includes(filter.sort)) filter.sort = "prix-asc";
   const [{ items, total, page, pageCount }, { dict, f, path }] = await Promise.all([
-    getWatchCards(filter),
+    getWatchCards(browseFilter(params, scope)),
     getDictionary(),
   ]);
   const t = dict.catalog.results;
@@ -76,6 +72,11 @@ async function CatalogResults({
         <p className="py-12 text-center text-muted-foreground">{t.empty}</p>
       )}
       <CatalogPagination params={params} page={page} pageCount={pageCount} basePath={basePath} />
+      <CatalogTrailMarker
+        paths={items.map((w) => watchPath(w))}
+        offset={(page - 1) * PAGE_SIZE}
+        total={total}
+      />
       <JsonLd
         data={itemListJsonLd(
           items.map((w) => ({ name: displayName(w.brandName, w.name), path: path(watchPath(w)) })),
@@ -83,11 +84,4 @@ async function CatalogResults({
       />
     </section>
   );
-}
-
-function hiddenSorts(): Sort[] {
-  return [
-    ...(features.score() ? [] : (["note"] as const)),
-    ...(features.reviews() ? [] : (["avis"] as const)),
-  ];
 }

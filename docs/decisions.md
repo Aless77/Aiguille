@@ -3,6 +3,15 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-10-31 – Feuilletage de la liste filtrée depuis une fiche
+
+Depuis une fiche ouverte à partir du catalogue, Précédent, Suivant et les flèches du clavier
+parcourent la liste filtrée, page de résultats après page de résultats. La liste est gardée par
+onglet (`sessionStorage`), jamais dans l'URL de la fiche : pages statiques, canoniques et cache
+inchangés, et aucun doublon pour les moteurs. Les pages suivantes viennent de
+`/api/catalogue/parcours`, avec le même filtre que la page (`browseFilter`). Sans parcours (fiche
+ouverte directement), rien ne s'affiche.
+
 ## 2026-10-31 – Venezianico intégrée, collecte activée par le propriétaire
 
 Marque demandée par le propriétaire, qui a ensuite décidé d'activer la collecte après avoir pris

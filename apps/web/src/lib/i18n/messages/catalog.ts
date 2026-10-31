@@ -30,6 +30,11 @@ const fr = {
     previous: "Précédent",
     next: "Suivant",
   },
+  trail: {
+    label: "Parcourir les résultats",
+    back: "Retour aux résultats",
+    position: "Montre {rank} sur {total}",
+  },
   sorts: {
     "prix-asc": "Prix croissant",
     "prix-desc": "Prix décroissant",
@@ -185,6 +190,11 @@ const en: Messages = {
     pagination: "Pagination",
     previous: "Previous",
     next: "Next",
+  },
+  trail: {
+    label: "Browse the results",
+    back: "Back to results",
+    position: "Watch {rank} of {total}",
   },
   sorts: {
     "prix-asc": "Price: low to high",
@@ -378,6 +388,11 @@ const de: Messages = {
     previous: "Zurück",
     next: "Weiter",
   },
+  trail: {
+    label: "Ergebnisse durchblättern",
+    back: "Zurück zu den Ergebnissen",
+    position: "Uhr {rank} von {total}",
+  },
   sorts: {
     "prix-asc": "Preis aufsteigend",
     "prix-desc": "Preis absteigend",
@@ -570,6 +585,11 @@ const it: Messages = {
     previous: "Precedente",
     next: "Successiva",
   },
+  trail: {
+    label: "Sfoglia i risultati",
+    back: "Torna ai risultati",
+    position: "Orologio {rank} di {total}",
+  },
   sorts: {
     "prix-asc": "Prezzo crescente",
     "prix-desc": "Prezzo decrescente",
@@ -761,6 +781,11 @@ const es: Messages = {
     pagination: "Paginación",
     previous: "Anterior",
     next: "Siguiente",
+  },
+  trail: {
+    label: "Recorrer los resultados",
+    back: "Volver a los resultados",
+    position: "Reloj {rank} de {total}",
   },
   sorts: {
     "prix-asc": "Precio ascendente",
