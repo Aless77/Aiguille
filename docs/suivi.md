@@ -77,7 +77,7 @@ Reste pour boucler le lot 4 :
   /communaute avec avis et réponses des membres, anonymat possible, plafonds de stockage ;
   migrations `0007` et `0008` à appliquer en production (collecte
   `limit 1` ou build Vercel).
-- **Venezianico** : collecte quotidienne activée par le propriétaire (10 s entre deux fiches, fiches
+- **Venezianico** : collecte quotidienne activée par le propriétaire (20 s entre deux fiches, fiches
   en anglais, sans autorisation de la marque : voir docs/decisions.md du 31 octobre).
 - **Pays de provenance** des comptes (demandé après la première connexion, `npm run db:pays`).
 - **Multilingue** (FR, EN, DE, IT, ES) : routage `app/[lang]`, dictionnaires, repli anglais,

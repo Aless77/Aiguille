@@ -60,6 +60,19 @@ describe("Venezianico officiel", () => {
     expect(parsed?.rawSpecs.Crown).toBe("Screw-Down");
   });
 
+  it("garde le nom complet des éditions limitées, sans SKU", () => {
+    const edition = html
+      .replaceAll("Nereide 42 - 3321502C", "Redentore - Marco Polo Limited Edition")
+      .replace('"sku": "3321502C",', "")
+      .replace('"mpn": "3321502C",', "");
+    const parsed = parseVenezianico(
+      load(edition),
+      "https://www.venezianico.com/products/redentore-marco-polo-limited-edition",
+    );
+    expect(parsed?.name).toBe("Redentore Marco Polo Limited Edition");
+    expect(parsed?.reference).toBe("REDENTORE-MARCO-POLO-LIMITED-EDITION");
+  });
+
   it("n'expose pas de prix hors euros", () => {
     const usd = html.replace('"priceCurrency": "EUR"', '"priceCurrency": "USD"');
     expect(parseVenezianico(load(usd), url)?.priceCents).toBeUndefined();

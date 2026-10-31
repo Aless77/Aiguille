@@ -101,7 +101,11 @@ function readPage($: CheerioAPI, url: string) {
   if (!PRODUCT_URL.test(url) || data?.category !== "Watches") return null;
   const title = cleanText($("h1.product-info__title").first().text());
   if (!title) return null;
-  const name = titleCase(title.split(" - ")[0]!).replace(/\bGmt\b/, "GMT");
+  // « Nereide 42 - 3321502C » : référence après le tiret ; « Redentore - Marco Polo » : nom complet.
+  const name = titleCase(title.replace(/ - \d+[A-Z]*$/i, "").replaceAll(" - ", " ")).replace(
+    /\bGmt\b/,
+    "GMT",
+  );
   const collection = COLLECTIONS.find((c) => name.toLowerCase().startsWith(c.toLowerCase()));
   const entries = readEntries($);
   // Une montre a toujours un mouvement : écarte coffrets et éditions sans fiche technique.
@@ -162,8 +166,7 @@ export function parseVenezianico($: CheerioAPI, url: string) {
       movement: parseMovement(movement),
       caliber: parseCaliber(movement),
       diameterMm: dimension(/Ø\s*(\d+(?:[.,]\d+)?)/),
-      thicknessMm:
-        dimension(/thickness\s*(\d+(?:[.,]\d+)?)/i) ?? parseNumber(value("thickness")),
+      thicknessMm: dimension(/thickness\s*(\d+(?:[.,]\d+)?)/i) ?? parseNumber(value("thickness")),
       waterResistanceM: parseWaterResistance(value("water")),
       caseMaterial: value("caseMaterial"),
       crystal: value("crystal"),
@@ -187,7 +190,7 @@ export const venezianico: OfficialAdapter = {
   },
   parse: parseVenezianico,
   // La boutique répond 429 à un robot trop régulier : rythme plus lent que la règle générale.
-  minDelaySecs: 10,
+  minDelaySecs: 20,
   // Fiches en anglais, prix européens : ni version française, ni marché national distinct relevé.
   // it.venezianico.com redirige vers ce site selon le pays du visiteur : pas de traduction fiable.
   locales: {},

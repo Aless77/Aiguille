@@ -10,7 +10,7 @@ connaissance des deux points ci-dessous. Elle remplace la mise en attente envisa
 
 - **Accès** : la boutique (Shopify) a d'abord répondu 429 `local_rate_limited` à notre robot
   identifié sur les pages produits et `/products.json`, après quelques requêtes et encore après
-  25 minutes d'arrêt, puis l'accès est revenu. Rythme fixé à 10 s entre deux fiches
+  25 minutes d'arrêt, puis l'accès est revenu. Rythme fixé à 20 s entre deux fiches
   (`minDelaySecs`). Pas de contournement (User-Agent de navigateur, relais) : en cas de nouveau
   blocage, le disjoncteur arrête la collecte (docs/sources.md).
 - **Conditions** : la section 2 interdit de reproduire, copier ou exploiter toute partie du service
