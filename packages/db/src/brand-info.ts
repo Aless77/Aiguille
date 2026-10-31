@@ -121,6 +121,57 @@ export const BRAND_INFO: Record<string, BrandInfo> = {
     group: null,
     movementMakers: [],
   },
+  venezianico: {
+    warranty: {
+      value: {
+        months: 24,
+        extended: [],
+        page: "https://www.venezianico.com/pages/terms-and-conditions",
+        excludes: ["usure normale", "dommages dus à une mauvaise utilisation, eau comprise"],
+      },
+      source: "https://www.venezianico.com/pages/terms-and-conditions",
+      checkedAt: "2026-10-31",
+    },
+    service: {
+      value: {
+        prices: [],
+        battery: null,
+        fullServiceInterval: "tous les 4 à 5 ans",
+        partialServiceInterval: null,
+        waterResistanceCheck: null,
+        batteryLife: null,
+        serviceWarrantyMonths: null,
+        spareParts: null,
+        free: [],
+      },
+      source: "https://www.venezianico.com/pages/owners-guide",
+      checkedAt: "2026-10-31",
+    },
+    madeIn: null,
+    care: {
+      value: ["screwDownCrown", "saltWater", "magnetism", "temperature"],
+      source: "https://www.venezianico.com/pages/owners-guide",
+      checkedAt: "2026-10-31",
+    },
+    group: null,
+    // Guide du propriétaire : tolérances publiées par calibre, y compris les calibres tiers.
+    movementMakers: [
+      ...(
+        [
+          [/seiko|\bN[EH]\d/i, "Seiko"],
+          [/sellita|\bSW\d/i, "Sellita"],
+          [/miyota/i, "Miyota"],
+          [/soprod/i, "Soprod"],
+          [/\bV5000\b/i, "Venezianico"],
+        ] as const
+      ).map(([caliber, value]) => ({
+        caliber,
+        value,
+        source: "https://www.venezianico.com/pages/owners-guide",
+        checkedAt: "2026-10-31",
+      })),
+    ],
+  },
   seiko: {
     warranty: {
       value: {

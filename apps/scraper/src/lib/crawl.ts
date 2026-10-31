@@ -67,7 +67,11 @@ export async function runSource(
       `[${adapter.id}] ${discovered.length} fiches découvertes, ${discovered.length - urls.length} exclues par robots.txt`,
     );
     if (options.limit) urls = urls.slice(0, options.limit);
-    const delaySecs = Math.max(DOMAIN_DELAY_SECS, robots.crawlDelaySecs ?? 0);
+    const delaySecs = Math.max(
+      DOMAIN_DELAY_SECS,
+      robots.crawlDelaySecs ?? 0,
+      adapter.kind === "official" ? (adapter.minDelaySecs ?? 0) : 0,
+    );
     const crawler = createPoliteCrawler({
       delaySecs,
       async requestHandler({ $, request }) {

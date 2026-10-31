@@ -3,6 +3,27 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-10-31 – Venezianico intégrée, collecte activée par le propriétaire
+
+Marque demandée par le propriétaire, qui a ensuite décidé d'activer la collecte après avoir pris
+connaissance des deux points ci-dessous. Elle remplace la mise en attente envisagée le même jour.
+
+- **Accès** : la boutique (Shopify) a d'abord répondu 429 `local_rate_limited` à notre robot
+  identifié sur les pages produits et `/products.json`, après quelques requêtes et encore après
+  25 minutes d'arrêt, puis l'accès est revenu. Rythme fixé à 10 s entre deux fiches
+  (`minDelaySecs`). Pas de contournement (User-Agent de navigateur, relais) : en cas de nouveau
+  blocage, le disjoncteur arrête la collecte (docs/sources.md).
+- **Conditions** : la section 2 interdit de reproduire, copier ou exploiter toute partie du service
+  sans autorisation écrite. Formule type Shopify, moins explicite que les CGU d'Oris. **Aucune
+  demande n'a été envoyée à la marque et aucune autorisation n'est revendiquée** ; risque accepté
+  par le propriétaire, retrait immédiat sur demande de la marque.
+
+Choix de conception : fiches en anglais (ni français ni allemand publiés ;
+`it.venezianico.com` redirige selon le pays), donc `SOURCE_LANGUAGES` et avertissement sur les
+fiches françaises ; déclinaisons par préfixe de référence **et** nom publié, le préfixe seul
+couvrant des lignes distinctes (Ceramica, Madreperla) ; prix TTC UE (conditions, section 11),
+écartés si la page n'est pas en euros.
+
 ## 2026-10-31 – Site privé sur demande
 
 Pour les essais du propriétaire, `test/test` est accepté dans le serveur de développement local

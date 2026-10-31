@@ -55,6 +55,12 @@ export interface TranslatedWatch<T extends TranslatableWatch> {
 }
 
 /**
+ * Marques sans fiche française : leur catalogue est relevé dans cette langue. Le pivot `fr` de
+ * watch_translations porte alors cette version, et la fiche française affiche l'avertissement.
+ */
+export const SOURCE_LANGUAGES: Partial<Record<string, string>> = { venezianico: "en" };
+
+/**
  * Applique la version d'une langue à la fiche : valeurs de `rawSpecs` (gardées sous leurs
  * libellés français, lus par la fiche technique), nom et champs normalisés. Sans version dans
  * la langue, l'anglais sert de repli ; sans anglais, la fiche reste en français.
@@ -63,10 +69,13 @@ export function translateWatch<T extends TranslatableWatch>(
   w: T,
   locale: string,
   versions: Partial<Record<string, WatchTranslationData>>,
+  sourceLanguage = "fr",
 ): TranslatedWatch<T> {
-  if (locale === "fr") return { watch: w, status: "native", labels: {} };
+  if (locale === sourceLanguage) return { watch: w, status: "native", labels: {} };
   const pivot = versions.fr;
-  const own = versions[locale];
+  const own = locale === "fr" ? undefined : versions[locale];
+  // Catalogue déjà en anglais : la fiche d'origine est le repli.
+  if (sourceLanguage === "en" && !own) return { watch: w, status: "english", labels: {} };
   const target = own ?? versions.en;
   if (!target || !pivot) return { watch: w, status: "source", labels: {} };
 

@@ -170,6 +170,13 @@ export function buildSpecSheet(
   // Libellés lus par les extracteurs de faits : déjà représentés par une ligne.
   raw(
     "Mouvement",
+    "Movement",
+    "Case Material",
+    "Dimensions",
+    "Crystal",
+    "Water Resistance",
+    "Thickness",
+    "Bracelet",
     "Type de mouvement",
     "Mouvement · Type de mouvement",
     "Mouvement · Calibre",
@@ -231,6 +238,7 @@ export function buildSpecSheet(
     (longMovement && longMovement.length > 40 ? longMovement : null);
   const functions = raw(
     "Fonctions de la montre",
+    "Functions",
     "Mouvement · Fonctions",
     "Mouvement · Fonction",
     "Fonctions principales",
@@ -353,7 +361,9 @@ export function buildSpecSheet(
     },
     {
       label: "Lunette",
-      value: raw("Matière de la lunette") ?? (c.ceramicBezel ? L("Céramique") : null),
+      value:
+        raw("Matière de la lunette", "Bezel Insert", "Bezel") ??
+        (c.ceramicBezel ? L("Céramique") : null),
     },
     {
       label: "Verre",
@@ -385,6 +395,7 @@ export function buildSpecSheet(
       value:
         raw(
           "Matière luminescente sur les aiguilles",
+          "Luminous Material",
           "Matière luminescente sur la lunette",
           "Cadran · Spécificités",
           "LumiBrite",
@@ -403,7 +414,7 @@ export function buildSpecSheet(
           ? `${P.diamonds(fr(parseNumber(tissotDiamonds) ?? 0))}${carats && parseNumber(carats) ? P.carat(fr(parseNumber(carats)!)) : ""}`
           : L("Aucune mentionnée")),
     },
-    { label: "Description", value: raw("Cadran · Description") },
+    { label: "Description", value: raw("Cadran · Description", "Dial") },
   ];
   raw(
     "Type de pierre précieuse",
@@ -477,16 +488,17 @@ export function buildSpecSheet(
     {
       label: "Révision complète",
       value: service?.full ? `${fr(service.full)} €` : null,
+      // Sans tarif publié, ni mention de prix ni lien (les précisions de la marque restent).
       note: service
         ? [
-            P.priceNote(formatIsoDate(service.checkedAt, locale)),
+            service.full && P.priceNote(formatIsoDate(service.checkedAt, locale)),
             service.priceNote && L(service.priceNote),
             service.free.length && P.free(localizeList(service.free, locale)),
           ]
             .filter(Boolean)
-            .join(" ")
+            .join(" ") || undefined
         : undefined,
-      link: service ? { href: service.source, label: L("Tarifs de la marque") } : undefined,
+      link: service?.full ? { href: service.source, label: L("Tarifs de la marque") } : undefined,
     },
     { label: "Révision partielle", value: service?.partial ? `${fr(service.partial)} €` : null },
     ...(quartz

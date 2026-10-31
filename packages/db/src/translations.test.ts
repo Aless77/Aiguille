@@ -24,6 +24,21 @@ const de = version("Conquest 41 mm", "Zifferblatt · Farbe", "Sonnenschliff blau
   dialColor: "Sonnenschliff blau",
 });
 
+describe("translateWatch d'une marque sans fiche française", () => {
+  it("garde la fiche anglaise, signalée en français et dans les langues absentes", () => {
+    expect(translateWatch(watch, "en", { fr }, "en").status).toBe("native");
+    expect(translateWatch(watch, "fr", { fr }, "en")).toMatchObject({ watch, status: "english" });
+    expect(translateWatch(watch, "de", { fr }, "en")).toMatchObject({ watch, status: "english" });
+  });
+
+  it("applique la version publiée dans la langue", () => {
+    const it_ = version("Conquest 41 mm", "Quadrante · Colore", "Blu", { dialColor: "Blu" });
+    const t = translateWatch(watch, "it", { fr, it: it_ }, "en");
+    expect(t.status).toBe("native");
+    expect(t.watch.dialColor).toBe("Blu");
+  });
+});
+
 describe("translateWatch", () => {
   it("garde la fiche française telle quelle", () => {
     expect(translateWatch(watch, "fr", { fr, en })).toEqual({

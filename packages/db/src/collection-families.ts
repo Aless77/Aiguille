@@ -39,6 +39,13 @@ export const COLLECTION_FAMILIES: Record<string, BrandFamilies> = {
     complete: false,
     families: [],
   },
+  // Menu de la boutique : collections à plat, sans gamme supérieure.
+  venezianico: {
+    source: "https://www.venezianico.com/collections/all-watches",
+    checkedAt: "2026-10-31",
+    complete: false,
+    families: [],
+  },
   // Menu « Montres » : cinq univers, chacun listant ses collections.
   longines: {
     source: "https://www.longines.com/fr/watches",

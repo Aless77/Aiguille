@@ -17,6 +17,16 @@ function watch(over: Partial<VariantCandidate> & { reference: string }): Variant
 }
 
 describe("modelKey", () => {
+  it("exige aussi le même nom quand le préfixe couvre plusieurs lignes (Venezianico)", () => {
+    expect(modelKey("venezianico", "3321502C", "Nereide 42")).toBe(
+      modelKey("venezianico", "3321504", "Nereide 42"),
+    );
+    expect(modelKey("venezianico", "4521530", "Nereide Ceramica")).not.toBe(
+      modelKey("venezianico", "4521540", "Nereide Madreperla"),
+    );
+    expect(modelKey("venezianico", "NEREIDE-OPALE-LIMITED-EDITION", "Nereide Opale")).toBeNull();
+  });
+
   it("extrait la partie modèle de la référence selon la marque", () => {
     expect(modelKey("hamilton", "H32705141")).toBe("H32705");
     expect(modelKey("tissot", "T137.407.11.041.00")).toBe("T137.407");

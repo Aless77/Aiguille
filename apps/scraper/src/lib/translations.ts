@@ -32,7 +32,7 @@ export async function runTranslations(
     pages = pages.filter((p) => robots.isAllowed(p.url));
     if (options.limit) pages = pages.slice(0, options.limit);
     const crawler = createPoliteCrawler({
-      delaySecs: Math.max(DOMAIN_DELAY_SECS, robots.crawlDelaySecs ?? 0),
+      delaySecs: Math.max(DOMAIN_DELAY_SECS, robots.crawlDelaySecs ?? 0, adapter.minDelaySecs ?? 0),
       ignoreHttpErrorStatusCodes: [404, 410],
       async requestHandler({ $, request, response }) {
         stats.pagesFetched++;

@@ -6,6 +6,7 @@ import { longines } from "./longines.ts";
 import { ocarat } from "./ocarat.ts";
 import { tissot } from "./tissot.ts";
 import { type SourceAdapter } from "./types.ts";
+import { venezianico } from "./venezianico.ts";
 
 /**
  * Sources actives. Les sites officiels définissent le catalogue ; les revendeurs y rattachent
@@ -17,6 +18,7 @@ export const sources: Record<string, SourceAdapter> = {
   longines,
   citizen,
   seiko,
+  venezianico,
   lepage,
   ocarat,
 };

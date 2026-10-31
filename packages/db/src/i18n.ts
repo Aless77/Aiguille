@@ -317,6 +317,23 @@ export const TEXTS: Record<string, Translations> = {
     "da 2 a 5 anni secondo il movimento",
     "de 2 a 5 años según el movimiento",
   ),
+  "dommages dus à une mauvaise utilisation, eau comprise": t(
+    "damage caused by improper use, including water damage",
+    "Schäden durch unsachgemäßen Gebrauch, einschließlich Wasserschäden",
+    "danni dovuti a un uso improprio, compresi quelli causati dall'acqua",
+    "daños por mal uso, incluidos los causados por el agua",
+  ),
+  "tous les 4 à 5 ans": t(
+    "every 4 to 5 years",
+    "alle 4 bis 5 Jahre",
+    "ogni 4-5 anni",
+    "cada 4 a 5 años",
+  ),
+  Seiko: t("Seiko", "Seiko", "Seiko", "Seiko"),
+  Sellita: t("Sellita", "Sellita", "Sellita", "Sellita"),
+  Miyota: t("Miyota", "Miyota", "Miyota", "Miyota"),
+  Soprod: t("Soprod", "Soprod", "Soprod", "Soprod"),
+  Venezianico: t("Venezianico", "Venezianico", "Venezianico", "Venezianico"),
   "tous les 6 à 8 ans": t(
     "every 6 to 8 years",
     "alle 6 bis 8 Jahre",

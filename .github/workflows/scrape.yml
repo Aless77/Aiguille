@@ -81,7 +81,7 @@ jobs:
       # Une source cassée ne doit pas empêcher la collecte des autres.
       fail-fast: false
       matrix:
-        source: [tissot, hamilton, longines, citizen, seiko]
+        source: [tissot, hamilton, longines, citizen, seiko, venezianico]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7

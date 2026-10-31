@@ -27,6 +27,8 @@ export interface OfficialAdapter extends BaseAdapter {
    * stable : affichage du site dans d'autres langues (packages/db/src/translations.ts).
    */
   translate?($: CheerioAPI, url: string): WatchTranslationData | null;
+  /** Délai entre deux pages, si le site limite plus que la règle générale (voir sources.md). */
+  minDelaySecs?: number;
   /** Langues officielles indépendantes d'un marché de prix (ex. anglais européen Citizen). */
   translationLocales?: Partial<Record<"en" | "de" | "it" | "es", string>>;
   /** Prix national rendu dans le HTML si la marque ne fournit pas de Product JSON-LD. */

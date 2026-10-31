@@ -1,6 +1,6 @@
 import { familyOf } from "@aiguille/db/collection-families";
 import { reviewMean } from "@aiguille/db/rating";
-import { translateWatch } from "@aiguille/db/translations";
+import { SOURCE_LANGUAGES, translateWatch } from "@aiguille/db/translations";
 import { modelVariants } from "@aiguille/db/variants";
 import { ExternalLink } from "lucide-react";
 import { Link } from "@/lib/i18n/client";
@@ -91,7 +91,12 @@ export default async function WatchPage({ params }: Props) {
   const { locale, dict, f, path } = await getDictionary();
   const t = dict.watch;
   const tag = LOCALE_TAGS[locale];
-  const translated = translateWatch(source, locale, await getWatchTranslations(source.id));
+  const translated = translateWatch(
+    source,
+    locale,
+    await getWatchTranslations(source.id),
+    SOURCE_LANGUAGES[source.brandSlug],
+  );
   const w = translated.watch;
   const fallbackNotice =
     translated.status === "native"

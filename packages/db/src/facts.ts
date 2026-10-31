@@ -133,13 +133,14 @@ const COMPLICATION_PATTERNS: Record<Complication, RegExp> = {
 export function extractConstructionFacts(w: WatchSource): ConstructionFacts {
   const text = specText(w);
   const material = w.caseMaterial ?? "";
-  const noble = /titane|c[ée]ramique|\bor\b|bronze|platine/i.exec(material);
+  const noble =
+    /titane|titanium|c[ée]ramique|ceramic|\bor\b|\bgold\b|bronze|platine|platinum/i.exec(material);
   return {
     sapphire: /saphir|sapphire/i.test(w.crystal ?? ""),
     crystalKnown: Boolean(w.crystal?.trim()),
     materialKnown: Boolean(material.trim()),
     antiReflective:
-      /anti-?reflet|antireflet/i.test(
+      /anti-?reflet|antireflet|anti-?reflective/i.test(
         `${w.crystal ?? ""} ${specs(w)["Revêtement du verre"] ?? ""}`,
       ) || yes(specs(w)["Anti-reflet"]),
     waterResistanceM: w.waterResistanceM,
@@ -151,10 +152,14 @@ export function extractConstructionFacts(w: WatchSource): ConstructionFacts {
       /fond[^|]{0,20}(saphir|transparent)/i.test(text),
     // Tissot : « Couronne et fond de boîte vissés ».
     screwDownCrown:
-      yes(specs(w)["Couronne vissée"]) || /couronne( et fond de bo[iî]te)? viss[ée]/i.test(text),
+      yes(specs(w)["Couronne vissée"]) ||
+      /screw-?down/i.test(specs(w)["Crown"] ?? "") ||
+      /couronne( et fond de bo[iî]te)? viss[ée]/i.test(text),
     luminescent: /luminova|luminescent|lumibrite/i.test(text),
     gemSet: /diamant/i.test(text),
-    ceramicBezel: /lunette[^|]{0,40}c[ée]ramique|c[ée]ramique[^|]{0,20}lunette/i.test(text),
+    ceramicBezel:
+      /lunette[^|]{0,40}c[ée]ramique|c[ée]ramique[^|]{0,20}lunette/i.test(text) ||
+      /^ceramic/i.test(specs(w)["Bezel Insert"] ?? ""),
   };
 }
 

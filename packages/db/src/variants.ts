@@ -17,11 +17,18 @@ export const MODEL_KEYS: Record<string, RegExp> = {
   longines: /^(L\d\.\d{3})\.\d\.\d{2}\.\d$/i,
   // H32705141 : modèle H32705, puis trois chiffres de déclinaison.
   hamilton: /^(H\d{5})\d{3}$/i,
+  // 3321502C : boîtier 33215, cadran 02, C pour le bracelet. Le préfixe est partagé par des
+  // lignes distinctes (Ceramica, Madreperla…) : le nom publié doit aussi être le même.
+  venezianico: /^(\d{5})\d{2}[A-Z]?$/i,
 };
 
-export function modelKey(brandSlug: string, reference: string): string | null {
-  const match = MODEL_KEYS[brandSlug]?.exec(reference.trim());
-  return match?.[1]?.toUpperCase() ?? null;
+/** Marques dont le préfixe de référence ne suffit pas : le nom du modèle complète la clé. */
+const NAMED_MODELS = new Set(["venezianico"]);
+
+export function modelKey(brandSlug: string, reference: string, name = ""): string | null {
+  const key = MODEL_KEYS[brandSlug]?.exec(reference.trim())?.[1]?.toUpperCase();
+  if (!key) return null;
+  return NAMED_MODELS.has(brandSlug) ? `${key} ${baseName(name)}` : key;
 }
 
 /** Nom sans la taille ni les espaces superflus : « Open Heart  Auto 42mm » → « open heart auto ». */
@@ -97,7 +104,7 @@ export function modelVariants<T extends VariantCandidate>(
   current: T,
   candidates: T[],
 ): ModelVariants<T> {
-  const key = modelKey(brandSlug, current.reference);
+  const key = modelKey(brandSlug, current.reference, current.name);
   const others = candidates.filter((c) => c.slug !== current.slug);
   const normalize = (reference: string) => reference.toUpperCase().replace(/[^A-Z0-9]/g, "");
   const linked = (candidate: T) =>
@@ -109,7 +116,7 @@ export function modelVariants<T extends VariantCandidate>(
     current,
     ...others.filter(
       (c) =>
-        (linked(c) || (key !== null && modelKey(brandSlug, c.reference) === key)) &&
+        (linked(c) || (key !== null && modelKey(brandSlug, c.reference, c.name) === key)) &&
         c.diameterMm === current.diameterMm,
     ),
   ].sort(byAvailabilityThenPrice);
@@ -136,7 +143,10 @@ export function modelVariants<T extends VariantCandidate>(
   const bySize = new Map<number, T[]>();
   for (const c of others) {
     if (c.diameterMm == null || c.diameterMm === current.diameterMm) continue;
-    if (!linked(c) && (!key || !modelKey(brandSlug, c.reference) || baseName(c.name) !== base))
+    if (
+      !linked(c) &&
+      (!key || !modelKey(brandSlug, c.reference, c.name) || baseName(c.name) !== base)
+    )
       continue;
     bySize.set(c.diameterMm, [...(bySize.get(c.diameterMm) ?? []), c]);
   }
