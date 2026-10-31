@@ -230,6 +230,30 @@ export const TEXTS: Record<string, Translations> = {
     "duración de la pila",
   ),
   "usure normale": t("normal wear", "normaler Verschleiß", "normale usura", "desgaste normal"),
+  "verre, pile et bracelet": t(
+    "crystal, battery and strap",
+    "Glas, Batterie und Armband",
+    "vetro, pila e cinturino",
+    "cristal, pila y correa",
+  ),
+  "intervention hors des ateliers LIP": t(
+    "work done outside the LIP workshops",
+    "Eingriffe außerhalb der LIP-Werkstätten",
+    "interventi eseguiti fuori dai laboratori LIP",
+    "intervenciones realizadas fuera de los talleres de LIP",
+  ),
+  "montres achetées ailleurs que sur lip.fr (voir avec le revendeur)": t(
+    "watches bought elsewhere than lip.fr (ask the retailer)",
+    "nicht auf lip.fr gekaufte Uhren (an den Händler wenden)",
+    "orologi acquistati altrove rispetto a lip.fr (rivolgersi al rivenditore)",
+    "relojes comprados fuera de lip.fr (consultar con el vendedor)",
+  ),
+  "tous les 3 à 5 ans selon la FAQ ; au moins tous les 10 ans selon la page des mouvements": t(
+    "every 3 to 5 years according to the FAQ; at least every 10 years according to the movements page",
+    "alle 3 bis 5 Jahre laut FAQ; mindestens alle 10 Jahre laut Seite zu den Uhrwerken",
+    "ogni 3-5 anni secondo le FAQ; almeno ogni 10 anni secondo la pagina dei movimenti",
+    "cada 3 a 5 años según las preguntas frecuentes; al menos cada 10 años según la página de los movimientos",
+  ),
   "usure normale (rayures, bracelets cuir ou caoutchouc, PVD)": t(
     "normal wear (scratches, leather or rubber straps, PVD)",
     "normaler Verschleiß (Kratzer, Leder- oder Kautschukbänder, PVD)",
@@ -332,6 +356,9 @@ export const TEXTS: Record<string, Translations> = {
   Seiko: t("Seiko", "Seiko", "Seiko", "Seiko"),
   Sellita: t("Sellita", "Sellita", "Sellita", "Sellita"),
   Miyota: t("Miyota", "Miyota", "Miyota", "Miyota"),
+  Ronda: t("Ronda", "Ronda", "Ronda", "Ronda"),
+  TMI: t("TMI", "TMI", "TMI", "TMI"),
+  LIP: t("LIP", "LIP", "LIP", "LIP"),
   Soprod: t("Soprod", "Soprod", "Soprod", "Soprod"),
   Venezianico: t("Venezianico", "Venezianico", "Venezianico", "Venezianico"),
   "tous les 6 à 8 ans": t(

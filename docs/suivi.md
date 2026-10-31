@@ -1,5 +1,42 @@
 # Point de reprise
 
+## Séquencement commun (31 octobre 2026)
+
+Étape 1 réalisée : [bilan initial](bilan-initial.md). Parcours locaux échantillonnés vérifiés,
+builds du site et de l’atelier réussis. La production reste publiquement accessible et indexable
+sur la fiche examinée, contrairement au mode privé local. Collecte GitHub du 31 octobre réussie
+pour les cinq marques précédentes et les deux revendeurs ; Venezianico absente de cette exécution.
+Aucun déploiement ni changement distant effectué. La livraison du mode privé reste à préparer
+séparément.
+
+Étape 2 de construction réalisée : bracelet métal à pas régulier, trois rangs décalés, axes,
+maillons de bout et fermoir courbe avec poussoirs et lames intérieures. Cornes du modèle cuir
+effilées et plongeantes, raccord rapproché du boîtier, effilement du second brin corrigé et
+tranches fermées. Fond ponctué de vis. Mode « Volumes » pour examiner la géométrie sans les
+finitions. Tests du pas, de la symétrie et du regroupement des pièces ajoutés. Les ombres aident
+à lire les reliefs ; aucune animation automatique ajoutée. Suite : matières, verre et lumière.
+
+Proposition de feuille de route pour articuler Aiguille et les deux modèles AV :
+[feuille-de-route.md](feuille-de-route.md). Ordre proposé : état réel du site, construction
+des montres, matières et lumière, robustesse 3D, fiabilisation du site, parcours commun,
+comparateur, puis enrichissements optionnels. Les espaces restent techniquement séparés.
+La navigation commune et la publication ne sont pas encore décidées ni implémentées.
+
+## Atelier AV (31 octobre 2026)
+
+Première étude 3D autonome dans `apps/atelier`, accessible localement sur le port 4173 avec le
+profil Docker `atelier` ; détails dans son README. Deux modèles : Obsidienne (métal) et Éclipse
+(cuir), cadrans noirs, aiguilles or champagne, monogramme AV. Trois éclairages, quatre vues,
+rotation et zoom manuels. Aucun déploiement et aucune intégration au catalogue.
+Les images approuvées sont conservées comme références ; les proportions, microtextures,
+assemblages et reflets restent à affiner avec le propriétaire avant toute animation.
+
+Reprise du bracelet cuir : deux brins bombés et effilés, doublure, tranches teintées,
+coutures arrondies, recouvrement, boucle à ardillon et passants. Texture de veau noir générée,
+stockée en WebP dans l’atelier ; normales et rugosité dérivées au chargement, rendu à la demande
+réactualisé après chargement. Le bracelet métal est désormais reconstruit (étape 2 ci-dessus).
+La fabrication, les tolérances des articulations et la déformation portée ne sont pas validées.
+
 ## Accès privé (31 octobre 2026)
 
 Demandes d'accès et administration réalisées dans le code ; migration `0011` appliquée localement.
@@ -79,6 +116,9 @@ Reste pour boucler le lot 4 :
   `limit 1` ou build Vercel).
 - **Venezianico** : collecte quotidienne activée par le propriétaire (20 s entre deux fiches, fiches
   en anglais, sans autorisation de la marque : voir docs/decisions.md du 31 octobre).
+- **Lip** : collecte quotidienne activée par le propriétaire malgré les restrictions des mentions
+  légales, sans autorisation de la marque (voir docs/decisions.md du 31 octobre). Fiches en
+  français, traductions anglaise et italienne. Tarifs de révision non publiés (devis).
 - **Pays de provenance** des comptes (demandé après la première connexion, `npm run db:pays`).
 - **Multilingue** (FR, EN, DE, IT, ES) : routage `app/[lang]`, dictionnaires, repli anglais,
   fiches Longines traduites depuis les versions nationales. Activer avec `LANGUAGES`.

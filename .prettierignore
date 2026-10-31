@@ -1,6 +1,7 @@
 node_modules
 .next
 out
+apps/atelier/build
 package-lock.json
 packages/db/drizzle
 test-results

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta
+      name="description"
+      content="Atelier privé de création des montres AV : études de formes, matières et lumière."
+    />
+    <title>AV — Atelier horloger</title>
+  </head>
+  <body>
+    <main>
+      <header>
+        <a href="/" class="signature" aria-label="AV, accueil de l’atelier"
+          >AV<span>ATELIER HORLOGER</span></a
+        ><span class="edition">ÉTUDE DE DESIGN / 2026</span>
+      </header>
+      <section class="workbench" aria-label="Atelier de la montre">
+        <div class="intro">
+          <span class="eyebrow">COLLECTION NOIRE</span>
+          <h1>L’essentiel.<br />Dans chaque détail.</h1>
+          <p>Deux silhouettes. Une même signature.<br />Le noir profond, révélé par la lumière.</p>
+        </div>
+        <div id="stage" aria-label="Vue 3D de la montre AV">
+          <p id="status" role="status">Préparation de l’atelier…</p>
+        </div>
+        <aside>
+          <span class="eyebrow">LA PIÈCE</span>
+          <h2 id="model-title">02 — Obsidienne</h2>
+          <p id="model-description">
+            Une silhouette sculptée, prolongée par un bracelet en métal noir à trois maillons.
+          </p>
+          <fieldset>
+            <legend>Modèle</legend>
+            <div class="model-options">
+              <button data-model="metal" aria-pressed="true">02 <span>Métal</span></button
+              ><button data-model="leather" aria-pressed="false">01 <span>Cuir</span></button>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Éclairage</legend>
+            <div class="choices">
+              <button data-light="studio" aria-pressed="true">Studio</button
+              ><button data-light="warm" aria-pressed="false">Chaud</button
+              ><button data-light="rim" aria-pressed="false">Contours</button>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Point de vue</legend>
+            <div class="choices">
+              <button data-view="signature" aria-pressed="true">Signature</button
+              ><button data-view="front" aria-pressed="false">Cadran</button
+              ><button data-view="side" aria-pressed="false">Profil</button
+              ><button data-view="back" aria-pressed="false">Dos</button>
+              <button id="volumes" aria-pressed="false">Volumes</button>
+            </div>
+          </fieldset>
+          <dl>
+            <div>
+              <dt>Boîtier</dt>
+              <dd id="case-detail">Noir brossé · chanfreins polis</dd>
+            </div>
+            <div>
+              <dt>Cadran</dt>
+              <dd id="dial-detail">Noir · brossage vertical</dd>
+            </div>
+            <div>
+              <dt>Signature</dt>
+              <dd>Or champagne · monogramme AV</dd>
+            </div>
+          </dl>
+          <p class="note">
+            Étude numérique de forme et de matière.<br />Les dimensions sont des intentions de
+            design.
+          </p>
+        </aside>
+        <div class="stage-caption">
+          <span id="model-label">AV / 02</span
+          ><span>Glisser pour tourner · Défiler pour zoomer</span
+          ><button id="reset">Réinitialiser la vue</button>
+        </div>
+      </section>
+      <footer>
+        <span>AV — OBJETS DE TEMPS</span><span>FORME / MATIÈRE / LUMIÈRE</span
+        ><span>PROTOTYPE INDÉPENDANT</span>
+      </footer>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

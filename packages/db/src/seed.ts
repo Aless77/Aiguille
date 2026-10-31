@@ -9,6 +9,7 @@ const referenceBrands: NewBrand[] = [
   { slug: "seiko", name: "Seiko", segment: "coeur" },
   { slug: "citizen", name: "Citizen", segment: "coeur" },
   { slug: "venezianico", name: "Venezianico", segment: "coeur" },
+  { slug: "lip", name: "Lip", segment: "coeur" },
 ];
 
 const db = getDb();

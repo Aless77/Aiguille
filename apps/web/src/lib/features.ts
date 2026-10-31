@@ -20,4 +20,6 @@ export const features = {
   score: (env: Env = process.env) => isTrue(env.FEATURE_SCORE),
   reviews: (env: Env = process.env) => !isFalse(env.FEATURE_REVIEWS),
   community: (env: Env = process.env) => !isFalse(env.FEATURE_COMMUNITY),
+  /** Un compte sert aux avis, aux listes et aux marques épinglées : fermé si les deux sont masqués. */
+  accounts: (env: Env = process.env) => features.reviews(env) || features.community(env),
 };

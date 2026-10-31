@@ -154,6 +154,13 @@ describe("extractOwnershipFacts et constructions Tissot", () => {
     });
   });
 
+  it("lit une référence de pile écrite seule (Lip), sans prendre un nombre dans un texte", () => {
+    const battery = (value: string) =>
+      extractOwnershipFacts(watch({ rawSpecs: { "Mouvement · Pile": value } })).battery;
+    expect(battery("321")).toBe("321");
+    expect(battery("Autonomie 365 jours")).toBeNull();
+  });
+
   it("repère les pièces vintage (Longines Heritage)", () => {
     expect(
       extractOwnershipFacts(watch({ rawSpecs: { "Date de production": "1958" } })).vintageYear,

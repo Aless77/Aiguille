@@ -4,6 +4,7 @@ node_modules/
 # Next.js
 .next/
 out/
+apps/atelier/build/
 next-env.d.ts
 *.tsbuildinfo
 

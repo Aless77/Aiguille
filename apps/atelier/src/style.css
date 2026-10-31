@@ -1,0 +1,297 @@
+:root {
+  color-scheme: dark;
+  font-family: Arial, sans-serif;
+  color: #eae6de;
+  background: #111212;
+  font-synthesis: none;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+button:focus-visible,
+a:focus-visible,
+canvas:focus-visible {
+  outline: 2px solid #dcc18e;
+  outline-offset: 5px;
+}
+header {
+  height: 104px;
+  padding: 0 4%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #30302d;
+}
+.signature {
+  text-decoration: none;
+  color: #dfc494;
+  font:
+    40px Georgia,
+    serif;
+  letter-spacing: -7px;
+  display: flex;
+  align-items: center;
+  gap: 33px;
+}
+.signature span {
+  font:
+    10px Arial,
+    sans-serif;
+  letter-spacing: 3px;
+  color: #bdbab1;
+}
+.edition,
+.eyebrow,
+footer,
+.stage-caption {
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+.edition {
+  color: #8d8e87;
+}
+.workbench {
+  position: relative;
+  min-height: 760px;
+  height: calc(100svh - 166px);
+  display: grid;
+  grid-template-columns: 25% 1fr 26%;
+  padding: 0 4%;
+}
+.intro {
+  z-index: 1;
+  padding-top: 75px;
+  pointer-events: none;
+}
+.eyebrow {
+  color: #c5ab7e;
+}
+h1 {
+  font:
+    42px/1.15 Georgia,
+    serif;
+  font-weight: normal;
+  letter-spacing: -1px;
+  margin: 25px 0;
+}
+.intro p,
+aside p {
+  color: #a8a8a0;
+  font-size: 13px;
+  line-height: 1.8;
+}
+#stage {
+  position: absolute;
+  inset: 0 23% 55px 15%;
+}
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+#status {
+  position: absolute;
+  bottom: 4%;
+  left: 10%;
+  max-width: 80%;
+  font-size: 13px;
+  color: #d5bd92;
+}
+#status:empty {
+  display: none;
+}
+aside {
+  grid-column: 3;
+  z-index: 1;
+  padding: 76px 0 40px 26px;
+}
+h2 {
+  font:
+    normal 28px Georgia,
+    serif;
+  margin: 20px 0 12px;
+}
+fieldset {
+  padding: 0;
+  border: 0;
+  margin: 26px 0;
+  min-width: 0;
+}
+legend {
+  font-size: 11px;
+  color: #a7a79d;
+  margin-bottom: 12px;
+}
+.model-options,
+.choices {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.model-options button {
+  padding: 15px 18px;
+  border: 1px solid #3b3c37;
+  background: transparent;
+  font-family: Georgia, serif;
+  font-size: 21px;
+  flex: 1;
+}
+.model-options span {
+  font:
+    11px Arial,
+    sans-serif;
+  margin-left: 8px;
+}
+button[aria-pressed="true"] {
+  border-color: #c2a577;
+  color: #ead0a0;
+  background: #24231e;
+}
+.choices button,
+#reset {
+  font-size: 11px;
+  padding: 9px 10px;
+  border: 1px solid #3b3c37;
+  background: transparent;
+}
+.choices button[aria-pressed="true"] {
+  border-color: #c2a577;
+  background: #24231e;
+}
+button:hover {
+  border-color: #c2a577;
+}
+dl {
+  font-size: 11px;
+  margin: 28px 0;
+}
+dl div {
+  padding: 12px 0;
+  border-top: 1px solid #30302d;
+}
+dt {
+  color: #898b81;
+  margin-bottom: 6px;
+}
+dd {
+  margin: 0;
+  line-height: 1.6;
+}
+aside .note {
+  font-size: 10px;
+  color: #86877f;
+}
+.stage-caption {
+  position: absolute;
+  bottom: 22px;
+  left: 4%;
+  right: 30%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: #96978e;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+.stage-caption > span:first-child {
+  color: #d2b986;
+}
+#reset {
+  color: #c5c4b9;
+}
+footer {
+  padding: 24px 4%;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid #30302d;
+  color: #7f8278;
+  font-size: 9px;
+}
+@media (max-width: 1100px) {
+  h1 {
+    font-size: 32px;
+  }
+  .workbench {
+    grid-template-columns: 22% 1fr 30%;
+  }
+  aside {
+    padding-left: 10px;
+  }
+  #stage {
+    right: 28%;
+    left: 8%;
+  }
+  .stage-caption {
+    right: 34%;
+  }
+}
+@media (max-width: 1000px) {
+  header {
+    height: 80px;
+  }
+  .signature {
+    font-size: 32px;
+  }
+  .signature span {
+    font-size: 8px;
+    letter-spacing: 2px;
+  }
+  .edition {
+    display: none;
+  }
+  .workbench {
+    height: auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 6%;
+  }
+  .intro {
+    padding-top: 32px;
+  }
+  h1 {
+    font-size: 32px;
+    margin: 16px 0;
+  }
+  .intro p {
+    display: none;
+  }
+  #stage {
+    position: relative;
+    inset: auto;
+    height: 470px;
+    margin: -10px -6% 0;
+  }
+  aside {
+    padding: 25px 0;
+  }
+  .stage-caption {
+    position: static;
+    order: 0;
+    padding: 12px 0 25px;
+    flex-wrap: wrap;
+  }
+  aside {
+    order: 1;
+  }
+  footer {
+    font-size: 8px;
+    line-height: 1.6;
+    flex-wrap: wrap;
+  }
+}

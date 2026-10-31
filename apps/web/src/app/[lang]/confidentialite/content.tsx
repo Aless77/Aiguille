@@ -66,6 +66,10 @@ const fr: PrivacyContent = {
           avec votre nom et votre photo de profil, sur la fiche de la montre.
         </p>
         <p>
+          Les marques que vous épinglez sont rattachées à votre compte et ne sont visibles que par
+          vous.
+        </p>
+        <p>
           Vos listes de souhaits (nom, description, montres choisies) sont privées par défaut. Si
           vous choisissez de les partager par lien ou de les publier dans la communauté, elles
           deviennent visibles avec votre nom et votre photo de profil, comme les messages que vous
@@ -98,9 +102,10 @@ const fr: PrivacyContent = {
           <li>Session : 30 jours au plus, effacée à la déconnexion.</li>
           <li>Compte : tant que vous ne le supprimez pas.</li>
           <li>
-            À la suppression du compte, vos données de profil, vos sessions, vos avis, vos listes et
-            vos commentaires sont effacés immédiatement. Vous pouvez aussi supprimer un seul avis
-            depuis la fiche, une liste depuis « Mes listes » et un commentaire depuis la liste.
+            À la suppression du compte, vos données de profil, vos sessions, vos avis, vos listes,
+            vos marques épinglées et vos commentaires sont effacés immédiatement. Vous pouvez aussi
+            supprimer un seul avis depuis la fiche, une liste depuis « Mes listes » et un
+            commentaire depuis la liste.
           </li>
         </ul>
       </section>
@@ -287,6 +292,7 @@ const en = translated({
         ],
         "After the account is created, we ask for your country of origin (optional, “Prefer not to say” is possible, editable on the My account page). Only the country is recorded, never an address: it is only used to count visitors by country.",
         "For each open session, we also record the IP address and browser type, to detect abuse (fake reviews, multiple accounts). Your reviews (ratings, comment, owner or not) are linked to your account and shown publicly with your name and profile photo on the watch page.",
+        "The brands you pin are linked to your account and visible only to you.",
         "Your wish lists (name, description, chosen watches) are private by default. If you choose to share them by link or publish them in the community, they become visible with your name and profile photo, like the messages you leave on other members' lists. You can also publish a list or write anonymously: other members then see “List author” or a pseudonym specific to each list, never your name or photo, and cannot link your messages from one list to another. The message stays linked to your account on the site side, to fight abuse.",
         "We send no emails and request no access to your GitHub repositories or Google data beyond your profile. The chosen language is not stored: it only appears in the page address.",
       ],
@@ -303,7 +309,7 @@ const en = translated({
         [
           "Session: 30 days at most, erased on sign-out.",
           "Account: until you delete it.",
-          "When the account is deleted, your profile data, sessions, reviews, lists and comments are erased immediately. You can also delete a single review from the watch page, a list from “My lists” and a comment from the list.",
+          "When the account is deleted, your profile data, sessions, reviews, lists, pinned brands and comments are erased immediately. You can also delete a single review from the watch page, a list from “My lists” and a comment from the list.",
         ],
       ],
     },
@@ -377,6 +383,7 @@ const de = translated({
         ],
         "Nach der Kontoerstellung fragen wir nach Ihrem Herkunftsland (freiwillig, „Keine Angabe“ möglich, auf der Seite Mein Konto änderbar). Gespeichert wird nur das Land, nie eine Adresse: Es dient nur dazu, Besucher nach Ländern zu zählen.",
         "Für jede offene Sitzung speichern wir außerdem IP-Adresse und Browsertyp, um Missbrauch zu erkennen (gefälschte Meinungen, Mehrfachkonten). Ihre Meinungen (Bewertungen, Kommentar, Besitzer oder nicht) sind Ihrem Konto zugeordnet und werden öffentlich mit Ihrem Namen und Profilfoto auf der Uhrenseite angezeigt.",
+        "Die von Ihnen angehefteten Marken sind mit Ihrem Konto verknüpft und nur für Sie sichtbar.",
         "Ihre Wunschlisten (Name, Beschreibung, gewählte Uhren) sind standardmäßig privat. Wenn Sie sie per Link teilen oder in der Community veröffentlichen, werden sie mit Ihrem Namen und Profilfoto sichtbar, ebenso wie Ihre Nachrichten auf den Listen anderer Mitglieder. Sie können eine Liste auch anonym veröffentlichen oder anonym schreiben: Andere Mitglieder sehen dann „Autor der Liste“ oder ein Pseudonym pro Liste, nie Ihren Namen oder Ihr Foto, und können Ihre Nachrichten nicht listenübergreifend verknüpfen. Die Nachricht bleibt auf Seiten der Website Ihrem Konto zugeordnet, um Missbrauch zu bekämpfen.",
         "Wir senden keine E-Mails und verlangen keinen Zugriff auf Ihre GitHub-Repositorys oder Google-Daten über Ihr Profil hinaus. Die gewählte Sprache wird nicht gespeichert: Sie steht nur in der Adresse der Seite.",
       ],
@@ -393,7 +400,7 @@ const de = translated({
         [
           "Sitzung: höchstens 30 Tage, bei der Abmeldung gelöscht.",
           "Konto: bis Sie es löschen.",
-          "Bei der Kontolöschung werden Ihre Profildaten, Sitzungen, Meinungen, Listen und Kommentare sofort gelöscht. Sie können auch eine einzelne Meinung auf der Uhrenseite, eine Liste unter „Meine Listen“ und einen Kommentar auf der Liste löschen.",
+          "Bei der Kontolöschung werden Ihre Profildaten, Sitzungen, Meinungen, Listen, angehefteten Marken und Kommentare sofort gelöscht. Sie können auch eine einzelne Meinung auf der Uhrenseite, eine Liste unter „Meine Listen“ und einen Kommentar auf der Liste löschen.",
         ],
       ],
     },
@@ -470,6 +477,7 @@ const it = translated({
         ],
         "Dopo la creazione dell'account, ti chiediamo il tuo paese di provenienza (facoltativo, «Preferisco non dirlo» possibile, modificabile nella pagina Il mio account). Viene registrato solo il paese, mai un indirizzo: serve solo a contare i visitatori per paese.",
         "Per ogni sessione aperta registriamo anche l'indirizzo IP e il tipo di browser, per individuare gli abusi (false opinioni, account multipli). Le tue opinioni (voti, commento, proprietario o no) sono collegate al tuo account e mostrate pubblicamente con il tuo nome e la tua foto del profilo sulla scheda dell'orologio.",
+        "Le marche che fissi sono collegate al tuo account e visibili solo a te.",
         "Le tue liste dei desideri (nome, descrizione, orologi scelti) sono private per impostazione predefinita. Se scegli di condividerle tramite link o di pubblicarle nella community, diventano visibili con il tuo nome e la tua foto del profilo, come i messaggi che lasci sulle liste degli altri membri. Puoi anche pubblicare una lista o scrivere in forma anonima: gli altri membri vedono allora «Autore della lista» o uno pseudonimo proprio di ogni lista, mai il tuo nome né la tua foto, e non possono collegare i tuoi messaggi da una lista all'altra. Il messaggio resta collegato al tuo account lato sito, per contrastare gli abusi.",
         "Non inviamo e-mail e non chiediamo accesso ai tuoi repository GitHub né ai tuoi dati Google oltre al profilo. La lingua scelta non viene registrata: compare solo nell'indirizzo della pagina.",
       ],
@@ -486,7 +494,7 @@ const it = translated({
         [
           "Sessione: al massimo 30 giorni, cancellata alla disconnessione.",
           "Account: finché non lo elimini.",
-          "All'eliminazione dell'account, i tuoi dati del profilo, le sessioni, le opinioni, le liste e i commenti vengono cancellati subito. Puoi anche eliminare una singola opinione dalla scheda, una lista da «Le mie liste» e un commento dalla lista.",
+          "All'eliminazione dell'account, i tuoi dati del profilo, le sessioni, le opinioni, le liste, le marche fissate e i commenti vengono cancellati subito. Puoi anche eliminare una singola opinione dalla scheda, una lista da «Le mie liste» e un commento dalla lista.",
         ],
       ],
     },
@@ -563,6 +571,7 @@ const es = translated({
         ],
         "Tras crear la cuenta, le pedimos su país de procedencia (opcional, «Prefiero no decirlo» posible, modificable en la página Mi cuenta). Solo se registra el país, nunca una dirección: sirve únicamente para contar los visitantes por país.",
         "En cada sesión abierta registramos también la dirección IP y el tipo de navegador, para detectar abusos (opiniones falsas, cuentas múltiples). Sus opiniones (valoraciones, comentario, propietario o no) están vinculadas a su cuenta y se muestran públicamente con su nombre y su foto de perfil en la ficha del reloj.",
+        "Las marcas que fija están vinculadas a su cuenta y solo usted puede verlas.",
         "Sus listas de deseos (nombre, descripción, relojes elegidos) son privadas por defecto. Si decide compartirlas por enlace o publicarlas en la comunidad, se vuelven visibles con su nombre y su foto de perfil, como los mensajes que deja en las listas de otros miembros. También puede publicar una lista o escribir de forma anónima: los demás miembros ven entonces «Autor de la lista» o un seudónimo propio de cada lista, nunca su nombre ni su foto, y no pueden relacionar sus mensajes de una lista a otra. El mensaje sigue vinculado a su cuenta en el sitio, para combatir los abusos.",
         "No enviamos correos ni pedimos acceso a sus repositorios de GitHub ni a sus datos de Google más allá de su perfil. El idioma elegido no se guarda: solo aparece en la dirección de la página.",
       ],
@@ -579,7 +588,7 @@ const es = translated({
         [
           "Sesión: 30 días como máximo, borrada al cerrar sesión.",
           "Cuenta: mientras no la elimine.",
-          "Al eliminar la cuenta, sus datos de perfil, sesiones, opiniones, listas y comentarios se borran inmediatamente. También puede eliminar una sola opinión desde la ficha, una lista desde «Mis listas» y un comentario desde la lista.",
+          "Al eliminar la cuenta, sus datos de perfil, sesiones, opiniones, listas, marcas fijadas y comentarios se borran inmediatamente. También puede eliminar una sola opinión desde la ficha, una lista desde «Mis listas» y un comentario desde la lista.",
         ],
       ],
     },

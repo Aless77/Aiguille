@@ -188,8 +188,8 @@ export function extractOwnershipFacts(w: WatchSource): OwnershipFacts {
   const warranty = /(\d+)\s*ans? de garantie|garantie[^|]{0,20}?(\d+)\s*ans/i.exec(
     specs(w)["Garantie"] ?? "",
   );
-  // Référence normalisée (CEI) : « RENATA 321 - SR716SW - 1.55V » → SR716SW.
-  const battery = /\b(SR\s?\d{3,4}\s?[A-Z]{0,2}|CR\s?\d{4})\b/.exec(
+  // Référence normalisée (CEI) : « RENATA 321 - SR716SW - 1.55V » → SR716SW ; Lip : « 321 » seul.
+  const battery = /\b(SR\s?\d{3,4}\s?[A-Z]{0,2}|CR\s?\d{4})\b|^(\d{3})$/.exec(
     specs(w)["Mouvement · Pile"] ?? "",
   );
   const chrono = specs(w)["Mouvement · Chronographe"] ?? "";
@@ -197,7 +197,7 @@ export function extractOwnershipFacts(w: WatchSource): OwnershipFacts {
   return {
     warrantyMonths: warranty ? Number(warranty[1] ?? warranty[2]) * 12 : null,
     madeIn: specs(w)["Pays de fabrication"]?.trim() || null,
-    battery: battery ? battery[1]!.replace(/\s+/g, "") : null,
+    battery: battery ? (battery[1] ?? battery[2]!).replace(/\s+/g, "") : null,
     endOfLifeIndicator: /\bE\.?O\.?L\.?\b|fin de vie de la pile/i.test(text),
     interchangeableStrap:
       yes(specs(w)["Easy Click"]) ||

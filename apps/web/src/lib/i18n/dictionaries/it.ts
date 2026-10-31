@@ -11,6 +11,7 @@ export const it: PartialDictionary = {
   nav: {
     label: "Navigazione principale",
     allWatches: "Tutti gli orologi",
+    brands: "Marche",
     newArrivals: "Novità",
     community: "Community",
     stores: "Negozi",
@@ -179,6 +180,18 @@ export const it: PartialDictionary = {
     signOut: "Esci",
     myLists: "Le mie liste dei desideri",
     myAccount: "Il mio account ({name})",
+    brands: {
+      search: "Cerca una marca",
+      mine: "Le mie marche",
+      all: "Tutte le marche",
+      empty: "Nessuna marca per «{query}».",
+      seeAll: "Vedi tutte le {count} marche",
+      pin: "Aggiungi {brand} alle mie marche",
+      unpin: "Rimuovi {brand} dalle mie marche",
+      pinShort: "Aggiungi alle mie marche",
+      pinned: "Nelle mie marche",
+      signInToPin: "Accedi per fissare le tue marche",
+    },
     close: "Chiudi",
     country: {
       label: "Paese",

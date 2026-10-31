@@ -18,6 +18,7 @@ export const fr = {
   nav: {
     label: "Navigation principale",
     allWatches: "Toutes les montres",
+    brands: "Marques",
     newArrivals: "Nouveautés",
     community: "Communauté",
     stores: "Boutiques",
@@ -137,6 +138,18 @@ export const fr = {
     signOut: "Se déconnecter",
     myLists: "Mes listes de souhaits",
     myAccount: "Mon compte ({name})",
+    brands: {
+      search: "Rechercher une marque",
+      mine: "Mes marques",
+      all: "Toutes les marques",
+      empty: "Aucune marque pour « {query} ».",
+      seeAll: "Voir les {count} marques",
+      pin: "Ajouter {brand} à mes marques",
+      unpin: "Retirer {brand} de mes marques",
+      pinShort: "Ajouter à mes marques",
+      pinned: "Dans mes marques",
+      signInToPin: "Connectez-vous pour épingler vos marques",
+    },
     close: "Fermer",
     country: {
       label: "Pays",

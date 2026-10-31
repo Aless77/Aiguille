@@ -1,6 +1,7 @@
 import { groupByFamily } from "@aiguille/db/collection-families";
 import { notFound } from "next/navigation";
 
+import { BrandFavoriteButton } from "@/components/brand-favorite-button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { CatalogBrowser } from "@/components/catalog-browser";
 import { CollectionExplorer } from "@/components/collection-explorer";
@@ -84,9 +85,12 @@ export default async function BrandPage({
             { name: brand.name },
           ]}
         />
-        <h1 className="text-3xl font-semibold tracking-tight">
-          {format(t.title, { brand: brand.name })}
-        </h1>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-3xl font-semibold tracking-tight">
+            {format(t.title, { brand: brand.name })}
+          </h1>
+          <BrandFavoriteButton brand={{ slug: brand.slug, name: brand.name }} labelled />
+        </div>
         {brand.watchCount > 0 ? (
           <p className="max-w-2xl text-muted-foreground">
             {format(t.intro, {

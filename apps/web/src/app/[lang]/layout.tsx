@@ -5,6 +5,7 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { CountryPrompt } from "@/components/country-field";
+import { BrandFavoritesProvider } from "@/lib/catalog/brand-favorites-client";
 import { features } from "@/lib/features";
 import { JsonLd, organizationJsonLd, websiteJsonLd } from "@/lib/seo/json-ld";
 import { getSiteUrl, isIndexable, siteConfig } from "@/lib/site";
@@ -95,18 +96,22 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
             next/script (exécuté trop tard) et de <head> (recréé côté client par React 19). */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <LocaleProvider locale={lang} dict={dict}>
-          <FeaturesProvider score={features.score()}>
-            <NuqsAdapter>
-              <SiteHeader />
-              <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</div>
-              <SiteFooter />
-              {(features.reviews() || features.community()) && <CountryPrompt />}
-              <FallbackNotice
-                messages={
-                  missing.length ? [format(dict.fallback.ui, { language: LOCALE_NAMES[lang] })] : []
-                }
-              />
-            </NuqsAdapter>
+          <FeaturesProvider score={features.score()} accounts={features.accounts()}>
+            <BrandFavoritesProvider enabled={features.accounts()}>
+              <NuqsAdapter>
+                <SiteHeader />
+                <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</div>
+                <SiteFooter />
+                {features.accounts() && <CountryPrompt />}
+                <FallbackNotice
+                  messages={
+                    missing.length
+                      ? [format(dict.fallback.ui, { language: LOCALE_NAMES[lang] })]
+                      : []
+                  }
+                />
+              </NuqsAdapter>
+            </BrandFavoritesProvider>
           </FeaturesProvider>
         </LocaleProvider>
         <JsonLd data={[websiteJsonLd(), organizationJsonLd()]} />

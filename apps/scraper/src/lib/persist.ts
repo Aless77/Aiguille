@@ -10,7 +10,7 @@ import {
   translationSchema,
   type WatchTranslationData,
 } from "@aiguille/db";
-import { and, desc, eq, lt, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, lt, sql } from "drizzle-orm";
 
 import { type Listing } from "./listing.ts";
 import { type Offer } from "./offer.ts";
@@ -25,6 +25,14 @@ export function hasChanged(
 ): boolean {
   if (!last) return true;
   return last.priceCents !== (next.priceCents ?? null) || last.availability !== next.availability;
+}
+
+/** Écarte ce dont la page a échoué pendant l'exécution : son absence ne prouve pas un retrait. */
+export function withoutFailedPages<T extends { url: string | null }>(
+  rows: T[],
+  failedUrls: ReadonlySet<string>,
+): T[] {
+  return rows.filter((r) => r.url === null || !failedUrls.has(r.url));
 }
 
 export interface SaveResult {
@@ -236,24 +244,35 @@ export class Persister {
 
   /** Montres pour lesquelles la source a une offre en cours (dernier relevé avec un prix). */
   async currentOfferWatchIds(): Promise<number[]> {
+    return (await this.currentOffers()).map((o) => o.watchId);
+  }
+
+  private async currentOffers(): Promise<{ watchId: number; url: string | null }[]> {
     const latest = await this.db
       .selectDistinctOn([priceObservations.watchId], {
         watchId: priceObservations.watchId,
         priceCents: priceObservations.priceCents,
+        url: priceObservations.url,
       })
       .from(priceObservations)
       .where(eq(priceObservations.source, this.source))
       .orderBy(priceObservations.watchId, desc(priceObservations.observedAt));
-    return latest.filter((o) => o.priceCents !== null).map((o) => o.watchId);
+    return latest.filter((o) => o.priceCents !== null);
   }
 
   /**
    * Après une exécution complète : une offre en cours qui n'a pas été revue a été retirée par le
    * revendeur. On l'enregistre (prix nul, rupture) pour ne plus l'afficher comme disponible.
    */
-  async withdrawUnseenOffers(seenWatchIds: Set<number>, seenAt: Date): Promise<number> {
-    const missing = (await this.currentOfferWatchIds()).filter((id) => !seenWatchIds.has(id));
-    for (const watchId of missing) {
+  async withdrawUnseenOffers(
+    seenWatchIds: Set<number>,
+    seenAt: Date,
+    failedUrls: ReadonlySet<string> = new Set(),
+  ): Promise<number> {
+    const missing = withoutFailedPages(await this.currentOffers(), failedUrls).filter(
+      (o) => !seenWatchIds.has(o.watchId),
+    );
+    for (const { watchId } of missing) {
       await this.db.insert(priceObservations).values({
         watchId,
         source: this.source,
@@ -269,20 +288,34 @@ export class Persister {
    * Après une exécution complète, les montres de la marque non revues sont marquées
    * « plus produites ». Leur page reste en ligne (voir docs/seo/strategie.md).
    */
-  async markUnseenAsDiscontinued(brandSlug: string, runStartedAt: Date): Promise<number> {
+  async markUnseenAsDiscontinued(
+    brandSlug: string,
+    runStartedAt: Date,
+    failedUrls: ReadonlySet<string> = new Set(),
+  ): Promise<number> {
     const brandId = await this.brandId(brandSlug);
-    const rows = await this.db
-      .update(watches)
-      .set({ status: "discontinued", updatedAt: new Date() })
+    const unseen = await this.db
+      .select({ id: watches.id, url: watches.officialUrl })
+      .from(watches)
       .where(
         and(
           eq(watches.brandId, brandId),
           eq(watches.status, "active"),
           lt(watches.lastSeenAt, runStartedAt),
         ),
-      )
-      .returning({ id: watches.id });
-    return rows.length;
+      );
+    const gone = withoutFailedPages(unseen, failedUrls);
+    if (gone.length === 0) return 0;
+    await this.db
+      .update(watches)
+      .set({ status: "discontinued", updatedAt: new Date() })
+      .where(
+        inArray(
+          watches.id,
+          gone.map((w) => w.id),
+        ),
+      );
+    return gone.length;
   }
 
   async activeCount(brandSlug: string): Promise<number> {

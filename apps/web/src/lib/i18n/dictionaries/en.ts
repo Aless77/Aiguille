@@ -16,6 +16,7 @@ export const en: Dictionary = {
   nav: {
     label: "Main navigation",
     allWatches: "All watches",
+    brands: "Brands",
     newArrivals: "New arrivals",
     community: "Community",
     stores: "Stores",
@@ -186,6 +187,18 @@ export const en: Dictionary = {
     signOut: "Sign out",
     myLists: "My wish lists",
     myAccount: "My account ({name})",
+    brands: {
+      search: "Search for a brand",
+      mine: "My brands",
+      all: "All brands",
+      empty: "No brand matches “{query}”.",
+      seeAll: "See all {count} brands",
+      pin: "Add {brand} to my brands",
+      unpin: "Remove {brand} from my brands",
+      pinShort: "Add to my brands",
+      pinned: "In my brands",
+      signInToPin: "Sign in to pin your brands",
+    },
     close: "Close",
     country: {
       label: "Country",

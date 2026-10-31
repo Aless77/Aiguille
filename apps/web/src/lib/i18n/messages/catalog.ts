@@ -146,6 +146,15 @@ const fr = {
     soon: "Bientôt disponible",
     latest: "Dernières références ajoutées",
   },
+  brandsIndex: {
+    title: "Toutes les marques",
+    metaTitle: "Marques de montres : prix et catalogues",
+    metaDescription:
+      "Toutes les marques de montres suivies : nombre de références, fourchette de prix et accès direct à chaque catalogue.",
+    intro: "Les marques suivies, avec leur nombre de références et leur fourchette de prix.",
+    empty: "Aucune marque n'est encore disponible.",
+    lettersLabel: "Aller à une lettre",
+  },
   news: {
     title: "Nouveautés",
     metaTitle: "Nouveautés : les dernières montres ajoutées par les marques",
@@ -344,6 +353,15 @@ const en: Messages = {
     soon: "Coming soon",
     latest: "Latest references added",
   },
+  brandsIndex: {
+    title: "All brands",
+    metaTitle: "Watch brands: prices and catalogues",
+    metaDescription:
+      "All the watch brands we track: number of references, price range and direct access to each catalogue.",
+    intro: "The brands we track, with their number of references and price range.",
+    empty: "No brand is available yet.",
+    lettersLabel: "Jump to a letter",
+  },
   news: {
     title: "New arrivals",
     metaTitle: "New arrivals: the latest watches added by the brands",
@@ -540,6 +558,15 @@ const de: Messages = {
     brandCount: "{count} Uhren · ab {price}",
     soon: "Demnächst verfügbar",
     latest: "Zuletzt hinzugefügte Referenzen",
+  },
+  brandsIndex: {
+    title: "Alle Marken",
+    metaTitle: "Uhrenmarken: Preise und Kataloge",
+    metaDescription:
+      "Alle erfassten Uhrenmarken: Anzahl der Referenzen, Preisspanne und direkter Zugang zu jedem Katalog.",
+    intro: "Die erfassten Marken mit ihrer Anzahl an Referenzen und ihrer Preisspanne.",
+    empty: "Noch ist keine Marke verfügbar.",
+    lettersLabel: "Zu einem Buchstaben springen",
   },
   news: {
     title: "Neuheiten",
@@ -738,6 +765,15 @@ const it: Messages = {
     soon: "Presto disponibile",
     latest: "Ultime referenze aggiunte",
   },
+  brandsIndex: {
+    title: "Tutte le marche",
+    metaTitle: "Marche di orologi: prezzi e cataloghi",
+    metaDescription:
+      "Tutte le marche di orologi seguite: numero di referenze, fascia di prezzo e accesso diretto a ogni catalogo.",
+    intro: "Le marche seguite, con il numero di referenze e la fascia di prezzo.",
+    empty: "Nessuna marca è ancora disponibile.",
+    lettersLabel: "Vai a una lettera",
+  },
   news: {
     title: "Novità",
     metaTitle: "Novità: gli ultimi orologi aggiunti dai marchi",
@@ -934,6 +970,15 @@ const es: Messages = {
     brandCount: "{count} relojes · desde {price}",
     soon: "Próximamente",
     latest: "Últimas referencias añadidas",
+  },
+  brandsIndex: {
+    title: "Todas las marcas",
+    metaTitle: "Marcas de relojes: precios y catálogos",
+    metaDescription:
+      "Todas las marcas de relojes seguidas: número de referencias, rango de precios y acceso directo a cada catálogo.",
+    intro: "Las marcas seguidas, con su número de referencias y su rango de precios.",
+    empty: "Todavía no hay ninguna marca disponible.",
+    lettersLabel: "Ir a una letra",
   },
   news: {
     title: "Novedades",

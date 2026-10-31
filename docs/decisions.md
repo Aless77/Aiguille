@@ -3,6 +3,45 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-10-31 – Lip intégrée, collecte activée par le propriétaire malgré ses mentions légales
+
+robots.txt autorise les fiches, mais les mentions légales de lip.fr interdisent sans autorisation
+expresse la représentation du site ou de ses éléments à d'autres fins que l'usage personnel,
+protègent ses bases de données et soumettent les liens vers le site à une autorisation écrite
+préalable. C'est une restriction du même ordre que celle qui a fait écarter Oris. Le propriétaire
+en a été informé et a choisi d'activer la collecte en assumant le risque, comme pour Venezianico.
+Aucune autorisation de Lip n'a été demandée ni n'est présumée. En cas de demande de retrait, la
+source est désactivée et ses données et visuels supprimés.
+
+Fiches relevées en français, versions anglaise et italienne pour les traductions : aucune n'est un
+marché national, donc pas de relevé de prix par pays. Garantie de 2 ans limitée aux achats sur
+lip.fr : affichée comme exclusion. La FAQ (révision tous les 3 à 5 ans) et la page des mouvements
+(au moins tous les 10 ans) divergent : les deux sont citées. Pas de déclinaisons proposées : les
+références n'encodent pas le modèle et le site n'a pas de sélecteur explicite.
+
+## 2026-10-31 – Une page en échec ne prouve pas un retrait
+
+Les montres et offres dont la page a échoué pendant une collecte ne sont plus marquées « plus
+produites » ni retirées. Une exécution pouvait dépasser le seuil de 80 % et, avec un blocage
+partiel, déclarer à tort des montres encore vendues (19 sur Venezianico). Les autres montres non
+revues restent traitées comme avant.
+
+## 2026-10-31 – Une entrée « Marques » dans l'en-tête, marques épinglées par compte
+
+Les noms de marques quittent la barre : au-delà de quelques marques, elle devenait illisible. Une
+entrée « Marques » ouvre un panneau avec recherche (sans accents, Entrée ouvre le premier résultat),
+marques épinglées puis liste alphabétique. La page `/marques` donne l'annuaire complet, découpé par
+lettre à partir de 13 marques.
+
+Un compte épingle une marque avec l'étoile (panneau, page Marques, page de la marque) : table
+`brand_favorites`, supprimée avec le compte, visible par lui seul, indiquée dans la politique de
+confidentialité. Les 3 premières s'affichent en lien direct dans la barre, toutes dans le panneau.
+Elles sont lues côté navigateur, comme la session : les pages restent statiques.
+
+Le pied de page relie `/marques` et les 12 marques les mieux couvertes : le panneau n'est pas dans
+le HTML serveur, et chaque marque doit rester atteignable par un lien pour les moteurs.
+`/marques` devra entrer au sitemap à l'ouverture publique (sitemap vide tant que le site est privé).
+
 ## 2026-10-31 – Feuilletage de la liste filtrée depuis une fiche
 
 Depuis une fiche ouverte à partir du catalogue, Précédent, Suivant et les flèches du clavier
@@ -452,6 +491,21 @@ et le chargement des pages extrêmement lents. Les builds de vérification reste
 | CI               | GitHub Actions : qualité, build, migrations + seed + scraper sur Postgres de service | Bloque les PR cassées avant Vercel.                                                                                         |
 | Indexation       | Seul `VERCEL_ENV=production` est indexable                                           | Éviter que les previews soient indexées (contenu dupliqué).                                                                 |
 | Langue           | Français partout (UI, docs, commits) ; identifiants de code en anglais               | Public francophone ; conventions de code universelles.                                                                      |
+
+## Atelier AV autonome (31 octobre 2026)
+
+À la demande du propriétaire, création d’un atelier de montres originales distinct du catalogue :
+`apps/atelier`, TypeScript, Three.js et Vite, service Docker optionnel sur le port local 4173.
+Deux directions retenues : 02 Obsidienne (métal noir) puis 01 Éclipse (cuir noir), aiguilles
+or champagne et initiales AV ; la forme coussin est écartée. Les concepts approuvés sont conservés
+dans le dossier `references` de l’atelier.
+
+Le code et les styles de l’atelier ne sont pas importés par le site Next.js. Aucun accès à la base,
+aucun lien de navigation et aucun déploiement ajouté. Le verrou npm et les contrôles restent
+communs au dépôt ; le build de l’atelier est explicite et distinct du build du site. Ce choix permet
+de travailler formes, matières et éclairage sans charger la 3D dans le catalogue.
+Première étude statique manipulable, sans animation automatique, avec rendu à la demande.
+Les dimensions et les assemblages simplifiés ne constituent pas un plan de fabrication.
 
 ## Questions encore ouvertes
 

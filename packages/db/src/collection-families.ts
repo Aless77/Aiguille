@@ -46,6 +46,20 @@ export const COLLECTION_FAMILIES: Record<string, BrandFamilies> = {
     complete: false,
     families: [],
   },
+  // Menu du site : collections à plat, plus la rubrique des montres à mouvement exclusif.
+  lip: {
+    source: "https://lip.fr/fr/220-montres-de-mouvement-manufacture",
+    checkedAt: "2026-10-31",
+    complete: false,
+    families: [
+      {
+        slug: "mouvement-de-manufacture",
+        name: "LIP Mouvement de Manufacture",
+        url: "https://lip.fr/fr/220-montres-de-mouvement-manufacture",
+        collections: ["type-14", "nautic-666", "annapurna"],
+      },
+    ],
+  },
   // Menu « Montres » : cinq univers, chacun listant ses collections.
   longines: {
     source: "https://www.longines.com/fr/watches",

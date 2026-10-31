@@ -2,6 +2,7 @@ import { hamilton } from "./hamilton.ts";
 import { citizen } from "./citizen.ts";
 import { seiko } from "./seiko.ts";
 import { lepage } from "./lepage.ts";
+import { lip } from "./lip.ts";
 import { longines } from "./longines.ts";
 import { ocarat } from "./ocarat.ts";
 import { tissot } from "./tissot.ts";
@@ -19,6 +20,7 @@ export const sources: Record<string, SourceAdapter> = {
   citizen,
   seiko,
   venezianico,
+  lip,
   lepage,
   ocarat,
 };

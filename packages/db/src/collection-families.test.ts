@@ -12,7 +12,9 @@ describe("COLLECTION_FAMILIES", () => {
     for (const [brand, config] of Object.entries(COLLECTION_FAMILIES)) {
       const slugs = config.families.flatMap((f) => f.collections);
       expect(new Set(slugs).size, brand).toBe(slugs.length);
-      for (const f of config.families) expect(f.url).toMatch(new RegExp(`^https://www\\.${brand}`));
+      for (const f of config.families) {
+        expect(f.url).toMatch(new RegExp(`^https://(www\\.)?${brand}`));
+      }
     }
   });
 });

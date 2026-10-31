@@ -121,6 +121,69 @@ export const BRAND_INFO: Record<string, BrandInfo> = {
     group: null,
     movementMakers: [],
   },
+  lip: {
+    warranty: {
+      value: {
+        months: 24,
+        extended: [],
+        page: "https://lip.fr/fr/content/10-sav",
+        excludes: [
+          "verre, pile et bracelet",
+          "accidents et mauvaise utilisation",
+          "usure normale",
+          "intervention hors des ateliers LIP",
+          "montres achetées ailleurs que sur lip.fr (voir avec le revendeur)",
+        ],
+      },
+      source: "https://lip.fr/fr/content/14-cgv",
+      checkedAt: "2026-10-31",
+    },
+    service: {
+      value: {
+        // Devis après réception de la montre : aucune grille publiée.
+        prices: [],
+        battery: null,
+        fullServiceInterval:
+          "tous les 3 à 5 ans selon la FAQ ; au moins tous les 10 ans selon la page des mouvements",
+        partialServiceInterval: null,
+        waterResistanceCheck: null,
+        batteryLife: null,
+        serviceWarrantyMonths: null,
+        spareParts: null,
+        free: [],
+        adviceSources: ["https://lip.fr/fr/content/9-nos-mouvements"],
+      },
+      source: "https://lip.fr/fr/content/17-foire-aux-questions",
+      checkedAt: "2026-10-31",
+    },
+    madeIn: null,
+    care: {
+      value: ["saltWater", "magnetism", "temperature", "chemicals", "batteryAtDealer", "cleaning"],
+      source: "https://lip.fr/fr/content/17-foire-aux-questions",
+      checkedAt: "2026-10-31",
+    },
+    group: null,
+    movementMakers: [
+      ...(
+        [
+          [/ronda/i, "Ronda"],
+          [/miyota/i, "Miyota"],
+          [/\bTMI\b/i, "TMI"],
+        ] as const
+      ).map(([caliber, value]) => ({
+        caliber,
+        value,
+        source: "https://lip.fr/fr/content/9-nos-mouvements",
+        checkedAt: "2026-10-31",
+      })),
+      {
+        caliber: /\bR26/i,
+        value: "LIP",
+        source: "https://lip.fr/fr/content/28-lip-mouvement-R26",
+        checkedAt: "2026-10-31",
+      },
+    ],
+  },
   venezianico: {
     warranty: {
       value: {

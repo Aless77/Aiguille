@@ -512,6 +512,24 @@ export const wishlists = pgTable(
 
 export type Wishlist = typeof wishlists.$inferSelect;
 
+/** Marques épinglées par un compte : accès direct dans l'en-tête. Supprimées avec le compte. */
+export const brandFavorites = pgTable(
+  "brand_favorites",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    brandId: integer("brand_id")
+      .notNull()
+      .references(() => brands.id, { onDelete: "cascade" }),
+    addedAt: timestamp("added_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.brandId] }),
+    index("brand_favorites_brand_idx").on(t.brandId),
+  ],
+);
+
 export const wishlistItems = pgTable(
   "wishlist_items",
   {
