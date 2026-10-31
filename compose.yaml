@@ -101,6 +101,10 @@ services:
       FEATURE_COMMUNITY: "true"
       # Comme la CI : français, anglais et allemand publiés (e2e/langues.spec.ts).
       LANGUAGES: "fr,en,de"
+      ADMIN_USERNAME: ${E2E_ADMIN_USERNAME:-}
+      ADMIN_ACCESS_PATH: ${E2E_ADMIN_ACCESS_PATH:-}
+      ADMIN_PASSWORD: ${E2E_ADMIN_PASSWORD:-}
+      BETTER_AUTH_SECRET: ${E2E_AUTH_SECRET:-}
     command: sh -c "npm run build -w @aiguille/web && npm run start -w @aiguille/web -- --hostname 0.0.0.0"
     healthcheck:
       # 127.0.0.1 et non localhost : sous Alpine, localhost se résout en IPv6, où Next n'écoute pas.
@@ -124,6 +128,11 @@ services:
     working_dir: /app/apps/web
     environment:
       BASE_URL: http://web-prod:3000
+      DATABASE_URL: ${E2E_DATABASE_URL:-postgres://aiguille:aiguille@db:5432/aiguille}
+      ADMIN_USERNAME: ${E2E_ADMIN_USERNAME:-}
+      ADMIN_ACCESS_PATH: ${E2E_ADMIN_ACCESS_PATH:-}
+      ADMIN_PASSWORD: ${E2E_ADMIN_PASSWORD:-}
+      BETTER_AUTH_SECRET: ${E2E_AUTH_SECRET:-}
     volumes:
       - .:/app
       - node_modules:/app/node_modules

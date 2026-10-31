@@ -24,14 +24,16 @@ const fr: PrivacyContent = {
   title: "Règles de confidentialité",
   body: (site, repository) => (
     <>
-      <p className="text-muted-foreground">Dernière mise à jour : 25 octobre 2026.</p>
+      <p className="text-muted-foreground">Dernière mise à jour : 31 octobre 2026.</p>
 
       <section className={section}>
         <h2 className={h2}>En bref</h2>
         <ul className={list}>
-          <li>Consulter le site ne demande aucun compte et ne dépose aucun traceur.</li>
           <li>
-            Un compte sert uniquement à donner votre avis sur les montres et à tenir vos listes de
+            Le site est privé : un compte approuvé est nécessaire. Aucun traceur publicitaire.
+          </li>
+          <li>
+            Un compte approuvé sert à consulter le site, donner votre avis et tenir vos listes de
             souhaits.
           </li>
           <li>Nous ne vendons, ne louons ni ne partageons aucune donnée. Aucune publicité.</li>
@@ -267,8 +269,8 @@ const en = translated({
       title: "In short",
       blocks: [
         [
-          "Browsing the site requires no account and sets no tracker.",
-          "An account is only used to review watches and keep your wish lists.",
+          "The site is private: an approved account is required. No advertising trackers.",
+          "An approved account lets you browse the site, review watches and keep your wish lists.",
           "We do not sell, rent or share any data. No advertising.",
           "You can delete your account yourself, at any time.",
         ],
@@ -357,8 +359,8 @@ const de = translated({
       title: "Kurz gesagt",
       blocks: [
         [
-          "Für den Besuch der Website ist kein Konto nötig und es wird kein Tracker gesetzt.",
-          "Ein Konto dient nur dazu, Uhren zu bewerten und Ihre Wunschlisten zu führen.",
+          "Die Website ist privat: Ein genehmigtes Konto ist erforderlich. Keine Werbetracker.",
+          "Ein genehmigtes Konto ermöglicht den Zugang, Bewertungen und Wunschlisten.",
           "Wir verkaufen, vermieten oder teilen keine Daten. Keine Werbung.",
           "Sie können Ihr Konto jederzeit selbst löschen.",
         ],
@@ -450,8 +452,8 @@ const it = translated({
       title: "In breve",
       blocks: [
         [
-          "Consultare il sito non richiede alcun account e non installa alcun tracker.",
-          "Un account serve solo per dare la tua opinione sugli orologi e tenere le tue liste dei desideri.",
+          "Il sito è privato: serve un account approvato. Nessun tracker pubblicitario.",
+          "Un account approvato permette di consultare il sito, recensire orologi e gestire le liste.",
           "Non vendiamo, non affittiamo e non condividiamo alcun dato. Nessuna pubblicità.",
           "Puoi eliminare il tuo account da solo, in qualsiasi momento.",
         ],
@@ -543,8 +545,8 @@ const es = translated({
       title: "En resumen",
       blocks: [
         [
-          "Consultar el sitio no requiere cuenta ni instala ningún rastreador.",
-          "Una cuenta solo sirve para opinar sobre los relojes y gestionar sus listas de deseos.",
+          "El sitio es privado: se necesita una cuenta aprobada. Sin rastreadores publicitarios.",
+          "Una cuenta aprobada permite consultar el sitio, opinar y gestionar las listas de deseos.",
           "No vendemos, alquilamos ni compartimos ningún dato. Sin publicidad.",
           "Puede eliminar su cuenta usted mismo, en cualquier momento.",
         ],

@@ -3,6 +3,28 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-10-31 – Site privé sur demande
+
+Pour les essais du propriétaire, `test/test` est accepté dans le serveur de développement local
+(`NODE_ENV=development`, hors Vercel). Le minimum de 16 caractères reste requis ailleurs.
+Une configuration invalide affiche désormais une explication distincte des identifiants incorrects.
+
+Précision du propriétaire : l'administration n'a aucun lien ni bouton d'entrée sur le site.
+Son adresse est définie uniquement dans `ADMIN_ACCESS_PATH`, sans chemin par défaut.
+L'entrée `/administration` mentionnée dans l'implémentation initiale est remplacée : elle renvoie
+désormais 404 sans révéler l'adresse configurée. Identifiant et mot de passe restent requis.
+
+À la demande du propriétaire, l'intégralité du catalogue et des pages de contenu devient privée.
+Cette décision remplace l'ouverture publique et l'objectif SEO précédents : sitemap vide,
+exploration interdite et indexation désactivée, y compris en production.
+Les comptes Google/GitHub sont conservés, mais sans autorisation implicite, même s'ils existaient
+déjà. Une demande décrit les motivations, la provenance et les marques souhaitées.
+Le propriétaire accepte ou refuse dans `/administration`, avec identifiant et mot de passe définis
+dans les variables privées. Aucun compte administrateur par défaut ni envoi d'e-mail ajouté.
+La décision est consultable sur `/demande-acces` ; elle reste modifiable par l'administrateur.
+Les exceptions nécessaires à la connexion, la confidentialité et l'effacement du compte restent
+accessibles. Configuration et limites : [acces-prive.md](acces-prive.md).
+
 ## 2026-10-25 – Citizen et Seiko intégrées, Oris écartée
 
 Le propriétaire retient Citizen et Seiko et demande de retirer Oris du site. Ce choix remplace

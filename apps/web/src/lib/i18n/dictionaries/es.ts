@@ -1,3 +1,4 @@
+import { access } from "../messages/access";
 import { community } from "../messages/community";
 import { pages } from "../messages/pages";
 import { sections } from "../messages/sections";
@@ -5,6 +6,7 @@ import { catalog } from "../messages/catalog";
 import { type PartialDictionary } from "../dictionary";
 
 export const es: PartialDictionary = {
+  access: access.es,
   common: { unknown: "No comunicado", newTab: "(nueva pestaña)", close: "Cerrar" },
   nav: {
     label: "Navegación principal",

@@ -1,3 +1,4 @@
+import { access } from "../messages/access";
 import { community } from "../messages/community";
 import { pages } from "../messages/pages";
 import { sections } from "../messages/sections";
@@ -6,6 +7,7 @@ import { type Dictionary } from "./fr";
 
 /** Anglais : langue de repli, donc complet (TypeScript refuse une clé manquante). */
 export const en: Dictionary = {
+  access: access.en,
   common: {
     unknown: "Not disclosed",
     newTab: "(new tab)",
