@@ -1,5 +1,6 @@
 import { type CheerioAPI } from "cheerio";
 
+import { uniqueImages } from "../lib/images.ts";
 import { findProduct, parseAvailability } from "../lib/jsonld.ts";
 import { fetchSitemapPages } from "../lib/sitemap.ts";
 import { parseMovement, parseWaterResistance, pick } from "../lib/specs.ts";
@@ -35,6 +36,15 @@ function readSpecs($: CheerioAPI): Record<string, string> {
   return specs;
 }
 
+/** Photos du carrousel de la fiche, à l'adresse du fichier d'origine (sans redimensionnement). */
+export function carouselImages($: CheerioAPI): string[] {
+  return $(".ti-pdp-carousel-image img[src]")
+    .map((_, img) => $(img).attr("src")!)
+    .get()
+    .filter((src) => src.startsWith("https://"))
+    .map((src) => src.replace("/dw/image/v2/BKKD_PRD/", "/").replace(/\?.*$/, ""));
+}
+
 export function parseTissot($: CheerioAPI, url: string) {
   if (!PRODUCT_URL.test(url)) return null;
   const product = findProduct($);
@@ -57,7 +67,10 @@ export function parseTissot($: CheerioAPI, url: string) {
     name: product.name ?? h1,
     collectionName,
     description: product.description,
-    imageUrls: product.images.length ? product.images : ogImage ? [ogImage] : [],
+    imageUrls: uniqueImages([
+      ...(product.images.length ? product.images : ogImage ? [ogImage] : []),
+      ...carouselImages($),
+    ]),
     priceCents: toCents(product.price),
     currency: "EUR" as const,
     availability: parseAvailability(product.availability),

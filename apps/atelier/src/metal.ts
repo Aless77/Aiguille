@@ -4,20 +4,30 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { braceletFrame, braceletLayout } from "./bracelet-path";
 
 /** Bracelet à trois maillons, raccords pleins et fermoir déployant fermé. */
-export function createMetalBracelet() {
+export function createMetalBracelet(finishes?: {
+  brushed: THREE.MeshStandardMaterial;
+  polished: THREE.MeshStandardMaterial;
+  center: THREE.MeshStandardMaterial;
+}) {
   const group = new THREE.Group();
   group.name = "Bracelet à trois maillons articulés";
-  const brushed = new THREE.MeshStandardMaterial({
-    color: 0x1d2022,
-    metalness: 1,
-    roughness: 0.38,
-  });
-  const bevel = new THREE.MeshStandardMaterial({ color: 0x292c2e, metalness: 1, roughness: 0.2 });
-  const centerFinish = new THREE.MeshStandardMaterial({
-    color: 0x242729,
-    metalness: 1,
-    roughness: 0.3,
-  });
+  const brushed =
+    finishes?.brushed ??
+    new THREE.MeshStandardMaterial({
+      color: 0x1d2022,
+      metalness: 1,
+      roughness: 0.38,
+    });
+  const bevel =
+    finishes?.polished ??
+    new THREE.MeshStandardMaterial({ color: 0x292c2e, metalness: 1, roughness: 0.2 });
+  const centerFinish =
+    finishes?.center ??
+    new THREE.MeshStandardMaterial({
+      color: 0x242729,
+      metalness: 1,
+      roughness: 0.3,
+    });
   const recess = new THREE.MeshStandardMaterial({
     color: 0x050606,
     metalness: 0.6,

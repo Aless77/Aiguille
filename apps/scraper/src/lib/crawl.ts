@@ -129,7 +129,7 @@ export async function runSource(
     if (failure) throw new Error(failure);
 
     // Garde-fou : une exécution partielle (blocage, panne) ne doit rien marquer comme disparu.
-    if (!options.limit && adapter.kind === "official") {
+    if (!options.limit && adapter.kind === "official" && !adapter.partialCatalog) {
       const active = await persister.activeCount(adapter.brandSlug);
       if (stats.watchesFound >= active * COMPLETE_RUN_RATIO) {
         stats.discontinued = await persister.markUnseenAsDiscontinued(

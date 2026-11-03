@@ -1,6 +1,7 @@
 import { type WatchTranslationData } from "@aiguille/db/translations";
 import { type CheerioAPI } from "cheerio";
 
+import { uniqueImages } from "../lib/images.ts";
 import { fetchRobots } from "../lib/robots.ts";
 import { fetchSitemapPages } from "../lib/sitemap.ts";
 import { parseMovement, parseWaterResistance } from "../lib/specs.ts";
@@ -132,10 +133,8 @@ export function translateSeiko($: CheerioAPI, url: string): WatchTranslationData
   };
 }
 
-/** Prix affiché, lu sans API et sans assimiler l'absence de stock à une rupture. */
-export function seikoCountryPrice($: CheerioAPI, url: string) {
-  if (!readPage($, url)) return null;
-  const text = cleanText($(".productInformation-detail ._price").text());
+/** « EUR 7 000,00 », « GBP 5,800.00 » : montant en centimes et devise affichée. */
+export function readDisplayedPrice(text: string) {
   const currency =
     /\b(EUR|GBP|CHF|SEK|DKK|PLN)\b/i.exec(text)?.[1]?.toUpperCase() ??
     (/\bEuro\b|€/.test(text) ? "EUR" : "");
@@ -144,8 +143,26 @@ export function seikoCountryPrice($: CheerioAPI, url: string) {
   if (numeric && /[.,]\d{2}$/.test(numeric)) {
     numeric = numeric.slice(0, -3).replace(/[.,]/g, "") + "." + numeric.slice(-2);
   } else numeric = numeric?.replace(/[.,]/g, "");
-  const priceCents = numeric ? Math.round(Number(numeric) * 100) : undefined;
-  return { priceCents, currency, availability: "unknown" as const };
+  return { priceCents: numeric ? Math.round(Number(numeric) * 100) : undefined, currency };
+}
+
+/** Prix affiché, lu sans API et sans assimiler l'absence de stock à une rupture. */
+export function seikoCountryPrice($: CheerioAPI, url: string) {
+  if (!readPage($, url)) return null;
+  const price = readDisplayedPrice(cleanText($(".productInformation-detail ._price").text()));
+  return { ...price, availability: "unknown" as const };
+}
+
+/** Photo principale, puis galerie de la fiche (« HKF003J1_ima_1_2026.png »). */
+export function readImages($: CheerioAPI, url: string, reference: string): string[] {
+  const main = $(".productInformation-visual img[src]")
+    .map((_, img) => $(img).attr("src")!)
+    .get();
+  const gallery = $(".productInformation-gallery-inner a[href]")
+    .map((_, link) => $(link).attr("href")!)
+    .get()
+    .filter((href) => href.includes(reference));
+  return uniqueImages([...main, ...gallery].map((src) => new URL(src, url).href));
 }
 
 export function parseSeiko($: CheerioAPI, url: string) {
@@ -161,16 +178,14 @@ export function parseSeiko($: CheerioAPI, url: string) {
   );
   const lugToLug = dimension(/Corne à corne\s*:\s*(\d+(?:[.,]\d+)?)/i);
   if (lugToLug) rawSpecs["Corne à corne"] = `${lugToLug} mm`;
-  const imageUrls = $(".productInformation-visual img[src]")
-    .map((_, e) => new URL($(e).attr("src")!, url).href)
-    .get();
+  const imageUrls = readImages($, url, page.reference);
   return {
     brandSlug: "seiko",
     url,
     reference: page.reference,
     name: page.name,
     collectionName: page.collection || undefined,
-    imageUrls: [...new Set(imageUrls)],
+    imageUrls,
     priceCents: price?.currency === "EUR" ? price.priceCents : undefined,
     currency: "EUR" as const,
     availability: "unknown" as const,

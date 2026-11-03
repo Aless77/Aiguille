@@ -6,6 +6,10 @@ import { lip } from "./lip.ts";
 import { longines } from "./longines.ts";
 import { ocarat } from "./ocarat.ts";
 import { tissot } from "./tissot.ts";
+import { tagHeuer } from "./tag-heuer.ts";
+import { tudor } from "./tudor.ts";
+import { omega } from "./omega.ts";
+import { grandSeiko } from "./grand-seiko.ts";
 import { type SourceAdapter } from "./types.ts";
 import { venezianico } from "./venezianico.ts";
 
@@ -21,6 +25,10 @@ export const sources: Record<string, SourceAdapter> = {
   seiko,
   venezianico,
   lip,
+  tudor,
+  omega,
+  "grand-seiko": grandSeiko,
+  "tag-heuer": tagHeuer,
   lepage,
   ocarat,
 };

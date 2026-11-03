@@ -2,20 +2,47 @@ import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { createWatch, type WatchModel } from "./watch";
+import { createStudio, type StudioLight } from "./studio";
+import { createDiagnostics } from "./diagnostics";
+import { renderPixelRatio } from "./render-budget";
+import { connectAiguille } from "./navigation";
 
+connectAiguille();
 const stage = document.querySelector<HTMLDivElement>("#stage")!;
 const status = document.querySelector<HTMLParagraphElement>("#status")!;
+const retry = document.querySelector<HTMLButtonElement>("#retry")!;
+const reset = document.querySelector<HTMLButtonElement>("#reset")!;
+retry.addEventListener("click", () => {
+  const url = new URL(location.href);
+  if (import.meta.env.DEV && url.searchParams.get("diagnostic") === "no-webgl") {
+    url.searchParams.delete("diagnostic");
+    location.assign(url.href);
+  } else location.reload();
+});
+function setAvailable(available: boolean, message = "") {
+  status.textContent = message;
+  retry.hidden = available;
+  document.querySelectorAll("fieldset").forEach((field) => {
+    field.disabled = !available;
+  });
+  reset.disabled = !available;
+}
 const setText = (id: string, text: string) => {
   document.getElementById(id)!.textContent = text;
 };
 
 function start() {
+  if (import.meta.env.DEV && new URLSearchParams(location.search).get("diagnostic") === "no-webgl")
+    throw new Error("Indisponibilité graphique simulée pour vérifier le repli.");
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.35;
+  renderer.toneMappingExposure = 1.15;
+  renderer.transmissionResolutionScale = 1;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.autoUpdate = false;
+  renderer.shadowMap.needsUpdate = true;
+  const diagnostics = createDiagnostics(renderer);
   stage.appendChild(renderer.domElement);
   renderer.domElement.setAttribute(
     "aria-label",
@@ -29,38 +56,11 @@ function start() {
   controls.enablePan = false;
   controls.minDistance = 7;
   controls.maxDistance = 22;
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  // Boîtes à lumière dans un studio noir : les reflets révèlent les arêtes sans blanchir le cadran.
-  const room = new THREE.Scene();
-  room.background = new THREE.Color(0x080808);
-  for (const [x, y, z, width, height] of [
-    [-5, 3, 4, 2, 9],
-    [6, 1, 2, 1, 7],
-    [0, 7, -3, 6, 2],
-    [1, 2, 9, 5, 7],
-  ]) {
-    const panel = new THREE.Mesh(
-      new THREE.PlaneGeometry(width, height),
-      new THREE.MeshBasicMaterial({
-        color: new THREE.Color().setRGB(3, 3, 3),
-        side: THREE.DoubleSide,
-      }),
-    );
-    panel.position.set(x!, y!, z!);
-    panel.lookAt(0, 0, 0);
-    room.add(panel);
-  }
-  const environment = pmrem.fromScene(room, 0.04);
-  scene.environment = environment.texture;
-  scene.environmentIntensity = 1.6;
-  room.traverse((object) => {
-    if (object instanceof THREE.Mesh) {
-      object.geometry.dispose();
-      object.material.dispose();
-    }
-  });
-  pmrem.dispose();
-  const key = new THREE.DirectionalLight(0xfff1d7, 1.5);
+  let currentLight: StudioLight = "studio";
+  let studio = createStudio(renderer);
+  scene.environment = studio.use(currentLight);
+  scene.environmentIntensity = 1.25;
+  const key = new THREE.DirectionalLight(0xfff1df, 1.7);
   key.position.set(-4, 6, 8);
   key.castShadow = true;
   key.shadow.mapSize.set(1024, 1024);
@@ -70,12 +70,15 @@ function start() {
   key.shadow.camera.far = 25;
   key.shadow.normalBias = 0.015;
   key.shadow.bias = -0.0001;
-  const fill = new THREE.DirectionalLight(0xd8e7ff, 0.7);
+  const fill = new THREE.DirectionalLight(0xe3eaff, 1);
   fill.position.set(5, 1, 4);
-  const rim = new THREE.DirectionalLight(0xffffff, 5);
+  const rim = new THREE.DirectionalLight(0xffffff, 3);
   rim.position.set(-4, 3, -3);
   scene.add(key, fill, rim);
-  let watch = createWatch("metal", render);
+  let currentModel: WatchModel = "metal";
+  let watch = createWatch(currentModel, render);
+  // Deux modèles au maximum : éviter de reconstruire et recompiler leurs matières à chaque retour.
+  const watches = new Map<WatchModel, ReturnType<typeof createWatch>>([[currentModel, watch]]);
   scene.add(watch.object);
   const neutral = new THREE.MeshStandardMaterial({
     color: 0x898b8e,
@@ -96,12 +99,29 @@ function start() {
     inspectVolumes();
   });
   let frame = 0;
-  let visible = true;
+  let contextLost = false;
+  let failed = false;
+  let disposed = false;
+  let ready = false;
   function render() {
-    if (!frame && visible && !document.hidden)
+    if (!frame && !document.hidden && !contextLost && !failed && !disposed)
       frame = requestAnimationFrame(() => {
         frame = 0;
-        renderer.render(scene, camera);
+        if (document.hidden || contextLost || disposed) return;
+        const started = diagnostics?.begin();
+        try {
+          renderer.render(scene, camera);
+          if (!ready) {
+            ready = true;
+            setAvailable(true);
+          }
+        } catch (error) {
+          console.error(error);
+          failed = true;
+          controls.enabled = false;
+          setAvailable(false, "Le rendu a été interrompu. Vous pouvez relancer la 3D.");
+        }
+        if (started !== undefined) diagnostics?.end(started);
       });
   }
   function view(name: string) {
@@ -116,20 +136,35 @@ function start() {
     controls.update();
     render();
   }
+  let lastWidth = 0;
+  let lastHeight = 0;
+  let lastRatio = 0;
   function resize() {
-    renderer.setSize(stage.clientWidth, stage.clientHeight);
-    camera.aspect = stage.clientWidth / stage.clientHeight;
+    const width = stage.clientWidth;
+    const height = stage.clientHeight;
+    if (!width || !height) return;
+    const ratio = renderPixelRatio(window.devicePixelRatio, width, height);
+    if (width === lastWidth && height === lastHeight && ratio === lastRatio) return;
+    lastWidth = width;
+    lastHeight = height;
+    lastRatio = ratio;
+    renderer.setPixelRatio(ratio);
+    renderer.setSize(width, height);
+    camera.aspect = width / height;
     camera.updateProjectionMatrix();
     render();
   }
   const observer = new ResizeObserver(resize);
   observer.observe(stage);
-  const intersection = new IntersectionObserver(([entry]) => {
-    visible = entry?.isIntersecting ?? true;
-    render();
-  });
-  intersection.observe(stage);
-  document.addEventListener("visibilitychange", render);
+  function visibilityChanged() {
+    if (document.hidden) {
+      cancelAnimationFrame(frame);
+      frame = 0;
+    } else render();
+  }
+  document.addEventListener("visibilitychange", visibilityChanged);
+  window.addEventListener("resize", resize);
+  window.addEventListener("pageshow", render);
   controls.addEventListener("change", render);
   controls.addEventListener("start", () =>
     document
@@ -144,9 +179,13 @@ function start() {
   document.querySelectorAll<HTMLButtonElement>("[data-model]").forEach((button) =>
     button.addEventListener("click", () => {
       const model = button.dataset.model as WatchModel;
+      if (model === currentModel) return;
+      const replacement = watches.get(model) ?? createWatch(model, render);
+      watches.set(model, replacement);
       scene.remove(watch.object);
-      watch.dispose();
-      watch = createWatch(model, render);
+      watch = replacement;
+      currentModel = model;
+      renderer.shadowMap.needsUpdate = true;
       scene.add(watch.object);
       inspectVolumes();
       select("[data-model]", button);
@@ -169,14 +208,16 @@ function start() {
   );
   document.querySelectorAll<HTMLButtonElement>("[data-light]").forEach((button) =>
     button.addEventListener("click", () => {
-      const name = button.dataset.light;
+      const name = button.dataset.light as StudioLight;
+      currentLight = name;
       select("[data-light]", button);
-      key.color.set(name === "warm" ? 0xffce8b : 0xfff1d7);
-      fill.color.set(name === "warm" ? 0xffe4bd : 0xd8e7ff);
-      key.intensity = name === "rim" ? 0.5 : 1.5;
-      fill.intensity = name === "rim" ? 0.2 : 0.7;
-      rim.intensity = name === "rim" ? 9 : 5;
-      scene.environmentIntensity = name === "rim" ? 0.65 : 1.6;
+      scene.environment = studio.use(name);
+      key.color.set(name === "warm" ? 0xffce8b : 0xfff1df);
+      fill.color.set(name === "warm" ? 0xffe4bd : 0xe3eaff);
+      key.intensity = name === "rim" ? 0.5 : 1.7;
+      fill.intensity = name === "rim" ? 0.3 : 1;
+      rim.intensity = name === "rim" ? 6 : 3;
+      scene.environmentIntensity = name === "rim" ? 0.8 : 1.25;
       render();
     }),
   );
@@ -186,7 +227,7 @@ function start() {
       view(button.dataset.view!);
     }),
   );
-  document.getElementById("reset")!.addEventListener("click", () => {
+  reset.addEventListener("click", () => {
     view("signature");
     document
       .querySelectorAll<HTMLButtonElement>("[data-view]")
@@ -196,34 +237,58 @@ function start() {
   });
   renderer.domElement.addEventListener("webglcontextlost", (event) => {
     event.preventDefault();
-    status.textContent =
-      "L’affichage 3D a été interrompu. Rechargez la page pour reprendre l’étude.";
+    contextLost = true;
+    ready = false;
+    controls.enabled = false;
+    cancelAnimationFrame(frame);
+    frame = 0;
+    setAvailable(
+      false,
+      "L’affichage 3D a été interrompu. La reprise est automatique dès que possible.",
+    );
+  });
+  renderer.domElement.addEventListener("webglcontextrestored", () => {
+    contextLost = false;
+    failed = false;
+    controls.enabled = true;
+    // Les textures calculées sur le GPU ont perdu leur contenu avec le contexte.
+    studio.dispose();
+    studio = createStudio(renderer);
+    scene.environment = studio.use(currentLight);
+    renderer.shadowMap.needsUpdate = true;
+    render();
   });
   window.addEventListener(
     "pagehide",
     (event) => {
       if (event.persisted) return;
+      disposed = true;
       cancelAnimationFrame(frame);
       observer.disconnect();
-      intersection.disconnect();
+      document.removeEventListener("visibilitychange", visibilityChanged);
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("pageshow", render);
       controls.dispose();
-      watch.dispose();
-      environment.dispose();
+      watches.forEach((model) => model.dispose());
+      watches.clear();
+      studio.dispose();
       neutral.dispose();
       key.shadow.map?.dispose();
       renderer.dispose();
+      diagnostics?.dispose();
     },
     { once: true },
   );
   view("signature");
   resize();
-  status.textContent = "";
 }
 
 try {
   start();
 } catch (error) {
   console.error(error);
-  status.textContent =
-    "La 3D n’a pas pu démarrer. Vérifiez que WebGL est disponible dans votre navigateur, puis rechargez la page.";
+  setAvailable(
+    false,
+    "La 3D n’a pas pu démarrer. Vérifiez que WebGL est disponible dans votre navigateur, puis relancez l’affichage.",
+  );
 }

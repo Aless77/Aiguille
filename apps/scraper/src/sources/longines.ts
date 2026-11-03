@@ -1,6 +1,7 @@
 import { type WatchTranslationData } from "@aiguille/db/translations";
 import { type CheerioAPI } from "cheerio";
 
+import { byImageRank, imagesInHtml, uniqueImages } from "../lib/images.ts";
 import { findProduct, parseAvailability } from "../lib/jsonld.ts";
 import { fetchSitemapPages } from "../lib/sitemap.ts";
 import { parseMovement, parseWaterResistance } from "../lib/specs.ts";
@@ -133,6 +134,20 @@ export function translateLongines($: CheerioAPI, url: string): WatchTranslationD
   };
 }
 
+/**
+ * Vues détaillées de cette référence, dans l'ordre de la marque. Les déclinaisons voisines ont une
+ * autre référence dans le nom de fichier ; vignettes et images techniques ne sont pas des vues.
+ */
+export function detailedViews($: CheerioAPI, reference: string): string[] {
+  const key = reference.toLowerCase().replaceAll(".", "-");
+  return imagesInHtml(
+    $.html(),
+    /https:\/\/api\.ecom\.longines\.com\/media\/catalog\/product\/[^"'\\?\s]+/g,
+  )
+    .filter((image) => image.includes(key) && image.includes("-detailed-view-"))
+    .sort(byImageRank((image) => /-(\d+)-[0-9a-f]+\.\w+$/.exec(image)?.[1]));
+}
+
 export function parseLongines($: CheerioAPI, url: string) {
   if (!PRODUCT_URL.test(url)) return null;
   const product = findProduct($);
@@ -166,7 +181,7 @@ export function parseLongines($: CheerioAPI, url: string) {
     name: watchName(item.name ?? product.name ?? product.sku, diameterMm),
     collectionName,
     description: product.description,
-    imageUrls: product.images,
+    imageUrls: uniqueImages([...product.images, ...detailedViews($, product.sku)]),
     priceCents: toCents(product.price),
     currency: "EUR" as const,
     availability: parseAvailability(product.availability),

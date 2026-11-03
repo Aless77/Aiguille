@@ -18,6 +18,9 @@ describe("parseMovement", () => {
 describe("parseWaterResistance", () => {
   it("privilégie les mètres", () => {
     expect(parseWaterResistance("jusqu’à 5 bar (50m)")).toBe(50);
+    expect(parseWaterResistance("600 bars (6 000 mètres / 20 000 pieds)")).toBe(6000);
+    expect(parseWaterResistance("120 bars (1 200 mètres)")).toBe(1200);
+    expect(parseWaterResistance("30 bars (300 mètres/1 000 pieds)")).toBe(300);
     expect(parseWaterResistance("Etanche jusqu’à une pression de 10 bar (100 m/330 ft)")).toBe(100);
   });
 

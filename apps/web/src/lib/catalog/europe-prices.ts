@@ -39,7 +39,7 @@ export interface EuropePrice {
   currency: string;
   /** Prix converti en euros au dernier taux BCE (centimes). */
   eurCents: number;
-  /** Écart avec le prix français, en % (null sans prix français). */
+  /** Écart non arrondi avec le prix français, en % (null sans prix français). */
   deltaPercent: number | null;
   availability: Availability;
   date: string;
@@ -56,7 +56,13 @@ export function buildEuropePrices(
 ): EuropePrice[] {
   const converted = rows
     .filter((r): r is CountryPriceRow & { priceCents: number } => r.priceCents !== null)
-    .filter((r) => COUNTRY_INFO[r.country] && (r.currency === "EUR" || unitsPerEur[r.currency]))
+    .filter((r) => Number.isFinite(r.priceCents) && r.priceCents > 0)
+    .filter(
+      (r) =>
+        COUNTRY_INFO[r.country] &&
+        (r.currency === "EUR" ||
+          (Number.isFinite(unitsPerEur[r.currency]) && unitsPerEur[r.currency]! > 0)),
+    )
     .map((r) => ({
       ...r,
       eurCents: Math.round(
@@ -73,7 +79,7 @@ export function buildEuropePrices(
       localCents: r.priceCents,
       currency: r.currency,
       eurCents: r.eurCents,
-      deltaPercent: france ? Math.round(((r.eurCents - france) / france) * 1000) / 10 : null,
+      deltaPercent: france ? ((r.eurCents - france) / france) * 100 : null,
       availability: r.availability,
       date: new Date(r.observedAt).toISOString().slice(0, 10),
       url: r.url ?? null,
@@ -86,6 +92,8 @@ export interface EuropeSummaryTexts {
   franceCheapest: string;
   /** « Moins chère {inCountry} : environ {percent} % de moins qu'en France… ». */
   cheaper: string;
+  /** Prix légèrement inférieur, écart inférieur à la précision d'un dixième de pour cent. */
+  similar: string;
   /** Pays précédé de sa préposition (« au Royaume-Uni ») ou simple nom selon la langue. */
   inCountry: (code: string) => string;
   number: (n: number) => string;
@@ -94,9 +102,22 @@ export interface EuropeSummaryTexts {
 const FRENCH_SUMMARY: EuropeSummaryTexts = {
   franceCheapest: "La France fait partie des pays où cette montre est la moins chère.",
   cheaper: "Moins chère {inCountry} : environ {percent} % de moins qu'en France après conversion.",
+  similar:
+    "Prix très proche {inCountry} : moins de {percent} % d’écart avec la France après conversion.",
   inCountry: (code) => COUNTRY_INFO[code]?.inName ?? code,
-  number: (n) => n.toLocaleString("fr-FR"),
+  number: (n) => n.toLocaleString("fr-FR", { maximumFractionDigits: 1 }),
 };
+
+/** Même précision dans le tableau et les bulles de carte, sans produire « -0 % ». */
+export function formatEuropeDelta(
+  delta: number | null,
+  number: (n: number) => string = FRENCH_SUMMARY.number,
+) {
+  if (delta === null) return "—";
+  if (delta === 0) return `${number(0)} %`;
+  if (Math.abs(delta) < 0.05) return `≈ ${number(0)} %`;
+  return `${delta > 0 ? "+" : ""}${number(delta)} %`;
+}
 
 /** Phrase de synthèse pour le HTML serveur (SEO) : pays le moins cher comparé à la France. */
 export function europeSummary(
@@ -106,8 +127,11 @@ export function europeSummary(
   const france = prices.find((p) => p.country === "FR");
   const cheapest = prices[0];
   if (!france || !cheapest || prices.length < 2) return null;
-  if (cheapest.country === "FR") return texts.franceCheapest;
-  return texts.cheaper
+  // Les ex æquo restent vrais quel que soit l'ordre des pays dans les données.
+  if (cheapest.eurCents >= france.eurCents) return texts.franceCheapest;
+  const difference = ((france.eurCents - cheapest.eurCents) / france.eurCents) * 100;
+  const similar = difference < 0.1;
+  return (similar ? texts.similar : texts.cheaper)
     .replace("{inCountry}", texts.inCountry(cheapest.country))
-    .replace("{percent}", texts.number(Math.abs(cheapest.deltaPercent ?? 0)));
+    .replace("{percent}", texts.number(similar ? 0.1 : difference));
 }

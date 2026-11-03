@@ -4,7 +4,7 @@ const fr = {
   site: {
     shortDescription: "Le comparateur de montres guidé par les données",
     description:
-      "Historique des prix, disponibilité et caractéristiques des montres Tissot, Hamilton et Longines. Gratuit, indépendant et sans publicité.",
+      "Historique des prix, disponibilité et caractéristiques des montres du catalogue. Gratuit, indépendant et sans publicité.",
   },
   movements: {
     automatique: "Automatique",
@@ -99,7 +99,7 @@ const fr = {
     title: "Toutes les montres",
     metaTitle: "Toutes les montres : prix et caractéristiques",
     metaDescription:
-      "Tissot, Hamilton et Longines : recherchez un nom ou une référence et filtrez les montres par prix, mouvement et diamètre.",
+      "Recherchez une montre par nom ou référence et comparez les modèles suivis par prix, mouvement et diamètre.",
   },
   brandPage: {
     title: "Montres {brand}",
@@ -157,11 +157,11 @@ const fr = {
   },
   news: {
     title: "Nouveautés",
-    metaTitle: "Nouveautés : les dernières montres ajoutées par les marques",
+    metaTitle: "Nouveautés : les dernières montres du catalogue",
     metaDescription:
-      "Les nouvelles références Tissot, Hamilton et Longines, détectées automatiquement dès leur apparition sur les sites officiels, avec leur prix.",
+      "Les dernières références ajoutées au catalogue, détectées sur les sites des marques et des revendeurs suivis, avec les prix disponibles.",
     intro:
-      "Les références qui apparaissent sur les sites officiels des marques sont détectées lors de notre relevé quotidien et listées ici, des plus récentes aux plus anciennes.",
+      "Les références découvertes lors de nos relevés sur les sites des marques et des revendeurs suivis, des plus récentes aux plus anciennes.",
     empty: "Aucune nouvelle référence détectée pour l'instant",
     since: " depuis le début du suivi, le {date}",
     emptyEnd: ". Les prochaines sorties des marques apparaîtront ici automatiquement.",
@@ -175,7 +175,7 @@ const en: Messages = {
   site: {
     shortDescription: "The data-driven watch comparison site",
     description:
-      "Price history, availability and specifications of Tissot, Hamilton and Longines watches. Free, independent and ad-free.",
+      "Price history, availability and specifications of watches in the catalogue. Free, independent and ad-free.",
   },
   movements: {
     automatique: "Automatic",
@@ -306,7 +306,7 @@ const en: Messages = {
     title: "All watches",
     metaTitle: "All watches: prices and specifications",
     metaDescription:
-      "Tissot, Hamilton and Longines: search for a name or reference and filter watches by price, movement and diameter.",
+      "Search for a watch by name or reference and compare tracked models by price, movement and diameter.",
   },
   brandPage: {
     title: "{brand} watches",
@@ -364,11 +364,11 @@ const en: Messages = {
   },
   news: {
     title: "New arrivals",
-    metaTitle: "New arrivals: the latest watches added by the brands",
+    metaTitle: "New arrivals: the latest watches in the catalogue",
     metaDescription:
-      "New Tissot, Hamilton and Longines references, detected automatically as soon as they appear on the official websites, with their prices.",
+      "The latest additions to the catalogue, found on brand and tracked retailer websites, with available prices.",
     intro:
-      "References that appear on the brands' official websites are detected during our daily check and listed here, newest first.",
+      "References found during checks of brand and tracked retailer websites, listed here from newest to oldest.",
     empty: "No new reference detected yet",
     since: " since tracking began on {date}",
     emptyEnd: ". The brands' next releases will appear here automatically.",
@@ -380,7 +380,7 @@ const de: Messages = {
   site: {
     shortDescription: "Der datenbasierte Uhrenvergleich",
     description:
-      "Preisverlauf, Verfügbarkeit und technische Daten von Uhren von Tissot, Hamilton und Longines. Kostenlos, unabhängig und werbefrei.",
+      "Preisverlauf, Verfügbarkeit und technische Daten der Uhren im Katalog. Kostenlos, unabhängig und werbefrei.",
   },
   movements: {
     automatique: "Automatik",
@@ -512,7 +512,7 @@ const de: Messages = {
     title: "Alle Uhren",
     metaTitle: "Alle Uhren: Preise und technische Daten",
     metaDescription:
-      "Tissot, Hamilton und Longines: Suchen Sie nach Name oder Referenz und filtern Sie Uhren nach Preis, Uhrwerk und Durchmesser.",
+      "Suchen Sie nach Name oder Referenz und vergleichen Sie erfasste Uhren nach Preis, Uhrwerk und Durchmesser.",
   },
   brandPage: {
     title: "{brand}-Uhren",
@@ -570,11 +570,11 @@ const de: Messages = {
   },
   news: {
     title: "Neuheiten",
-    metaTitle: "Neuheiten: die zuletzt von den Marken hinzugefügten Uhren",
+    metaTitle: "Neu im Katalog: die zuletzt erfassten Uhren",
     metaDescription:
-      "Neue Referenzen von Tissot, Hamilton und Longines, automatisch erkannt, sobald sie auf den offiziellen Websites erscheinen, mit ihrem Preis.",
+      "Zuletzt in den Katalog aufgenommene Uhren mit verfügbaren Preisen, erfasst auf Websites der Marken und beobachteten Händler.",
     intro:
-      "Referenzen, die auf den offiziellen Websites der Marken erscheinen, werden bei unserer täglichen Erfassung erkannt und hier aufgelistet, die neuesten zuerst.",
+      "Bei unseren Erfassungen auf Websites der Marken und beobachteten Händler entdeckte Referenzen, von den neuesten zu den ältesten.",
     empty: "Bisher keine neue Referenz erkannt",
     since: " seit Beginn der Beobachtung am {date}",
     emptyEnd: ". Die nächsten Neuheiten der Marken erscheinen hier automatisch.",
@@ -586,7 +586,7 @@ const it: Messages = {
   site: {
     shortDescription: "Il comparatore di orologi guidato dai dati",
     description:
-      "Storico dei prezzi, disponibilità e caratteristiche degli orologi Tissot, Hamilton e Longines. Gratuito, indipendente e senza pubblicità.",
+      "Storico dei prezzi, disponibilità e caratteristiche degli orologi in catalogo. Gratuito, indipendente e senza pubblicità.",
   },
   movements: {
     automatique: "Automatico",
@@ -718,7 +718,7 @@ const it: Messages = {
     title: "Tutti gli orologi",
     metaTitle: "Tutti gli orologi: prezzi e caratteristiche",
     metaDescription:
-      "Tissot, Hamilton e Longines: cerca un nome o una referenza e filtra gli orologi per prezzo, movimento e diametro.",
+      "Cerca un orologio per nome o referenza e confronta i modelli seguiti per prezzo, movimento e diametro.",
   },
   brandPage: {
     title: "Orologi {brand}",
@@ -776,11 +776,11 @@ const it: Messages = {
   },
   news: {
     title: "Novità",
-    metaTitle: "Novità: gli ultimi orologi aggiunti dai marchi",
+    metaTitle: "Novità: gli ultimi orologi aggiunti al catalogo",
     metaDescription:
-      "Le nuove referenze Tissot, Hamilton e Longines, rilevate automaticamente appena compaiono sui siti ufficiali, con il loro prezzo.",
+      "Le ultime referenze aggiunte al catalogo, rilevate sui siti dei marchi e dei rivenditori seguiti, con i prezzi disponibili.",
     intro:
-      "Le referenze che compaiono sui siti ufficiali dei marchi vengono rilevate durante il nostro controllo quotidiano ed elencate qui, dalle più recenti.",
+      "Le referenze scoperte durante i rilevamenti sui siti dei marchi e dei rivenditori seguiti, dalle più recenti alle meno recenti.",
     empty: "Nessuna nuova referenza rilevata per ora",
     since: " dall'inizio del monitoraggio, il {date}",
     emptyEnd: ". Le prossime uscite dei marchi compariranno qui automaticamente.",
@@ -792,7 +792,7 @@ const es: Messages = {
   site: {
     shortDescription: "El comparador de relojes basado en datos",
     description:
-      "Historial de precios, disponibilidad y características de los relojes Tissot, Hamilton y Longines. Gratuito, independiente y sin publicidad.",
+      "Historial de precios, disponibilidad y características de los relojes del catálogo. Gratuito, independiente y sin publicidad.",
   },
   movements: {
     automatique: "Automático",
@@ -924,7 +924,7 @@ const es: Messages = {
     title: "Todos los relojes",
     metaTitle: "Todos los relojes: precios y características",
     metaDescription:
-      "Tissot, Hamilton y Longines: busque un nombre o una referencia y filtre los relojes por precio, movimiento y diámetro.",
+      "Busque un reloj por nombre o referencia y compare los modelos seguidos por precio, movimiento y diámetro.",
   },
   brandPage: {
     title: "Relojes {brand}",
@@ -982,11 +982,11 @@ const es: Messages = {
   },
   news: {
     title: "Novedades",
-    metaTitle: "Novedades: los últimos relojes añadidos por las marcas",
+    metaTitle: "Novedades: los últimos relojes del catálogo",
     metaDescription:
-      "Las nuevas referencias de Tissot, Hamilton y Longines, detectadas automáticamente en cuanto aparecen en las webs oficiales, con su precio.",
+      "Las últimas referencias añadidas al catálogo, detectadas en webs de marcas y distribuidores seguidos, con los precios disponibles.",
     intro:
-      "Las referencias que aparecen en las webs oficiales de las marcas se detectan en nuestra consulta diaria y se listan aquí, de la más reciente a la más antigua.",
+      "Las referencias descubiertas en nuestras consultas de webs de marcas y distribuidores seguidos, de la más reciente a la más antigua.",
     empty: "Aún no se ha detectado ninguna referencia nueva",
     since: " desde el inicio del seguimiento, el {date}",
     emptyEnd: ". Los próximos lanzamientos de las marcas aparecerán aquí automáticamente.",

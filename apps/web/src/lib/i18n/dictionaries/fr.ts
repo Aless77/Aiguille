@@ -1,3 +1,4 @@
+import { atelier } from "../messages/atelier";
 import { access } from "../messages/access";
 import { community } from "../messages/community";
 import { pages } from "../messages/pages";
@@ -10,6 +11,7 @@ import { catalog } from "../messages/catalog";
  */
 export const fr = {
   access: access.fr,
+  atelier: atelier.fr,
   common: {
     unknown: "Non communiqué",
     newTab: "(nouvel onglet)",
@@ -32,7 +34,7 @@ export const fr = {
     independent:
       "{site} est un site gratuit, indépendant et sans publicité : aucune affiliation avec les marques ni les revendeurs.",
     sources:
-      "Prix et caractéristiques relevés automatiquement sur les sites officiels des marques. Photos : © les marques respectives, affichées depuis leurs sites.",
+      "Prix et caractéristiques relevés automatiquement sur les sites officiels des marques et chez leurs revendeurs. Photos : © les marques respectives, affichées depuis leurs sites.",
   },
   language: {
     label: "Langue",
@@ -55,6 +57,7 @@ export const fr = {
     discontinued: "Plus produite",
     photo: "Photo : © {brand}",
     catalogPrice: "Prix catalogue officiel",
+    retailerPrice: "Prix relevé chez {retailer}",
     availabilityOn: "{status} sur le site {brand}",
     bestPrice: "Meilleur prix relevé : ",
     alsoAt: "Aussi chez ",
@@ -138,6 +141,16 @@ export const fr = {
     signOut: "Se déconnecter",
     myLists: "Mes listes de souhaits",
     myAccount: "Mon compte ({name})",
+    gallery: {
+      label: "Photos de la montre",
+      position: "Photo {index} sur {total}",
+      open: "Agrandir la photo",
+      close: "Fermer",
+      previous: "Photo précédente",
+      next: "Photo suivante",
+      zoomIn: "Zoomer",
+      zoomOut: "Dézoomer",
+    },
     brands: {
       search: "Rechercher une marque",
       mine: "Mes marques",

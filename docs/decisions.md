@@ -3,6 +3,85 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-11-01 – TAG Heuer intégrée via Lepage, même exception que Tudor
+
+Les fiches de tagheuer.com répondent 403 à notre User-Agent, malgré un robots.txt et des sitemaps
+ouverts. Rien n'est contourné. Le propriétaire a étendu à TAG Heuer l'exception accordée à Tudor :
+catalogue limité aux fiches neuves de Lepage, faits uniquement, prix affiché « relevé chez Lepage »,
+pas de marquage « plus produite ». Le code est commun aux deux marques (`lepageCatalog`). La page
+de garantie n'a pas pu être lue : garantie et entretien restent « non communiqués », rien n'est
+repris de mémoire. Fiches en français, sans déclinaisons : rien de vérifié dans les références.
+
+## 2026-11-01 – Grand Seiko intégrée, marque distincte de Seiko
+
+Grand Seiko a son propre site et son propre catalogue : c'est une marque à part (`grand-seiko`),
+collectée sur grand-seiko.com avec la même plateforme que Seiko. robots.txt ne restreint rien. Les
+conditions interdisent la reproduction et « toute autre utilisation secondaire » du contenu sans
+autorisation, sans viser les robots : même clause que Seiko, déjà collecté à la demande du
+propriétaire. Aucune autorisation n'est présumée ; seuls des faits sont gardés. En cas de demande
+de retrait, la source est désactivée et ses données et visuels supprimés.
+
+Spring Drive n'entre dans aucun type de mouvement commun : classé « autre », avec son nom affiché
+sur la fiche. Pas de déclinaisons : rien de vérifié dans les références. Les conseils d'entretien
+restent généraux et le fabricant des calibres non renseigné, faute de page lue qui l'établisse.
+
+## 2026-11-01 – Galerie de photos et zoom sur la fiche
+
+La fiche présente toutes les photos publiées pour une montre : glissement, flèches, miniatures, puis
+plein écran avec zoom. Chaque source relève désormais toute sa galerie, en excluant les montres
+voisines affichées sur la même page. Seiko ne publie qu'une photo dans le HTML de ses fiches.
+
+Les photos restent des liens directs vers les sites sources, avec `images.unoptimized`. Pour ne pas
+charger des originaux jusqu'à 2,5 Mo, `sizedImage` demande la largeur utile aux sites qui savent
+redimensionner (Omega, Longines, Tissot, formats Lepage) : cartes en 480 px, fiche en 1 024 px,
+miniatures en 200 px. Seul le zoom charge l'original.
+
+## 2026-11-01 – Omega intégrée en direct : exception du propriétaire à la règle sur les CGU
+
+robots.txt autorise les fiches et le site répond à notre User-Agent. Mais l'article 4.2 des
+conditions d'utilisation exclut de la licence « l'exploration de données, [les] robots ou autre
+méthode similaire d'extraction ou de collecte de données » et interdit d'incorporer les
+informations du site dans une autre base de données sans accord écrit d'Omega. Cette collecte va
+donc contre une interdiction écrite, plus nette que chez Oris (écartée), Venezianico ou Lip. Une
+voie moins risquée via Lepage a été proposée : le propriétaire, informé de la clause et du risque,
+a choisi de faire exception et d'intégrer Omega en direct. Aucune autorisation d'Omega n'existe.
+
+Mesures : User-Agent identifiable, sans masquage ; 8 s entre deux pages ; faits uniquement, sans
+texte descriptif de la marque. Si Omega bloque notre robot, on s'arrête sans contourner. En cas de
+demande de retrait, la source est désactivée et ses données et visuels supprimés.
+
+Les fiches sont lues depuis les pages catalogue du menu, faute de sitemap de produits. La FAQ et la
+page d'entretien donnent la garantie (5 ans), la révision (5 à 8 ans), le test d'étanchéité annuel
+et la garantie de service (24 mois). La page des tarifs n'affiche aucun montant à la lecture :
+aucun prix de révision n'est repris.
+
+## 2026-11-01 – Atelier AV : rendu à la demande et caches bornés
+
+Les deux modèles AV restent dans l’atelier autonome. Chaque montre est construite au premier
+choix et réutilisée ensuite ; seules deux montres et trois ambiances peuvent être conservées.
+Ce compromis borne les ressources tout en évitant les reconstructions et recompilations répétées.
+Les ressources sont libérées à la sortie de la page et les environnements recalculés après une
+restauration du contexte graphique. Les pièces fixes sont regroupées par matière, les ombres
+réutilisées tant que la géométrie ne change pas. Le rendu reste à la demande ; canevas limité
+à 1,5 million de pixels avec ratio maximal de 1,75. Aucun chargement du moteur dans le catalogue.
+Ces choix ne constituent ni une acceptation esthétique ni une décision de publication.
+
+## 2026-11-01 – Tudor intégrée via Lepage, exception à la règle du catalogue officiel
+
+tudorwatch.com répond 403 à notre User-Agent identifiable, sitemap compris. Rien n'est contourné.
+Le propriétaire a choisi Lepage, détaillant agréé déjà collecté, comme source de Tudor : c'est une
+exception à la règle « un revendeur ne crée jamais de montre » (voir sources.md), limitée à cette
+marque. Les conditions de Lepage interdisent la reproduction de ses textes sans autorisation et
+réservent le site à l'usage privé ; le propriétaire en a été informé et assume ce risque, aussi
+pour les prix Lepage déjà collectés. Aucune autorisation n'est présumée.
+
+Conséquences : seules des fiches neuves à référence moderne (`M79230B-0008`) entrent au catalogue,
+limité à ce que propose Lepage. Seuls des faits sont gardés, aucun texte descriptif ni la garantie
+du magasin. Le prix s'affiche « relevé chez Lepage », jamais comme prix officiel, et le lien vers
+un site de marque est masqué. Une fiche retirée ne marque pas la montre « plus produite »
+(`partialCatalog`) : Lepage ne prouve pas la fin de production. Garantie relevée à la main sur la
+page publique de Tudor. Fiches en français seulement.
+
 ## 2026-10-31 – Lip intégrée, collecte activée par le propriétaire malgré ses mentions légales
 
 robots.txt autorise les fiches, mais les mentions légales de lip.fr interdisent sans autorisation
@@ -506,6 +585,26 @@ communs au dépôt ; le build de l’atelier est explicite et distinct du build 
 de travailler formes, matières et éclairage sans charger la 3D dans le catalogue.
 Première étude statique manipulable, sans animation automatique, avec rendu à la demande.
 Les dimensions et les assemblages simplifiés ne constituent pas un plan de fabrication.
+
+## Navigation entre Aiguille et AV (1er novembre 2026)
+
+Poursuite de l'étape 6 : entrée « Atelier AV » dans la navigation d'Aiguille, accompagnée d'une
+présentation séparée en pied de page ; retour visible dans l'en-tête de l'atelier. Passage par
+navigation complète, sans importer ni précharger le moteur 3D depuis le catalogue. Les deux
+thèmes et les droits d'accès restent indépendants. Le lien n'intègre pas les créations AV au
+catalogue des références commerciales suivies.
+
+En développement seulement, liens entre les ports 3000 et 4173 sur le même hôte local. En
+production, destinations HTTPS explicites (`ATELIER_URL` et `VITE_AIGUILLE_URL`), sans lien si
+la destination n'est pas configurée. L'atelier reste en français, annoncé dans les cinq langues
+du site. Ces choix préparent un parcours consultable localement ; les adresses d'hébergement,
+la protection d'accès de l'atelier et la publication restent à valider par le propriétaire.
+Le mode privé et la non-indexation du site ne sont pas modifiés.
+
+Complément du 3 novembre 2026, à la demande du propriétaire : `FEATURE_ATELIER=false`
+masque les entrées vers AV dans l'en-tête et le pied de page, y compris en développement.
+Variable absente : entrées autorisées. Ce réglage d'affichage est lu au build du site et
+ne remplace pas la protection ou l'arrêt du service autonome.
 
 ## Questions encore ouvertes
 

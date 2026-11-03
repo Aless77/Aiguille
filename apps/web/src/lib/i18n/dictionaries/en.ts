@@ -1,3 +1,4 @@
+import { atelier } from "../messages/atelier";
 import { access } from "../messages/access";
 import { community } from "../messages/community";
 import { pages } from "../messages/pages";
@@ -8,6 +9,7 @@ import { type Dictionary } from "./fr";
 /** Anglais : langue de repli, donc complet (TypeScript refuse une clé manquante). */
 export const en: Dictionary = {
   access: access.en,
+  atelier: atelier.en,
   common: {
     unknown: "Not disclosed",
     newTab: "(new tab)",
@@ -30,7 +32,7 @@ export const en: Dictionary = {
     independent:
       "{site} is free, independent and ad-free: no affiliation with brands or retailers.",
     sources:
-      "Prices and specifications collected automatically from the brands' official websites. Photos: © the respective brands, displayed from their websites.",
+      "Prices and specifications collected automatically from the brands' official websites and their retailers. Photos: © the respective brands, displayed from their websites.",
   },
   language: {
     label: "Language",
@@ -53,6 +55,7 @@ export const en: Dictionary = {
     discontinued: "Discontinued",
     photo: "Photo: © {brand}",
     catalogPrice: "Official list price",
+    retailerPrice: "Price recorded at {retailer}",
     availabilityOn: "{status} on the {brand} website",
     bestPrice: "Best price found: ",
     alsoAt: "Also at ",
@@ -187,6 +190,16 @@ export const en: Dictionary = {
     signOut: "Sign out",
     myLists: "My wish lists",
     myAccount: "My account ({name})",
+    gallery: {
+      label: "Watch photos",
+      position: "Photo {index} of {total}",
+      open: "Enlarge the photo",
+      close: "Close",
+      previous: "Previous photo",
+      next: "Next photo",
+      zoomIn: "Zoom in",
+      zoomOut: "Zoom out",
+    },
     brands: {
       search: "Search for a brand",
       mine: "My brands",

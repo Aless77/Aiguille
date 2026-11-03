@@ -98,7 +98,118 @@ export interface BrandInfo {
 
 const AUDIT = "2026-10-24";
 
+/** Marques dont le catalogue vient d'un revendeur : son prix n'est pas un prix officiel. */
+export const RETAILER_CATALOGS: Record<string, string> = {
+  tudor: "Lepage",
+  "tag-heuer": "Lepage",
+};
+
 export const BRAND_INFO: Record<string, BrandInfo> = {
+  // Les pages de garantie et de service n'ont pas pu être lues : rien n'est repris de mémoire.
+  "tag-heuer": {
+    warranty: null,
+    service: null,
+    madeIn: null,
+    care: null,
+    group: null,
+    movementMakers: [],
+  },
+  "grand-seiko": {
+    warranty: {
+      value: {
+        months: 60,
+        extended: [],
+        page: "https://www.grand-seiko.com/fr-fr/support",
+        excludes: ["bracelets non métalliques", "accidents et mauvaise utilisation"],
+      },
+      source: "https://www.grand-seiko.com/fr-fr/support",
+      checkedAt: "2026-11-01",
+    },
+    service: {
+      value: {
+        prices: [],
+        battery: null,
+        fullServiceInterval: "tous les 3 à 4 ans",
+        partialServiceInterval: null,
+        waterResistanceCheck: null,
+        batteryLife: null,
+        serviceWarrantyMonths: null,
+        spareParts: null,
+        free: [],
+      },
+      source: "https://www.grand-seiko.com/fr-fr/support",
+      checkedAt: "2026-11-01",
+    },
+    madeIn: null,
+    care: null,
+    group: null,
+    movementMakers: [],
+  },
+  omega: {
+    warranty: {
+      value: {
+        months: 60,
+        extended: [],
+        page: "https://www.omegawatches.com/fr-fr/customer-service/faq",
+        excludes: ["durée de vie de la pile", "usure normale", "accidents et mauvaise utilisation"],
+      },
+      source: "https://www.omegawatches.com/fr-fr/customer-service/faq",
+      checkedAt: "2026-11-01",
+    },
+    service: {
+      value: {
+        // La page des tarifs n'affiche aucun montant à la lecture : rien n'est repris.
+        prices: [],
+        battery: null,
+        fullServiceInterval: "tous les 5 à 8 ans",
+        partialServiceInterval: null,
+        waterResistanceCheck: "chaque année",
+        batteryLife: null,
+        serviceWarrantyMonths: 24,
+        spareParts: null,
+        free: [],
+        adviceSources: [
+          "https://www.omegawatches.com/fr-fr/customer-service/interventions-and-prices/watch-service-prices",
+        ],
+      },
+      source: "https://www.omegawatches.com/fr-fr/customer-service/preserve-your-omega/watches",
+      checkedAt: "2026-11-01",
+    },
+    madeIn: null,
+    care: {
+      value: ["chemicals", "temperature", "magnetism", "screwDownCrown", "saltWater", "cleaning"],
+      source: "https://www.omegawatches.com/fr-fr/customer-service/preserve-your-omega/watches",
+      checkedAt: "2026-11-01",
+    },
+    group: null,
+    movementMakers: [],
+  },
+  tudor: {
+    warranty: {
+      value: {
+        months: 60,
+        extended: [],
+        page: "https://www.tudorwatch.com/fr/tudor-care/tudor-guarantee",
+        excludes: [
+          "usure normale",
+          "bracelets non métalliques",
+          "perte et vol",
+          "mauvaise utilisation",
+          "pièces non fabriquées par Tudor",
+          "intervention par un tiers",
+          "montres non vendues par un détaillant officiel",
+        ],
+      },
+      source: "https://www.tudorwatch.com/fr/tudor-care/tudor-guarantee",
+      checkedAt: "2026-11-01",
+    },
+    // Devis après diagnostic : aucune grille ni fréquence relevée sur la page du service.
+    service: null,
+    madeIn: null,
+    care: null,
+    group: null,
+    movementMakers: [],
+  },
   citizen: {
     warranty: {
       value: {

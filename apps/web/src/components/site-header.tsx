@@ -1,4 +1,6 @@
 import { Watch } from "lucide-react";
+import { AtelierLink } from "@/components/atelier-link";
+import { getAtelierUrl } from "@/lib/atelier";
 
 import { BrandMenu, FavoriteBrandLinks } from "@/components/brand-menu";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -59,6 +61,13 @@ export async function SiteHeader() {
             {t.stores}
           </Link>
           <FavoriteBrandLinks />
+          <AtelierLink
+            enabled={features.atelier()}
+            href={getAtelierUrl()}
+            className="border-l pl-4 whitespace-nowrap text-muted-foreground hover:text-foreground"
+          >
+            {dict.atelier.title}
+          </AtelierLink>
         </nav>
         <div className="ml-auto flex shrink-0 items-center gap-3">
           <LanguageSwitcher locales={enabledLocales()} label={dict.language.label} />

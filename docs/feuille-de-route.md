@@ -10,9 +10,9 @@ d’explorer deux créations originales et leurs détails. Les deux contribuent 
 horloger, avec une identité cohérente et des parcours distincts.
 
 La séparation demandée est conservée : `apps/web` pour Aiguille, `apps/atelier` pour la 3D.
-Une future navigation entre ces espaces peut les relier sans importer le moteur 3D dans
-le catalogue. L’emplacement de ce lien, son adresse et la publication restent à décider ;
-cette feuille de route n’ajoute ni lien, ni déploiement, ni partage des comptes.
+Une navigation entre ces espaces les relie sans importer le moteur 3D dans le catalogue.
+L'entrée dédiée et le retour sont préparés localement à l'étape 6 ; les adresses distantes,
+les protections de l'atelier et la publication restent à choisir. Aucun partage des comptes.
 
 ## Point de départ
 
@@ -20,15 +20,29 @@ cette feuille de route n’ajoute ni lien, ni déploiement, ni partage des compt
 [bilan initial](bilan-initial.md), ses écarts de livraison et ses réserves de validation.
 **Étape 2 réalisée en étude numérique le 31 octobre 2026** : bracelet métal reconstruit,
 raccords, fermoir, cornes du modèle cuir et tranches repris ; contrôle en matière neutre
-via « Volumes ». La suite porte sur les matières, le verre et la lumière (étape 3).
+via « Volumes ». **Étape 3 implémentée le 1er novembre 2026** : brossage, grain, cuir satiné,
+aiguilles facettées, lunette profilée, réhaut et glace bombée ; studio commun et ambiances
+réfléchies distinctes. Voir la [revue des matières](../apps/atelier/design-qa-etape3.md).
+La validation esthétique des deux rendus par le propriétaire reste à recueillir pour clore
+l’étape 3. **Étape 4 : contrôles locaux réalisés le 1er novembre 2026**, en poursuivant le travail
+technique : regroupement des pièces, réutilisation des modèles et des ombres, budget de résolution,
+alternances répétées, reprise graphique et replis. Voir le [README de l’atelier](../apps/atelier/README.md).
+Téléphone physique et autres navigateurs restent à vérifier. **Étape 5 : corrections locales
+du 1er novembre** sur les résumés européens, les ex æquo et les textes devenus incomplets avec
+l'élargissement du catalogue. Accès privé et HTML autorisé contrôlés localement ; préparation
+de livraison actualisée dans [deploiement.md](deploiement.md).
+La recette en production de cette version reste à effectuer après sa livraison par le propriétaire.
+**Étape 6 : parcours local préparé le 1er novembre**, entrée « Atelier AV » dans la navigation
+et présentation distincte en pied de page ; retour vers Aiguille dans l'atelier.
+Les liens de production exigent une adresse HTTPS explicite ; aucune publication effectuée.
 Cette étape de construction ne vaut pas acceptation esthétique finale ni plan de fabrication.
 
 - Le catalogue, les relevés de prix, les cartes, les comptes et les fonctions communautaires
   disposent déjà d’implémentations. Leur état local ne prouve pas leur validation en production.
 - Deux premières montres AV sont manipulables : 02 Obsidienne (métal noir), 01 Éclipse (cuir noir),
   aiguilles or champagne et monogramme AV. La forme coussin est écartée.
-- Le bracelet cuir a reçu une première reprise détaillée. Le bracelet métal, les liaisons,
-  le verre et plusieurs finitions restent à travailler.
+- Les deux bracelets et leurs liaisons ont été repris à l’étape 2. Le verre, les microtextures
+  et les reflets ont une nouvelle version à examiner à l’étape 3.
 - Le cahier des charges initial reste la référence des objectifs ; les décisions ultérieures
   précisent le périmètre actuel : accès privé, Note Aiguille masquée, Oris écartée,
   Citizen et Seiko intégrées, Venezianico ajoutée, cinq langues prévues.
@@ -81,7 +95,8 @@ Le réalisme visuel ne constitue pas une validation de fabrication : mouvement, 
 ## Décisions à prendre au moment utile
 
 - Après les rendus statiques : accepter les deux designs ou préciser les retouches.
-- Avant de relier les espaces : choisir la place de l’atelier, son adresse et ses règles d’accès.
+- Avant publication : valider les entrées locales proposées, choisir les adresses distantes et
+  les règles d'accès propres à l'atelier.
 - Avant les enrichissements : choisir une priorité entre animation, exploration et alertes.
 
 Les étapes proposées n’annulent pas les décisions de [decisions.md](decisions.md).

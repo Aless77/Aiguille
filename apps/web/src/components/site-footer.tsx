@@ -1,4 +1,7 @@
 import { getBrands } from "@/lib/catalog/queries";
+import { AtelierLink } from "@/components/atelier-link";
+import { getAtelierUrl } from "@/lib/atelier";
+import { features } from "@/lib/features";
 import { Link } from "@/lib/i18n/client";
 import { format } from "@/lib/i18n/dictionary";
 import { getDictionary } from "@/lib/i18n/server";
@@ -13,6 +16,23 @@ export async function SiteFooter() {
   return (
     <footer className="mt-16 border-t">
       <div className="mx-auto w-full max-w-6xl space-y-4 px-4 py-8 text-sm text-muted-foreground">
+        <AtelierLink
+          enabled={features.atelier()}
+          href={getAtelierUrl()}
+          className="group mb-6 flex items-center gap-5 rounded-lg border p-5 transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-4"
+        >
+          <span aria-hidden className="font-serif text-3xl tracking-tighter text-foreground">
+            AV
+          </span>
+          <span className="flex-1 space-y-1">
+            <span className="block font-medium text-foreground">{dict.atelier.title}</span>
+            <span className="block">{dict.atelier.description}</span>
+            <span className="block text-xs">{dict.atelier.language}</span>
+          </span>
+          <span aria-hidden className="text-xl text-foreground">
+            ↗
+          </span>
+        </AtelierLink>
         <nav aria-label={t.label} className="flex flex-wrap gap-4">
           <Link href="/montres" className="hover:text-foreground">
             {dict.nav.allWatches}

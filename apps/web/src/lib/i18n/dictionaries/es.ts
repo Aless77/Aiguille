@@ -1,3 +1,4 @@
+import { atelier } from "../messages/atelier";
 import { access } from "../messages/access";
 import { community } from "../messages/community";
 import { pages } from "../messages/pages";
@@ -7,6 +8,7 @@ import { type PartialDictionary } from "../dictionary";
 
 export const es: PartialDictionary = {
   access: access.es,
+  atelier: atelier.es,
   common: { unknown: "No comunicado", newTab: "(nueva pestaña)", close: "Cerrar" },
   nav: {
     label: "Navegación principal",
@@ -25,7 +27,7 @@ export const es: PartialDictionary = {
     independent:
       "{site} es gratuito, independiente y sin publicidad: sin afiliación con marcas ni distribuidores.",
     sources:
-      "Precios y características recopilados automáticamente en las webs oficiales de las marcas. Fotos: © las marcas respectivas, mostradas desde sus webs.",
+      "Precios y características recopilados automáticamente en las webs oficiales de las marcas y en sus distribuidores. Fotos: © las marcas respectivas, mostradas desde sus webs.",
   },
   language: { label: "Idioma" },
   fallback: {
@@ -45,6 +47,7 @@ export const es: PartialDictionary = {
     discontinued: "Descatalogado",
     photo: "Foto: © {brand}",
     catalogPrice: "Precio oficial de catálogo",
+    retailerPrice: "Precio registrado en {retailer}",
     availabilityOn: "{status} en la web de {brand}",
     bestPrice: "Mejor precio encontrado: ",
     alsoAt: "También en ",
@@ -179,6 +182,16 @@ export const es: PartialDictionary = {
     signOut: "Cerrar sesión",
     myLists: "Mis listas de deseos",
     myAccount: "Mi cuenta ({name})",
+    gallery: {
+      label: "Fotos del reloj",
+      position: "Foto {index} de {total}",
+      open: "Ampliar la foto",
+      close: "Cerrar",
+      previous: "Foto anterior",
+      next: "Foto siguiente",
+      zoomIn: "Acercar",
+      zoomOut: "Alejar",
+    },
     brands: {
       search: "Buscar una marca",
       mine: "Mis marcas",

@@ -34,6 +34,9 @@ services:
     build: .
     profiles: ["atelier"]
     working_dir: /app
+    environment:
+      # Seule cette adresse de navigation est transmise ; ni secrets ni base de données.
+      VITE_AIGUILLE_URL: ${VITE_AIGUILLE_URL:-}
     volumes:
       - .:/app
       - node_modules:/app/node_modules

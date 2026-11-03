@@ -10,6 +10,10 @@ const referenceBrands: NewBrand[] = [
   { slug: "citizen", name: "Citizen", segment: "coeur" },
   { slug: "venezianico", name: "Venezianico", segment: "coeur" },
   { slug: "lip", name: "Lip", segment: "coeur" },
+  { slug: "tudor", name: "Tudor", segment: "milieu_haut" },
+  { slug: "omega", name: "Omega", segment: "milieu_haut" },
+  { slug: "grand-seiko", name: "Grand Seiko", segment: "milieu_haut" },
+  { slug: "tag-heuer", name: "TAG Heuer", segment: "milieu_haut" },
 ];
 
 const db = getDb();

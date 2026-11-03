@@ -16,11 +16,108 @@ tranches fermées. Fond ponctué de vis. Mode « Volumes » pour examiner la gé
 finitions. Tests du pas, de la symétrie et du regroupement des pièces ajoutés. Les ombres aident
 à lire les reliefs ; aucune animation automatique ajoutée. Suite : matières, verre et lumière.
 
+Revue finale du 1er novembre : rafraîchissement corrigé après redimensionnement et changement
+de modèle hors écran. L’ancienne garde de visibilité du bloc 3D pouvait laisser le canevas vide ;
+chaque changement demande désormais une seule image, même si le bloc est hors écran. L’onglet
+masqué reste suspendu et aucune boucle d’animation continue n’est ajoutée. Vérifications sur
+ordinateur et mobile, y compris le mode Volumes et les deux modèles. Les finitions restent
+le chantier de l’étape 3 ; les plans de fabrication ne sont pas inclus.
+
+Étape 3 — matières et lumière, 1er novembre : brossage et rugosité déterministes, faces du bracelet
+coordonnées au boîtier et chants polis. Aiguilles dauphine à deux pans inclinés, cadran métallique
+brossé ou mat à grain fin, cuir avec reflet satiné. Lunette profilée, réhaut fermé et glace bombée
+avec transmission et réfraction ; filtrage net pour conserver les index lisibles. Les trois ambiances
+changent aussi les sources réfléchies. Captures comparatives et limites dans la
+[revue des matières](../apps/atelier/design-qa-etape3.md). Implémentation consultable localement ;
+validation esthétique des deux rendus encore attendue avant de clore cette étape.
+Contrôles locaux : `npm run check` (358 tests), build du site et build séparé de l’atelier réussis.
+Revue navigateur sur ordinateur et petit écran ; aucun déploiement effectué.
+
+Étape 4 — robustesse et performances, 1er novembre : pièces fixes regroupées par matière,
+ombres réutilisées pendant la rotation, cache borné aux deux modèles et aux trois éclairages.
+24 alternances vérifiées après préparation, compteurs stables (44 géométries, 15 textures,
+15 programmes dans la session mesurée). Métal : 457 appels de dessin auparavant, 28 au changement
+et 19 pendant la manipulation ; cuir : 343, puis 73 et 49. Budget du canevas testé à 1,5 million
+de pixels, ratio plafonné à 1,75. Aucun moteur 3D ajouté au catalogue.
+
+Interruption/restauration WebGL vérifiée par injection locale : commandes suspendues, reprise
+du modèle, de la vue et de la lumière, environnements recalculés. Échec initial simulé et bouton
+de relance contrôlés sur mobile ; texture du cuir volontairement invalide, montre toujours visible.
+Diagnostics limités au développement. Les mesures CPU ne sont pas des FPS ; les essais en largeur
+mobile ne valident pas un téléphone physique. Détails et reproduction dans le README de l’atelier.
+La validation esthétique des rendus reste distincte ; ces contrôles n’autorisent aucune publication.
+Validation finale : contrôle qualité Docker réussi (367 tests, dont 8 pour l’atelier), build du
+site réussi sur l’état partagé du dépôt (15 021 pages), build séparé de l’atelier réussi.
+Aperçu compilé vérifié au clavier, en vues normales et Volumes, en rotation/zoom, sur ordinateur
+et en largeur mobile ; journal sans erreur. Serveur de contrôle temporaire arrêté, atelier normal
+laissé disponible sur le port 4173. Aucun déploiement effectué.
+
+Étape 5 — fiabilisation, 1er novembre : résumé européen corrigé pour les écarts inférieurs à
+0,1 % et les ex æquo. Le calcul conserve sa précision ; les écarts arrondis à zéro sont indiqués
+« ≈ 0 % » dans le tableau et les bulles, sans annoncer une économie nulle. Prix nuls et taux
+invalides écartés de la comparaison. Régressions couvertes dans les cinq langues.
+Textes de l'accueil, du catalogue, des nouveautés et métadonnées européens repris : plus de
+restriction artificielle aux trois premières marques ni d'assimilation de tous les ajouts
+à une sortie officielle de marque. Résumé et tableau restent rendus côté serveur.
+
+Contrôle de lecture seule `scripts/bilan-local.mjs` : visiteur redirigé, API privées refusées,
+ancienne administration en 404, sitemap vide et robots fermés ; pages autorisées et une fiche
+parmi les neuf marques locales avec caractéristiques, JSON-LD et `noindex` dans le HTML.
+La fiche Ballade utilisée dans le bilan de production n'existe pas dans cette base locale ;
+la fiche Tissot Le Locle disponible a servi à la revue du tableau. Les très petits écarts sont
+couverts par les tests de régression, sans créer de faux prix dans le catalogue.
+Le cas réel Seiko SJE089J1 confirme la correction des ex æquo : Allemagne, France et Italie
+au même prix, sans faux pays « moins cher à 0 % ». Recherche par référence sans ponctuation
+et ouverture de la fiche contrôlées ; introductions et métadonnées vérifiées dans les cinq
+langues, tableau lisible sur ordinateur et en largeur mobile sans débordement de page.
+Un avertissement React de développement a été observé sur l'ancienne URL Ballade absente ;
+pas de nouvel avertissement sur les parcours valides contrôlés ensuite. Cette vérification ne
+constitue pas une recette exhaustive de toutes les routes 404 ni des connexions OAuth réelles.
+Contrôles Docker : `npm run check` réussi (378 tests, dont 16 pour les prix européens),
+`npm run build` réussi (16 381 pages sur l'état partagé du dépôt). Aucun changement de schéma
+ou de migration dans cette correction.
+
+Livraison toujours distincte : Vercel sert `ec2a491` (`READY`, branche `main`) ; visiteur en ligne
+encore autorisé sur `/montres`, `index, follow`. La [collecte du 1er novembre](https://github.com/Aless77/Aiguille/actions/runs/41295463916)
+est réussie pour les cinq marques historiques et les deux revendeurs, sans Venezianico, Lip,
+Tudor ou Omega. Localement, Venezianico a 104 références avec prix ; dernier relevé : 85 montres
+trouvées, 151 pages et 35 erreurs. Ce résultat n'établit pas une couverture complète.
+Préparation de livraison et recette à effectuer après publication dans [deploiement.md](deploiement.md).
+Aucun déploiement, lancement de collecte, commit, PR ni changement distant effectué.
+
 Proposition de feuille de route pour articuler Aiguille et les deux modèles AV :
 [feuille-de-route.md](feuille-de-route.md). Ordre proposé : état réel du site, construction
 des montres, matières et lumière, robustesse 3D, fiabilisation du site, parcours commun,
 comparateur, puis enrichissements optionnels. Les espaces restent techniquement séparés.
-La navigation commune et la publication ne sont pas encore décidées ni implémentées.
+La navigation locale de l'étape 6 est préparée ci-dessous ; la publication reste à décider.
+
+Étape 6 — parcours commun, 1er novembre : entrée « Atelier AV » dans la navigation du site,
+présentation distincte des deux créations en pied de page et lien « Retour à Aiguille » dans
+l'atelier. Les cinq langues du site décrivent ce parcours et précisent que l'atelier est en français.
+Navigation complète par liens, sans préchargement 3D ni import du moteur dans le catalogue.
+Le thème de chaque espace, les comptes et les contrôles d'accès restent indépendants.
+
+Complément du 3 novembre : `FEATURE_ATELIER=false` masque les deux entrées dans Aiguille,
+y compris le repli local en développement. Variable absente : entrées autorisées si la destination
+est disponible. Changement au prochain build ou redémarrage local. Ce réglage d'affichage ne
+constitue pas une protection de l'adresse directe du service autonome.
+
+Vérification finale du 3 novembre : contrôle qualité Docker réussi (414 tests, 77 fichiers),
+build du site réussi (18 986 pages sur la base locale partagée) et build distinct de l'atelier réussi.
+Masquage vérifié dans le navigateur avec `FEATURE_ATELIER=false` sur un serveur temporaire :
+aucun lien vers l'atelier dans l'en-tête ou le pied de page après hydratation, accès privé conservé,
+journal navigateur sans erreur ni avertissement. Serveur temporaire arrêté après contrôle.
+L'aller-retour activé avait été vérifié au clavier sur ordinateur et en largeur mobile le 1er novembre.
+L'avertissement Vite existant sur la taille du moteur 3D reste limité au build autonome.
+Aucun commit ni déploiement effectué.
+
+En développement local, les liens conservent l'hôte pour retrouver la session du site.
+Pour une publication : `ATELIER_URL` côté site et `VITE_AIGUILLE_URL` côté atelier ; HTTPS explicite,
+liens masqués sans adresse, aucune adresse locale implicite dans les builds de production.
+Validation Zod des destinations ; dépendance de développement déjà présente dans le monorepo,
+déclarée pour la configuration Vite, sans ajout au rendu 3D. Aucun secret transmis à l'atelier.
+L'hébergement et la protection d'accès distante de l'atelier restent à choisir ; son `noindex`
+ne constitue pas un contrôle d'accès. Aucun déploiement effectué.
 
 ## Atelier AV (31 octobre 2026)
 
@@ -119,6 +216,20 @@ Reste pour boucler le lot 4 :
 - **Lip** : collecte quotidienne activée par le propriétaire malgré les restrictions des mentions
   légales, sans autorisation de la marque (voir docs/decisions.md du 31 octobre). Fiches en
   français, traductions anglaise et italienne. Tarifs de révision non publiés (devis).
+- **Tudor** : catalogue collecté chez Lepage, le site officiel refusant notre robot (voir
+  docs/decisions.md du 1er novembre). Prix affiché comme prix Lepage, catalogue partiel, fiches en
+  français. Entretien et conseils non renseignés.
+- **Omega** : 374 montres collectées en direct par exception du propriétaire, malgré l'interdiction
+  des robots dans les conditions (voir docs/decisions.md du 1er novembre). Tarifs de révision et
+  fabricant des calibres non renseignés.
+- **Grand Seiko** : 120 montres, marque distincte de Seiko, traduites en EN, DE, IT et ES. Conseils
+  d'entretien et fabricant des calibres non renseignés.
+- **TAG Heuer** : catalogue collecté chez Lepage, les fiches officielles refusant notre robot (voir
+  docs/decisions.md du 1er novembre). Prix affiché comme prix Lepage, catalogue partiel, fiches en
+  français. Garantie, entretien et conseils non renseignés.
+- **Galerie de la fiche** : toutes les photos de chaque source, glissement, miniatures, plein écran
+  et zoom. Le test e2e est ignoré sur les données de test à une seule photo : il faut une montre de
+  test à plusieurs photos pour qu'il s'exécute en CI.
 - **Pays de provenance** des comptes (demandé après la première connexion, `npm run db:pays`).
 - **Multilingue** (FR, EN, DE, IT, ES) : routage `app/[lang]`, dictionnaires, repli anglais,
   fiches Longines traduites depuis les versions nationales. Activer avec `LANGUAGES`.

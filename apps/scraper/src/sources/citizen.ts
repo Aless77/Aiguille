@@ -1,6 +1,7 @@
 import { type WatchTranslationData } from "@aiguille/db/translations";
 import { type CheerioAPI } from "cheerio";
 
+import { imagesInHtml, uniqueImages } from "../lib/images.ts";
 import { findProduct, parseAvailability } from "../lib/jsonld.ts";
 import { fetchRobots } from "../lib/robots.ts";
 import { fetchSitemapPages } from "../lib/sitemap.ts";
@@ -58,6 +59,15 @@ export function translateCitizen($: CheerioAPI, url: string): WatchTranslationDa
   };
 }
 
+/** Photos de cette référence (« CA4660-61A_2.png ») en 1 400 px ; le JSON-LD n'en donne qu'une. */
+export function galleryImages($: CheerioAPI, reference: string): string[] {
+  const file = reference.toUpperCase();
+  return imagesInHtml(
+    $.html(),
+    /https:\/\/[a-z.]*citizenwatch\.eu\/media\/thumbs\/[^"'\s,]*1400x_crop=center;format=webp\/managed\/[^"'\s,]+\.png\.thumb\.webp/g,
+  ).filter((image) => new RegExp(`/${file}(?:_\\d+)?\\.png\\.thumb\\.webp$`).test(image));
+}
+
 export function parseCitizen($: CheerioAPI, url: string) {
   const translated = translateCitizen($, url);
   const product = findProduct($);
@@ -96,7 +106,7 @@ export function parseCitizen($: CheerioAPI, url: string) {
     reference: product.sku.toUpperCase(),
     name,
     collectionName,
-    imageUrls: product.images,
+    imageUrls: uniqueImages([...product.images, ...galleryImages($, product.sku)]),
     priceCents: toCents(product.price),
     currency: "EUR" as const,
     availability: parseAvailability(product.availability),

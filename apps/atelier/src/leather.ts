@@ -11,18 +11,24 @@ export function createLeatherStrap(invalidate: () => void) {
   let disposed = false;
   const surface = new THREE.MeshPhysicalMaterial({
     color: 0x070809,
-    roughness: 0.88,
+    roughness: 0.68,
     metalness: 0,
     bumpScale: 0.052,
-    specularIntensity: 0.35,
+    specularIntensity: 0.45,
+    clearcoat: 0.06,
+    clearcoatRoughness: 0.5,
   });
   const lining = new THREE.MeshStandardMaterial({ color: 0x171613, roughness: 0.98 });
   const edge = new THREE.MeshStandardMaterial({ color: 0x080808, roughness: 0.7 });
   const thread = new THREE.MeshStandardMaterial({ color: 0x49443b, roughness: 0.94 });
   const stitchWell = new THREE.MeshStandardMaterial({ color: 0x020202, roughness: 1 });
   const buckle = new THREE.MeshStandardMaterial({ color: 0x25292b, metalness: 1, roughness: 0.25 });
+  const textureUrl =
+    import.meta.env.DEV && new URLSearchParams(location.search).get("diagnostic") === "no-texture"
+      ? "data:image/png;base64,AA=="
+      : new URL("./assets/black-calfskin.webp", import.meta.url).href;
   const grain = new THREE.TextureLoader().load(
-    new URL("./assets/black-calfskin.webp", import.meta.url).href,
+    textureUrl,
     () => {
       if (disposed) return;
       // Le scan sert au relief. La rugosité reste élevée, même au fond des pores.
@@ -56,7 +62,7 @@ export function createLeatherStrap(invalidate: () => void) {
       normalMap.anisotropy = 8;
       textures.push(normalMap);
       surface.normalMap = normalMap;
-      surface.normalScale.set(0.8, 0.8);
+      surface.normalScale.set(0.65, 0.65);
       surface.bumpMap = null;
       for (let i = 0; i < pixels.data.length; i += 4) {
         const value = 205 + pixels.data[i]! * 0.18;
@@ -73,6 +79,9 @@ export function createLeatherStrap(invalidate: () => void) {
     },
     undefined,
     () => {
+      if (disposed) return;
+      surface.bumpMap = lining.bumpMap = null;
+      surface.needsUpdate = lining.needsUpdate = true;
       console.warn("Texture du cuir indisponible : matière mate conservée.");
       invalidate();
     },

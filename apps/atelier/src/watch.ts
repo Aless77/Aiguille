@@ -2,6 +2,9 @@ import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { createLeatherStrap } from "./leather";
 import { createMetalBracelet } from "./metal";
+import { createSurfaceMaps } from "./finishes";
+import { createCrystalGeometry, createCrystalMaterial, createHandGeometry } from "./optics";
+import { mergeWatchParts } from "./merge-parts";
 
 export type WatchModel = "metal" | "leather";
 
@@ -9,50 +12,29 @@ export type WatchModel = "metal" | "leather";
 export function createWatch(model: WatchModel, invalidate: () => void = () => {}) {
   const watch = new THREE.Group();
   const textures: THREE.Texture[] = [];
-  const black = new THREE.MeshStandardMaterial({ color: 0x202326, metalness: 1, roughness: 0.32 });
-  const polished = new THREE.MeshStandardMaterial({
-    color: 0x333638,
+  const brushedMaps = createSurfaceMaps("brushed");
+  const grainMaps = createSurfaceMaps("grain");
+  textures.push(brushedMaps.bump, brushedMaps.roughness, grainMaps.bump, grainMaps.roughness);
+  const black = new THREE.MeshPhysicalMaterial({
+    color: 0x2b2d2f,
     metalness: 1,
-    roughness: 0.13,
+    roughness: 0.44,
+    roughnessMap: brushedMaps.roughness,
+    bumpMap: brushedMaps.bump,
+    bumpScale: 0.004,
+    anisotropy: 0.45,
+    anisotropyRotation: Math.PI / 2,
   });
-  const gold = new THREE.MeshStandardMaterial({ color: 0xc6a16a, metalness: 0.8, roughness: 0.28 });
-  const goldEdge = new THREE.MeshStandardMaterial({
-    color: 0xe6c78f,
-    metalness: 0.85,
-    roughness: 0.19,
+  const centerFinish = black.clone();
+  centerFinish.color.set(0x252729);
+  centerFinish.roughness = 0.34;
+  const polished = new THREE.MeshStandardMaterial({
+    color: 0x3d4043,
+    metalness: 1,
+    roughness: 0.16,
   });
-  const back = new THREE.MeshStandardMaterial({ color: 0x151819, metalness: 0.9, roughness: 0.45 });
-
-  function texture(kind: "dial" | "leather") {
-    const size = 512;
-    const canvas = document.createElement("canvas");
-    canvas.width = canvas.height = size;
-    const ctx = canvas.getContext("2d")!;
-    // Bruit déterministe : le grain ne change pas au changement de modèle.
-    let seed = 38;
-    const random = () => {
-      seed = (seed * 16807) % 2147483647;
-      return seed / 2147483647;
-    };
-    const image = ctx.createImageData(size, size);
-    for (let x = 0; x < size; x++) {
-      const stripe = random();
-      for (let y = 0; y < size; y++) {
-        const value =
-          kind === "dial" && model === "metal"
-            ? 90 + stripe * 80 + random() * 12
-            : 80 + random() * 90;
-        const i = (y * size + x) * 4;
-        image.data[i] = image.data[i + 1] = image.data[i + 2] = value;
-        image.data[i + 3] = 255;
-      }
-    }
-    ctx.putImageData(image, 0, 0);
-    const map = new THREE.CanvasTexture(canvas);
-    map.wrapS = map.wrapT = THREE.RepeatWrapping;
-    textures.push(map);
-    return map;
-  }
+  const gold = new THREE.MeshStandardMaterial({ color: 0xd8b77c, metalness: 1, roughness: 0.27 });
+  const back = new THREE.MeshStandardMaterial({ color: 0x151819, metalness: 1, roughness: 0.46 });
 
   function mesh(
     geometry: THREE.BufferGeometry,
@@ -130,19 +112,43 @@ export function createWatch(model: WatchModel, invalidate: () => void = () => {}
   }
   disk(1.94, 0.07, -0.37, back);
   ring(1.91, 0.025, -0.41, polished);
-  disk(1.86, 0.12, 0.26, black);
-  ring(1.92, 0.085, 0.31, black);
-  ring(1.99, 0.018, 0.28, polished);
-  ring(1.82, 0.018, 0.36, polished);
-  const dialTexture = texture("dial");
-  const dialMaterial = new THREE.MeshStandardMaterial({
-    color: model === "metal" ? 0x060708 : 0x050606,
-    metalness: model === "metal" ? 0.1 : 0,
-    roughness: 0.72,
-    bumpMap: dialTexture,
-    bumpScale: model === "metal" ? 0.003 : 0.008,
+  const bezelProfile = [
+    [1.795, 0.28],
+    [2.015, 0.28],
+    [2.015, 0.42],
+    [1.965, 0.46],
+    [1.825, 0.46],
+    [1.795, 0.44],
+    [1.795, 0.28],
+  ].map(([r, z]) => new THREE.Vector2(r, z));
+  const bezel = mesh(new THREE.LatheGeometry(bezelProfile, 160), polished);
+  bezel.rotation.x = Math.PI / 2;
+  ring(2.012, 0.012, 0.41, polished);
+  ring(1.818, 0.012, 0.455, polished);
+  // Réhaut intérieur : il ferme le jour entre la glace et le cadran en retrait.
+  const rehaut = mesh(
+    new THREE.LatheGeometry([new THREE.Vector2(1.8, 0.608), new THREE.Vector2(1.79, 0.33)], 160),
+    back,
+  );
+  rehaut.rotation.x = Math.PI / 2;
+  const dialMaps = model === "metal" ? brushedMaps : grainMaps;
+  const dialMaterial = new THREE.MeshPhysicalMaterial({
+    color: model === "metal" ? 0x24272a : 0x141616,
+    map: dialMaps.bump,
+    metalness: model === "metal" ? 0.65 : 0.05,
+    roughness: model === "metal" ? 0.58 : 0.95,
+    roughnessMap: dialMaps.roughness,
+    bumpMap: dialMaps.bump,
+    bumpScale: model === "metal" ? 0.005 : 0.022,
+    specularIntensity: 0.18,
+    envMapIntensity: model === "metal" ? 0.55 : 0.4,
   });
-  disk(1.8, 0.035, 0.31, dialMaterial);
+  const dial = disk(1.8, 0.035, 0.31, dialMaterial);
+  // Projection explicite : le brossage suit l’axe 12 h–6 h, indépendamment des UV du cylindre.
+  const dialPositions = dial.geometry.getAttribute("position");
+  const dialUv = dial.geometry.getAttribute("uv");
+  for (let i = 0; i < dialPositions.count; i++)
+    dialUv.setXY(i, (dialPositions.getX(i) + 1.8) / 3.6, (dialPositions.getZ(i) + 1.8) / 3.6);
 
   // Cornes effilées et plongeantes : le cuir rejoint les barrettes sous le boîtier.
   if (model === "leather")
@@ -242,45 +248,19 @@ export function createWatch(model: WatchModel, invalidate: () => void = () => {}
   }
 
   function hand(length: number, width: number, angle: number, z: number) {
-    const shape = new THREE.Shape();
-    shape.moveTo(-width * 0.35, -0.18);
-    shape.lineTo(-width, length * 0.35);
-    shape.lineTo(0, length);
-    shape.lineTo(width, length * 0.35);
-    shape.lineTo(width * 0.35, -0.18);
-    shape.closePath();
-    const item = mesh(
-      new THREE.ExtrudeGeometry(shape, {
-        depth: 0.022,
-        bevelEnabled: true,
-        bevelSize: 0.008,
-        bevelThickness: 0.008,
-        bevelSegments: 2,
-      }),
-      gold,
-      0,
-      0,
-      z,
-    );
+    const item = mesh(createHandGeometry(length, width), gold, 0, 0, z);
     item.rotation.z = angle;
-    // Facette supérieure légèrement plus claire, pour accrocher la lumière.
-    const facet = new THREE.Shape();
-    facet.moveTo(0, -0.15);
-    facet.lineTo(0, length);
-    facet.lineTo(width, length * 0.35);
-    facet.closePath();
-    const top = mesh(new THREE.ShapeGeometry(facet), goldEdge, 0, 0, 0.031, item);
-    top.name = "Facette de l’aiguille";
+    item.name = "Aiguille dauphine à arête centrale";
   }
-  hand(1.05, 0.067, Math.PI / 3, 0.43);
-  hand(1.46, 0.048, -Math.PI / 3, 0.48);
+  hand(1.05, 0.067, Math.PI / 3, 0.405);
+  hand(1.46, 0.048, -Math.PI / 3, 0.465);
   const seconds = new THREE.Group();
   seconds.rotation.z = Math.PI * 0.88;
-  seconds.position.z = 0.55;
+  seconds.position.z = 0.52;
   watch.add(seconds);
   box(0.013, 1.91, 0.014, gold, 0, 0.64, 0, 0.004, seconds);
-  disk(0.112, 0.035, 0.56, gold);
-  disk(0.038, 0.038, 0.59, polished);
+  disk(0.112, 0.035, 0.535, gold);
+  disk(0.038, 0.038, 0.55, polished);
   // Six vis fraisées distinguent le fond de la carrure.
   for (let i = 0; i < 6; i++) {
     const a = (i / 6) * Math.PI * 2;
@@ -316,25 +296,15 @@ export function createWatch(model: WatchModel, invalidate: () => void = () => {}
   stroke(0.01, 0.15, 0.12, -0.14);
   stroke(0.12, -0.14, 0.23, 0.15);
 
+  mergeWatchParts(watch);
   const leatherStrap = model === "leather" ? createLeatherStrap(invalidate) : undefined;
   if (leatherStrap) {
     watch.add(leatherStrap.object);
   } else {
-    watch.add(createMetalBracelet());
+    watch.add(createMetalBracelet({ brushed: black, polished, center: centerFinish }));
   }
-  const crystal = new THREE.MeshPhysicalMaterial({
-    color: 0x050607,
-    metalness: 0,
-    roughness: 0.035,
-    transmission: 0,
-    thickness: 0.04,
-    ior: 1.5,
-    transparent: true,
-    opacity: 0.06,
-    specularIntensity: 0.25,
-    depthWrite: false,
-  });
-  disk(1.805, 0.045, 0.68, crystal).name = "Glace";
+  const crystal = createCrystalMaterial();
+  mesh(createCrystalGeometry(), crystal).name = "Glace";
 
   watch.traverse((part) => {
     if (part instanceof THREE.Mesh) {
@@ -351,10 +321,9 @@ export function createWatch(model: WatchModel, invalidate: () => void = () => {}
         black,
         polished,
         gold,
-        goldEdge,
+        centerFinish,
         back,
         dialMaterial,
-
         crystal,
       ]);
       watch.traverse((item) => {

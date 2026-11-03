@@ -17,6 +17,8 @@ const isFalse = (value: string | undefined) => value === "false" || value === "0
  *   masquées seulement avec « false » (les listes existantes restent en base).
  */
 export const features = {
+  /** Entrées vers l'atelier AV ; n'arrête pas le service autonome. */
+  atelier: (env: Env = process.env) => !isFalse(env.FEATURE_ATELIER),
   score: (env: Env = process.env) => isTrue(env.FEATURE_SCORE),
   reviews: (env: Env = process.env) => !isFalse(env.FEATURE_REVIEWS),
   community: (env: Env = process.env) => !isFalse(env.FEATURE_COMMUNITY),

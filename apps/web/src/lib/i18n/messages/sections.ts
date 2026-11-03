@@ -33,6 +33,8 @@ const fr = {
     franceCheapest: "La France fait partie des pays où cette montre est la moins chère.",
     cheaper:
       "Moins chère {inCountry} : environ {percent} % de moins qu'en France après conversion.",
+    similar:
+      "Prix très proche {inCountry} : moins de {percent} % d’écart avec la France après conversion.",
     country: "Pays",
     localPrice: "Prix local",
     inEuros: "En euros",
@@ -91,6 +93,8 @@ const en: Messages = {
     franceCheapest: "France is among the countries where this watch is cheapest.",
     cheaper:
       "Cheapest country: {inCountry}, about {percent}% less than in France after conversion.",
+    similar:
+      "Very similar price in {inCountry}: less than {percent}% difference from France after conversion.",
     country: "Country",
     localPrice: "Local price",
     inEuros: "In euros",
@@ -147,6 +151,8 @@ const de: Messages = {
     franceCheapest: "Frankreich gehört zu den Ländern, in denen diese Uhr am günstigsten ist.",
     cheaper:
       "Günstigstes Land: {inCountry}, etwa {percent} % günstiger als in Frankreich nach Umrechnung.",
+    similar:
+      "Sehr ähnlicher Preis in {inCountry}: nach Umrechnung weniger als {percent} % Unterschied zu Frankreich.",
     country: "Land",
     localPrice: "Lokaler Preis",
     inEuros: "In Euro",
@@ -203,6 +209,8 @@ const it: Messages = {
     franceCheapest: "La Francia è tra i paesi in cui questo orologio costa meno.",
     cheaper:
       "Paese più conveniente: {inCountry}, circa il {percent} % in meno che in Francia dopo la conversione.",
+    similar:
+      "Prezzo molto simile in {inCountry}: meno dello {percent} % di differenza rispetto alla Francia dopo la conversione.",
     country: "Paese",
     localPrice: "Prezzo locale",
     inEuros: "In euro",
@@ -259,6 +267,8 @@ const es: Messages = {
     franceCheapest: "Francia está entre los países donde este reloj es más barato.",
     cheaper:
       "País más barato: {inCountry}, alrededor de un {percent} % menos que en Francia tras la conversión.",
+    similar:
+      "Precio muy similar en {inCountry}: menos de un {percent} % de diferencia con Francia tras la conversión.",
     country: "País",
     localPrice: "Precio local",
     inEuros: "En euros",

@@ -4,6 +4,7 @@ import { Watch } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
+import { sizedImage } from "@/lib/catalog/image-url";
 import { useLocale } from "@/lib/i18n/client";
 import { format } from "@/lib/i18n/dictionary";
 import { cn } from "@/lib/utils";
@@ -18,12 +19,18 @@ export function WatchImage({
   alt,
   priority = false,
   sizes = "(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw",
+  width = 450,
+  onSettled,
   className,
 }: {
   src: string | null;
   alt: string;
   priority?: boolean;
   sizes?: string;
+  /** Largeur demandée au site de la marque, quand il sait redimensionner. */
+  width?: number;
+  /** Appelé quand la photo est chargée, ou a échoué. */
+  onSettled?: () => void;
   className?: string;
 }) {
   const [failed, setFailed] = useState(false);
@@ -41,12 +48,16 @@ export function WatchImage({
       {src && !failed ? (
         <Image
           ref={img}
-          src={src}
+          src={sizedImage(src, width)}
           alt={alt}
           fill
           sizes={sizes}
           priority={priority}
-          onError={() => setFailed(true)}
+          onLoad={onSettled}
+          onError={() => {
+            setFailed(true);
+            onSettled?.();
+          }}
           className="object-contain p-4 mix-blend-multiply dark:mix-blend-normal"
         />
       ) : (

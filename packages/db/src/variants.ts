@@ -20,6 +20,10 @@ export const MODEL_KEYS: Record<string, RegExp> = {
   // 3321502C : boîtier 33215, cadran 02, C pour le bracelet. Le préfixe est partagé par des
   // lignes distinctes (Ceramica, Madreperla…) : le nom publié doit aussi être le même.
   venezianico: /^(\d{5})\d{2}[A-Z]?$/i,
+  // M79230B-0008 : modèle M79230B (boîtier et lunette), puis cadran et bracelet.
+  tudor: /^(M\d{5}[A-Z]*)-\d{4}$/i,
+  // 220.10.41.21.02.005 : ligne, boîtier et bracelet, diamètre, calibre, puis cadran et version.
+  omega: /^(\d{3}\.\d{2}\.\d{2}\.\d{2})\.\d{2}\.\d{3}$/,
 };
 
 /** Marques dont le préfixe de référence ne suffit pas : le nom du modèle complète la clé. */

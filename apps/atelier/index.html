@@ -15,7 +15,11 @@
       <header>
         <a href="/" class="signature" aria-label="AV, accueil de l’atelier"
           >AV<span>ATELIER HORLOGER</span></a
-        ><span class="edition">ÉTUDE DE DESIGN / 2026</span>
+        >
+        <div class="header-links">
+          <span class="edition">ÉTUDE DE DESIGN / 2026</span>
+          <a id="aiguille-link" class="return-link" hidden rel="noreferrer">← Retour à Aiguille</a>
+        </div>
       </header>
       <section class="workbench" aria-label="Atelier de la montre">
         <div class="intro">
@@ -24,7 +28,11 @@
           <p>Deux silhouettes. Une même signature.<br />Le noir profond, révélé par la lumière.</p>
         </div>
         <div id="stage" aria-label="Vue 3D de la montre AV">
-          <p id="status" role="status">Préparation de l’atelier…</p>
+          <div id="feedback">
+            <p id="status" role="status">Préparation de l’atelier…</p>
+            <button id="retry" hidden>Relancer la 3D</button>
+            <noscript>Activez JavaScript pour examiner les montres en trois dimensions.</noscript>
+          </div>
         </div>
         <aside>
           <span class="eyebrow">LA PIÈCE</span>
@@ -32,14 +40,14 @@
           <p id="model-description">
             Une silhouette sculptée, prolongée par un bracelet en métal noir à trois maillons.
           </p>
-          <fieldset>
+          <fieldset disabled>
             <legend>Modèle</legend>
             <div class="model-options">
               <button data-model="metal" aria-pressed="true">02 <span>Métal</span></button
               ><button data-model="leather" aria-pressed="false">01 <span>Cuir</span></button>
             </div>
           </fieldset>
-          <fieldset>
+          <fieldset disabled>
             <legend>Éclairage</legend>
             <div class="choices">
               <button data-light="studio" aria-pressed="true">Studio</button
@@ -47,7 +55,7 @@
               ><button data-light="rim" aria-pressed="false">Contours</button>
             </div>
           </fieldset>
-          <fieldset>
+          <fieldset disabled>
             <legend>Point de vue</legend>
             <div class="choices">
               <button data-view="signature" aria-pressed="true">Signature</button
@@ -79,7 +87,7 @@
         <div class="stage-caption">
           <span id="model-label">AV / 02</span
           ><span>Glisser pour tourner · Défiler pour zoomer</span
-          ><button id="reset">Réinitialiser la vue</button>
+          ><button id="reset" disabled>Réinitialiser la vue</button>
         </div>
       </section>
       <footer>
