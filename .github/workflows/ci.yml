@@ -1,4 +1,4 @@
-# Vérifie chaque pull request (et chaque push sur main) avant le déploiement Vercel.
+# Vérifie chaque pull request (et chaque push sur main) avant le déploiement Vercel. 
 # Les mêmes commandes tournent en local : docker compose run --rm tools npm run check
 name: CI
 
