@@ -39,6 +39,106 @@ export const COLLECTION_FAMILIES: Record<string, BrandFamilies> = {
     complete: false,
     families: [],
   },
+  // Menu de la boutique : collections à plat, sans gamme supérieure.
+  venezianico: {
+    source: "https://www.venezianico.com/collections/all-watches",
+    checkedAt: "2026-10-31",
+    complete: false,
+    families: [],
+  },
+  // Menu du site : cinq collections à plat (Masterpiece, Evolution 9, Heritage, Sport, Elegance).
+  "grand-seiko": {
+    source: "https://www.grand-seiko.com/fr-fr/collections",
+    checkedAt: "2026-11-01",
+    complete: false,
+    families: [],
+  },
+  // Menu « Montres » : quatre gammes, relues dans le nom publié de chaque fiche.
+  omega: {
+    source: "https://www.omegawatches.com/fr-fr/",
+    checkedAt: "2026-11-01",
+    complete: true,
+    families: [
+      {
+        slug: "speedmaster",
+        name: "Speedmaster",
+        url: "https://www.omegawatches.com/fr-fr/watches/speedmaster/moonwatch-professional/catalog",
+        collections: [
+          "moonwatch-professional",
+          "moonphase",
+          "speedmaster-38",
+          "chronoscope",
+          "dark-side-of-the-moon",
+          "speedmaster-57",
+          "racing",
+          "calibre-321",
+          "first-omega-in-space",
+          "pilot",
+          "serie-anniversaire",
+          "chrono-chime",
+          "super-racing",
+        ],
+      },
+      {
+        slug: "seamaster",
+        name: "Seamaster",
+        url: "https://www.omegawatches.com/fr-fr/watches/seamaster/diver-300-m/catalog",
+        collections: [
+          "diver-300m",
+          "aqua-terra-150m",
+          "aqua-terra-shades",
+          "planet-ocean-600m",
+          "planet-ocean-6000m",
+          "seamaster-300",
+          "railmaster",
+          "chronometreur-officiel-des-jeux-olympiques",
+          "regatta",
+          "editions-boutique",
+          "ploprof-1200m",
+          "seamaster-37-mm",
+        ],
+      },
+      {
+        slug: "de-ville",
+        name: "De Ville",
+        url: "https://www.omegawatches.com/fr-fr/watches/de-ville/prestige/catalog",
+        collections: ["prestige", "mini-tresor", "tresor", "ladymatic", "tourbillon"],
+      },
+      {
+        slug: "constellation",
+        name: "Constellation",
+        url: "https://www.omegawatches.com/fr-fr/watches/constellation/constellation/catalog",
+        collections: ["constellation", "observatory"],
+      },
+    ],
+  },
+  // Collections publiées à plat par Lepage : aucune gamme supérieure relevée.
+  "tag-heuer": {
+    source: "https://www.lepage.fr/fr/",
+    checkedAt: "2026-11-01",
+    complete: false,
+    families: [],
+  },
+  tudor: {
+    source: "https://www.lepage.fr/fr/2409-montres-tudor",
+    checkedAt: "2026-11-01",
+    complete: false,
+    families: [],
+  },
+  // Menu du site : collections à plat, plus la rubrique des montres à mouvement exclusif.
+  lip: {
+    source: "https://lip.fr/fr/220-montres-de-mouvement-manufacture",
+    checkedAt: "2026-10-31",
+    complete: false,
+    families: [
+      {
+        slug: "mouvement-de-manufacture",
+        name: "LIP Mouvement de Manufacture",
+        url: "https://lip.fr/fr/220-montres-de-mouvement-manufacture",
+        collections: ["type-14", "nautic-666", "annapurna"],
+      },
+    ],
+  },
   // Menu « Montres » : cinq univers, chacun listant ses collections.
   longines: {
     source: "https://www.longines.com/fr/watches",

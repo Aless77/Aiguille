@@ -19,12 +19,13 @@ export function parseMovement(value: string | undefined): Movement | undefined {
 
 /**
  * Étanchéité en mètres. Les sources écrivent « jusqu'à 5 bar (50m) » ou
- * « 10 bar (100 m/330 ft) » : on privilégie les mètres, sinon bar × 10.
+ * « 10 bar (100 m/330 ft) » : on privilégie les mètres, sinon bar × 10. Les milliers peuvent être
+ * séparés : « 600 bars (6 000 mètres) ».
  */
 export function parseWaterResistance(value: string | undefined): number | undefined {
   if (!value) return undefined;
-  const meters = value.match(/(\d+)\s*m(?![a-z])/i);
-  if (meters?.[1]) return Number(meters[1]);
+  const meters = value.match(/(\d{1,3}(?:[\s.,]\d{3})+|\d+)\s*m(?![a-z])/i);
+  if (meters?.[1]) return Number(meters[1].replace(/\D/g, ""));
   const bar = value.match(/(\d+(?:[.,]\d+)?)\s*bar/i);
   if (bar?.[1]) return Math.round(Number(bar[1].replace(",", ".")) * 10);
   if (/atm/i.test(value)) {

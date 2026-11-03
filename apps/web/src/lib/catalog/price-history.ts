@@ -58,7 +58,12 @@ export function sourceLabel(
   return RETAILER_LABELS[source] ?? source.charAt(0).toUpperCase() + source.slice(1);
 }
 
-const RETAILER_LABELS: Record<string, string> = { lepage: "Lepage", ocarat: "Ocarat" };
+const RETAILER_LABELS: Record<string, string> = {
+  lepage: "Lepage",
+  "lepage-tudor": "Lepage",
+  "lepage-tag-heuer": "Lepage",
+  ocarat: "Ocarat",
+};
 
 export interface CurrentOffer {
   source: string;

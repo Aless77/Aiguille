@@ -56,6 +56,8 @@ export async function runSource(
   };
   // Revendeur : montres dont l'offre a été vue pendant cette exécution.
   const seenWatchIds = new Set<number>();
+  // Page illisible cette fois-ci : ne prouve pas que la montre ou l'offre a disparu.
+  const failedUrls = new Set<string>();
 
   try {
     const discovered = await adapter.discover();
@@ -67,7 +69,11 @@ export async function runSource(
       `[${adapter.id}] ${discovered.length} fiches découvertes, ${discovered.length - urls.length} exclues par robots.txt`,
     );
     if (options.limit) urls = urls.slice(0, options.limit);
-    const delaySecs = Math.max(DOMAIN_DELAY_SECS, robots.crawlDelaySecs ?? 0);
+    const delaySecs = Math.max(
+      DOMAIN_DELAY_SECS,
+      robots.crawlDelaySecs ?? 0,
+      adapter.kind === "official" ? (adapter.minDelaySecs ?? 0) : 0,
+    );
     const crawler = createPoliteCrawler({
       delaySecs,
       async requestHandler({ $, request }) {
@@ -75,6 +81,7 @@ export async function runSource(
         const url = request.loadedUrl ?? request.url;
         const invalid = (issues: unknown) => {
           stats.errors++;
+          failedUrls.add(url);
           console.warn(`[${adapter.id}] fiche invalide ${request.url}`, issues);
         };
 
@@ -108,6 +115,7 @@ export async function runSource(
       },
       failedRequestHandler({ request }, error) {
         stats.errors++;
+        failedUrls.add(request.url);
         console.warn(`[${adapter.id}] échec ${request.url} : ${error.message}`);
       },
     });
@@ -121,16 +129,20 @@ export async function runSource(
     if (failure) throw new Error(failure);
 
     // Garde-fou : une exécution partielle (blocage, panne) ne doit rien marquer comme disparu.
-    if (!options.limit && adapter.kind === "official") {
+    if (!options.limit && adapter.kind === "official" && !adapter.partialCatalog) {
       const active = await persister.activeCount(adapter.brandSlug);
       if (stats.watchesFound >= active * COMPLETE_RUN_RATIO) {
-        stats.discontinued = await persister.markUnseenAsDiscontinued(adapter.brandSlug, startedAt);
+        stats.discontinued = await persister.markUnseenAsDiscontinued(
+          adapter.brandSlug,
+          startedAt,
+          failedUrls,
+        );
       }
     }
     if (!options.limit && adapter.kind === "retailer") {
       const current = (await persister.currentOfferWatchIds()).length;
       if (seenWatchIds.size >= current * COMPLETE_RUN_RATIO) {
-        stats.withdrawn = await persister.withdrawUnseenOffers(seenWatchIds, startedAt);
+        stats.withdrawn = await persister.withdrawUnseenOffers(seenWatchIds, startedAt, failedUrls);
       }
     }
 

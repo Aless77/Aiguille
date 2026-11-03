@@ -33,7 +33,13 @@ export default defineConfig([
 
   // Scraper, base et fichiers de config : TypeScript strict.
   {
-    files: ["apps/scraper/**/*.ts", "packages/**/*.ts", "*.{js,mjs,ts,mts}"],
+    files: [
+      "scripts/**/*.mjs",
+      "apps/scraper/**/*.ts",
+      "apps/atelier/**/*.ts",
+      "packages/**/*.ts",
+      "*.{js,mjs,ts,mts}",
+    ],
     extends: [tseslint.configs.recommended],
   },
 

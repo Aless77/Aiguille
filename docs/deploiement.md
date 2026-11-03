@@ -15,6 +15,44 @@ maintenir). Vercel ne rebuild que si `apps/web`, `packages/` ou les fichiers npm
 consomme pas de build. La branche `dev` n'est jamais déployée (`git.deploymentEnabled` dans le même
 fichier) : seule `main` alimente le site, et une preview de `dev` n'apporterait rien.
 
+## Livraison du mode privé — préparation du 1er novembre 2026
+
+La décision du 31 octobre réserve le catalogue aux membres approuvés : voir
+[acces-prive.md](acces-prive.md). Elle remplace les anciennes consignes d'indexation publique.
+Le propriétaire réalise les commits, la PR `dev` → `main` et la fusion.
+
+Avant cette livraison :
+
+1. Revoir les modifications et les contrôles de la version retenue ; les travaux présents dans
+   le dossier partagé ne sont pas tous nécessairement publiés ensemble.
+2. Configurer en production `ADMIN_USERNAME`, `ADMIN_PASSWORD` (au moins 16 caractères),
+   `ADMIN_ACCESS_PATH` (adresse privée conforme au format documenté) et `BETTER_AUTH_SECRET`
+   (au moins 32 caractères). Les identifiants courts d'essai local ne conviennent pas à la production.
+3. Conserver les fournisseurs OAuth nécessaires aux membres et leurs URL de rappel réelles.
+4. Vérifier que toutes les migrations de la version sont incluses, dont `0011` pour les accès.
+   Le build de production applique les migrations avant Next.js et s'arrête en cas d'échec.
+5. Vérifier que la version de `.github/workflows/scrape.yml` publiée sur `main` correspond
+   aux sources effectivement retenues. Une source présente localement n'est pas forcément
+   exécutée par la collecte distante.
+
+Après publication, recette de la version en ligne :
+
+- Visiteur : `/montres` redirige vers la demande d'accès ; les API privées refusent la requête.
+- Ancienne adresse `/administration` : vrai 404, sans divulgation de l'adresse privée.
+- Sitemap sans URL, exploration interdite, métadonnées `noindex`, y compris sur les fiches.
+- Administrateur : connexion réelle puis déconnexion ; membre : attente, acceptation et retrait
+  effectif de l'accès, avec les fournisseurs OAuth réels.
+- Fiches et recherche : prix, disponibilité, caractéristiques et JSON-LD toujours présents dans
+  le HTML autorisé ; résumés européens cohérents avec les écarts affichés.
+- Collecte : présence des tâches attendues, puis couverture et erreurs des relevés ; une tâche
+  verte ne démontre pas à elle seule la couverture complète d'une marque.
+
+Constat de lecture du 1er novembre : le domaine sert encore le catalogue public avec
+`index, follow`. Le déploiement de production est `READY` sur `ec2a491`, et la
+[collecte du jour](https://github.com/Aless77/Aiguille/actions/runs/41295463916) contient les cinq
+marques historiques et les deux revendeurs, sans Venezianico ni les autres ajouts locaux.
+Ce constat ne déclenche ni déploiement, ni migration distante, ni nouvelle collecte.
+
 Dépendances : pas de PR de mise à jour automatique (Dependabot version updates retiré). Les
 **alertes de sécurité** Dependabot restent actives (Settings → Code security → Dependabot alerts).
 Les montées de version se font à la main, régulièrement :
@@ -90,8 +128,10 @@ de staging) pour ne jamais écrire en production depuis une PR.
 
 ### 6. Après la mise en ligne
 
-Déclarer le site dans Google Search Console et Bing Webmaster Tools et soumettre
-`https://<domaine>/sitemap.xml` (voir [seo/strategie.md](seo/strategie.md#mesure-et-outils)).
+En mode privé, appliquer la recette ci-dessus et conserver le sitemap vide ainsi que la
+non-indexation. La soumission d'un sitemap public à Google Search Console ou Bing Webmaster
+Tools ne concerne qu'une éventuelle réouverture décidée séparément ; l'ancienne procédure SEO
+ne doit pas être appliquée au catalogue privé.
 
 ### 7. Collecte quotidienne (GitHub Actions)
 

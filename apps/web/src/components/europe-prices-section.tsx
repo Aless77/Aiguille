@@ -6,7 +6,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { COUNTRY_INFO, type EuropePrice, europeSummary } from "@/lib/catalog/europe-prices";
+import {
+  COUNTRY_INFO,
+  type EuropePrice,
+  europeSummary,
+  formatEuropeDelta,
+} from "@/lib/catalog/europe-prices";
 import { format } from "@/lib/i18n/dictionary";
 import { getDictionary } from "@/lib/i18n/server";
 
@@ -33,10 +38,11 @@ export async function EuropePricesSection({
   const delta = (p: EuropePrice) =>
     p.deltaPercent === null || p.country === "FR"
       ? "—"
-      : `${p.deltaPercent > 0 ? "+" : ""}${f.number(p.deltaPercent)} %`;
+      : formatEuropeDelta(p.deltaPercent, f.number);
   const summary = europeSummary(prices, {
     franceCheapest: t.franceCheapest,
     cheaper: t.cheaper,
+    similar: t.similar,
     // En français, la préposition suit le pays (« au Royaume-Uni ») ; ailleurs, le nom seul.
     inCountry: (code) => (locale === "fr" ? (COUNTRY_INFO[code]?.inName ?? code) : f.country(code)),
     number: (n) => f.number(n),

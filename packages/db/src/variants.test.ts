@@ -17,7 +17,22 @@ function watch(over: Partial<VariantCandidate> & { reference: string }): Variant
 }
 
 describe("modelKey", () => {
+  it("exige aussi le même nom quand le préfixe couvre plusieurs lignes (Venezianico)", () => {
+    expect(modelKey("venezianico", "3321502C", "Nereide 42")).toBe(
+      modelKey("venezianico", "3321504", "Nereide 42"),
+    );
+    expect(modelKey("venezianico", "4521530", "Nereide Ceramica")).not.toBe(
+      modelKey("venezianico", "4521540", "Nereide Madreperla"),
+    );
+    expect(modelKey("venezianico", "NEREIDE-OPALE-LIMITED-EDITION", "Nereide Opale")).toBeNull();
+  });
+
   it("extrait la partie modèle de la référence selon la marque", () => {
+    expect(modelKey("tudor", "M79230B-0008")).toBe("M79230B");
+    expect(modelKey("omega", "220.10.41.21.02.005")).toBe(modelKey("omega", "220.10.41.21.03.006"));
+    expect(modelKey("omega", "220.10.41.21.02.005")).not.toBe(
+      modelKey("omega", "220.12.41.21.02.002"),
+    );
     expect(modelKey("hamilton", "H32705141")).toBe("H32705");
     expect(modelKey("tissot", "T137.407.11.041.00")).toBe("T137.407");
     expect(modelKey("longines", "L3.781.4.76.6")).toBe("L3.781");

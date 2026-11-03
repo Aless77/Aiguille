@@ -133,13 +133,14 @@ const COMPLICATION_PATTERNS: Record<Complication, RegExp> = {
 export function extractConstructionFacts(w: WatchSource): ConstructionFacts {
   const text = specText(w);
   const material = w.caseMaterial ?? "";
-  const noble = /titane|c[ée]ramique|\bor\b|bronze|platine/i.exec(material);
+  const noble =
+    /titane|titanium|c[ée]ramique|ceramic|\bor\b|\bgold\b|bronze|platine|platinum/i.exec(material);
   return {
     sapphire: /saphir|sapphire/i.test(w.crystal ?? ""),
     crystalKnown: Boolean(w.crystal?.trim()),
     materialKnown: Boolean(material.trim()),
     antiReflective:
-      /anti-?reflet|antireflet/i.test(
+      /anti-?reflet|antireflet|anti-?reflective/i.test(
         `${w.crystal ?? ""} ${specs(w)["Revêtement du verre"] ?? ""}`,
       ) || yes(specs(w)["Anti-reflet"]),
     waterResistanceM: w.waterResistanceM,
@@ -151,10 +152,14 @@ export function extractConstructionFacts(w: WatchSource): ConstructionFacts {
       /fond[^|]{0,20}(saphir|transparent)/i.test(text),
     // Tissot : « Couronne et fond de boîte vissés ».
     screwDownCrown:
-      yes(specs(w)["Couronne vissée"]) || /couronne( et fond de bo[iî]te)? viss[ée]/i.test(text),
+      yes(specs(w)["Couronne vissée"]) ||
+      /screw-?down/i.test(specs(w)["Crown"] ?? "") ||
+      /couronne( et fond de bo[iî]te)? viss[ée]/i.test(text),
     luminescent: /luminova|luminescent|lumibrite/i.test(text),
     gemSet: /diamant/i.test(text),
-    ceramicBezel: /lunette[^|]{0,40}c[ée]ramique|c[ée]ramique[^|]{0,20}lunette/i.test(text),
+    ceramicBezel:
+      /lunette[^|]{0,40}c[ée]ramique|c[ée]ramique[^|]{0,20}lunette/i.test(text) ||
+      /^ceramic/i.test(specs(w)["Bezel Insert"] ?? ""),
   };
 }
 
@@ -183,8 +188,8 @@ export function extractOwnershipFacts(w: WatchSource): OwnershipFacts {
   const warranty = /(\d+)\s*ans? de garantie|garantie[^|]{0,20}?(\d+)\s*ans/i.exec(
     specs(w)["Garantie"] ?? "",
   );
-  // Référence normalisée (CEI) : « RENATA 321 - SR716SW - 1.55V » → SR716SW.
-  const battery = /\b(SR\s?\d{3,4}\s?[A-Z]{0,2}|CR\s?\d{4})\b/.exec(
+  // Référence normalisée (CEI) : « RENATA 321 - SR716SW - 1.55V » → SR716SW ; Lip : « 321 » seul.
+  const battery = /\b(SR\s?\d{3,4}\s?[A-Z]{0,2}|CR\s?\d{4})\b|^(\d{3})$/.exec(
     specs(w)["Mouvement · Pile"] ?? "",
   );
   const chrono = specs(w)["Mouvement · Chronographe"] ?? "";
@@ -192,7 +197,7 @@ export function extractOwnershipFacts(w: WatchSource): OwnershipFacts {
   return {
     warrantyMonths: warranty ? Number(warranty[1] ?? warranty[2]) * 12 : null,
     madeIn: specs(w)["Pays de fabrication"]?.trim() || null,
-    battery: battery ? battery[1]!.replace(/\s+/g, "") : null,
+    battery: battery ? (battery[1] ?? battery[2]!).replace(/\s+/g, "") : null,
     endOfLifeIndicator: /\bE\.?O\.?L\.?\b|fin de vie de la pile/i.test(text),
     interchangeableStrap:
       yes(specs(w)["Easy Click"]) ||

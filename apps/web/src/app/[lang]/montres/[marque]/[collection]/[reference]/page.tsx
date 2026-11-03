@@ -1,12 +1,14 @@
+import { RETAILER_CATALOGS } from "@aiguille/db/brand-info";
 import { familyOf } from "@aiguille/db/collection-families";
 import { reviewMean } from "@aiguille/db/rating";
-import { translateWatch } from "@aiguille/db/translations";
+import { SOURCE_LANGUAGES, translateWatch } from "@aiguille/db/translations";
 import { modelVariants } from "@aiguille/db/variants";
 import { ExternalLink } from "lucide-react";
 import { Link } from "@/lib/i18n/client";
 import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { CatalogStepper } from "@/components/catalog-stepper";
 import { EuropePricesSection } from "@/components/europe-prices-section";
 import { OffersSection } from "@/components/offers-section";
 import { AddToList } from "@/components/add-to-list";
@@ -19,7 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { WatchGrid } from "@/components/watch-card";
 import { VariantsPicker } from "@/components/variants-picker";
-import { WatchImage } from "@/components/watch-image";
+import { WatchGallery } from "@/components/watch-gallery";
 import { displayName, formatDate, formatPrice, watchSummary } from "@/lib/catalog/format";
 import { buildPriceHistory, currentOffers } from "@/lib/catalog/price-history";
 import { buildEuropePrices } from "@/lib/catalog/europe-prices";
@@ -91,7 +93,12 @@ export default async function WatchPage({ params }: Props) {
   const { locale, dict, f, path } = await getDictionary();
   const t = dict.watch;
   const tag = LOCALE_TAGS[locale];
-  const translated = translateWatch(source, locale, await getWatchTranslations(source.id));
+  const translated = translateWatch(
+    source,
+    locale,
+    await getWatchTranslations(source.id),
+    SOURCE_LANGUAGES[source.brandSlug],
+  );
   const w = translated.watch;
   const fallbackNotice =
     translated.status === "native"
@@ -128,6 +135,9 @@ export default async function WatchPage({ params }: Props) {
   const storeCount = storeCounts.find((c) => c.brandSlug === w.brandSlug)?.count ?? 0;
   const europePrices = buildEuropePrices(countryPrices, rates.unitsPerEur);
   const official = dict.sections.officialSite;
+  const retailerCatalog = RETAILER_CATALOGS[w.brandSlug];
+  // Site où le prix a été relevé : celui de la marque, ou le revendeur qui tient son catalogue.
+  const seller = retailerCatalog ?? w.brandName;
   const history = buildPriceHistory(
     observations,
     w.brandName,
@@ -147,6 +157,7 @@ export default async function WatchPage({ params }: Props) {
 
   return (
     <div className="space-y-12">
+      <CatalogStepper />
       <Breadcrumbs
         crumbs={[
           { name: t.watches, path: "/montres" },
@@ -158,11 +169,9 @@ export default async function WatchPage({ params }: Props) {
 
       <div className="grid gap-8 md:grid-cols-2">
         <div className="space-y-2">
-          <WatchImage
-            src={w.imageUrls[0] ?? null}
+          <WatchGallery
+            images={w.imageUrls}
             alt={format(t.imageAlt, { name, reference: w.reference })}
-            priority
-            sizes="(min-width: 768px) 50vw, 100vw"
           />
           {w.imageUrls.length > 0 && (
             <p className="text-xs text-muted-foreground">
@@ -245,7 +254,11 @@ export default async function WatchPage({ params }: Props) {
           )}
 
           <div className="space-y-1 rounded-xl border p-4">
-            <p className="text-sm text-muted-foreground">{t.catalogPrice}</p>
+            <p className="text-sm text-muted-foreground">
+              {retailerCatalog
+                ? format(t.retailerPrice, { retailer: retailerCatalog })
+                : t.catalogPrice}
+            </p>
             <p className="text-3xl font-semibold">
               {formatPrice(w.priceCents, tag) ?? dict.common.unknown}
             </p>
@@ -257,11 +270,11 @@ export default async function WatchPage({ params }: Props) {
                 />
                 {format(t.availabilityOn, {
                   status: dict.availability[availability],
-                  brand: w.brandName,
+                  brand: seller,
                 })}
               </p>
             )}
-            {bestRetailer && (
+            {bestRetailer && !retailerCatalog && (
               <p className="text-sm">
                 {bestRetailer.priceCents < (w.priceCents ?? Infinity) ? t.bestPrice : t.alsoAt}
                 <a href="#offres" className="font-medium underline underline-offset-4">
@@ -275,7 +288,7 @@ export default async function WatchPage({ params }: Props) {
               </p>
             )}
             <p className="text-sm text-muted-foreground">
-              {format(t.observedOn, { brand: w.brandName, date: formatDate(w.lastSeenAt, tag) })}{" "}
+              {format(t.observedOn, { brand: seller, date: formatDate(w.lastSeenAt, tag) })}{" "}
               <Link href="/methodologie" className="underline underline-offset-4">
                 {t.ourMethod}
               </Link>
@@ -287,7 +300,7 @@ export default async function WatchPage({ params }: Props) {
                 rel="nofollow noopener noreferrer"
                 className={buttonVariants({ variant: "outline", size: "sm", className: "mt-3" })}
               >
-                {format(t.seeOn, { brand: w.brandName })}
+                {format(t.seeOn, { brand: seller })}
                 <ExternalLink aria-hidden />
               </a>
             )}

@@ -29,7 +29,7 @@ const fr = {
   europe: {
     metaTitle: "Prix des montres en Europe : où acheter moins cher ?",
     metaDescription:
-      "Écart de prix médian avec la France pour Tissot, Hamilton et Longines dans 14 pays européens, à partir des prix officiels convertis en euros.",
+      "Écarts de prix médians avec la France dans les pays européens couverts, calculés à partir des prix officiels convertis en euros.",
     breadcrumb: "Prix en Europe",
     title: "Prix des montres en Europe",
     intro:
@@ -80,7 +80,7 @@ const en: Messages = {
   europe: {
     metaTitle: "Watch prices in Europe: where to buy for less?",
     metaDescription:
-      "Median price differences with France for Tissot, Hamilton and Longines in 14 European countries, using official list prices converted to euros.",
+      "Median price differences with France across the European countries covered, based on official list prices converted to euros.",
     breadcrumb: "Prices in Europe",
     title: "Watch prices in Europe",
     intro:
@@ -129,7 +129,7 @@ const de: Messages = {
   europe: {
     metaTitle: "Uhrenpreise in Europa: wo günstiger kaufen?",
     metaDescription:
-      "Mediane Preisabweichung zu Frankreich für Tissot, Hamilton und Longines in 14 europäischen Ländern, anhand offizieller Listenpreise in Euro.",
+      "Mediane Preisabweichungen zu Frankreich in den erfassten europäischen Ländern, anhand offizieller Listenpreise in Euro.",
     breadcrumb: "Preise in Europa",
     title: "Uhrenpreise in Europa",
     intro:
@@ -179,7 +179,7 @@ const it: Messages = {
   europe: {
     metaTitle: "Prezzi degli orologi in Europa: dove risparmiare?",
     metaDescription:
-      "Differenza mediana di prezzo rispetto alla Francia per Tissot, Hamilton e Longines in 14 paesi europei, dai prezzi ufficiali convertiti in euro.",
+      "Differenze mediane di prezzo rispetto alla Francia nei paesi europei coperti, dai prezzi ufficiali convertiti in euro.",
     breadcrumb: "Prezzi in Europa",
     title: "Prezzi degli orologi in Europa",
     intro:
@@ -229,7 +229,7 @@ const es: Messages = {
   europe: {
     metaTitle: "Precios de relojes en Europa: ¿dónde ahorrar?",
     metaDescription:
-      "Diferencia mediana de precio con Francia para Tissot, Hamilton y Longines en 14 países europeos, según los precios oficiales convertidos a euros.",
+      "Diferencias medianas de precio con Francia en los países europeos cubiertos, según los precios oficiales convertidos a euros.",
     breadcrumb: "Precios en Europa",
     title: "Precios de relojes en Europa",
     intro:

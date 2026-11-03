@@ -3,6 +3,176 @@
 Format : date, décision, raison. Les plus récentes en haut. Une décision ne se remet en cause que
 par une nouvelle entrée qui la remplace explicitement.
 
+## 2026-11-01 – TAG Heuer intégrée via Lepage, même exception que Tudor
+
+Les fiches de tagheuer.com répondent 403 à notre User-Agent, malgré un robots.txt et des sitemaps
+ouverts. Rien n'est contourné. Le propriétaire a étendu à TAG Heuer l'exception accordée à Tudor :
+catalogue limité aux fiches neuves de Lepage, faits uniquement, prix affiché « relevé chez Lepage »,
+pas de marquage « plus produite ». Le code est commun aux deux marques (`lepageCatalog`). La page
+de garantie n'a pas pu être lue : garantie et entretien restent « non communiqués », rien n'est
+repris de mémoire. Fiches en français, sans déclinaisons : rien de vérifié dans les références.
+
+## 2026-11-01 – Grand Seiko intégrée, marque distincte de Seiko
+
+Grand Seiko a son propre site et son propre catalogue : c'est une marque à part (`grand-seiko`),
+collectée sur grand-seiko.com avec la même plateforme que Seiko. robots.txt ne restreint rien. Les
+conditions interdisent la reproduction et « toute autre utilisation secondaire » du contenu sans
+autorisation, sans viser les robots : même clause que Seiko, déjà collecté à la demande du
+propriétaire. Aucune autorisation n'est présumée ; seuls des faits sont gardés. En cas de demande
+de retrait, la source est désactivée et ses données et visuels supprimés.
+
+Spring Drive n'entre dans aucun type de mouvement commun : classé « autre », avec son nom affiché
+sur la fiche. Pas de déclinaisons : rien de vérifié dans les références. Les conseils d'entretien
+restent généraux et le fabricant des calibres non renseigné, faute de page lue qui l'établisse.
+
+## 2026-11-01 – Galerie de photos et zoom sur la fiche
+
+La fiche présente toutes les photos publiées pour une montre : glissement, flèches, miniatures, puis
+plein écran avec zoom. Chaque source relève désormais toute sa galerie, en excluant les montres
+voisines affichées sur la même page. Seiko ne publie qu'une photo dans le HTML de ses fiches.
+
+Les photos restent des liens directs vers les sites sources, avec `images.unoptimized`. Pour ne pas
+charger des originaux jusqu'à 2,5 Mo, `sizedImage` demande la largeur utile aux sites qui savent
+redimensionner (Omega, Longines, Tissot, formats Lepage) : cartes en 480 px, fiche en 1 024 px,
+miniatures en 200 px. Seul le zoom charge l'original.
+
+## 2026-11-01 – Omega intégrée en direct : exception du propriétaire à la règle sur les CGU
+
+robots.txt autorise les fiches et le site répond à notre User-Agent. Mais l'article 4.2 des
+conditions d'utilisation exclut de la licence « l'exploration de données, [les] robots ou autre
+méthode similaire d'extraction ou de collecte de données » et interdit d'incorporer les
+informations du site dans une autre base de données sans accord écrit d'Omega. Cette collecte va
+donc contre une interdiction écrite, plus nette que chez Oris (écartée), Venezianico ou Lip. Une
+voie moins risquée via Lepage a été proposée : le propriétaire, informé de la clause et du risque,
+a choisi de faire exception et d'intégrer Omega en direct. Aucune autorisation d'Omega n'existe.
+
+Mesures : User-Agent identifiable, sans masquage ; 8 s entre deux pages ; faits uniquement, sans
+texte descriptif de la marque. Si Omega bloque notre robot, on s'arrête sans contourner. En cas de
+demande de retrait, la source est désactivée et ses données et visuels supprimés.
+
+Les fiches sont lues depuis les pages catalogue du menu, faute de sitemap de produits. La FAQ et la
+page d'entretien donnent la garantie (5 ans), la révision (5 à 8 ans), le test d'étanchéité annuel
+et la garantie de service (24 mois). La page des tarifs n'affiche aucun montant à la lecture :
+aucun prix de révision n'est repris.
+
+## 2026-11-01 – Atelier AV : rendu à la demande et caches bornés
+
+Les deux modèles AV restent dans l’atelier autonome. Chaque montre est construite au premier
+choix et réutilisée ensuite ; seules deux montres et trois ambiances peuvent être conservées.
+Ce compromis borne les ressources tout en évitant les reconstructions et recompilations répétées.
+Les ressources sont libérées à la sortie de la page et les environnements recalculés après une
+restauration du contexte graphique. Les pièces fixes sont regroupées par matière, les ombres
+réutilisées tant que la géométrie ne change pas. Le rendu reste à la demande ; canevas limité
+à 1,5 million de pixels avec ratio maximal de 1,75. Aucun chargement du moteur dans le catalogue.
+Ces choix ne constituent ni une acceptation esthétique ni une décision de publication.
+
+## 2026-11-01 – Tudor intégrée via Lepage, exception à la règle du catalogue officiel
+
+tudorwatch.com répond 403 à notre User-Agent identifiable, sitemap compris. Rien n'est contourné.
+Le propriétaire a choisi Lepage, détaillant agréé déjà collecté, comme source de Tudor : c'est une
+exception à la règle « un revendeur ne crée jamais de montre » (voir sources.md), limitée à cette
+marque. Les conditions de Lepage interdisent la reproduction de ses textes sans autorisation et
+réservent le site à l'usage privé ; le propriétaire en a été informé et assume ce risque, aussi
+pour les prix Lepage déjà collectés. Aucune autorisation n'est présumée.
+
+Conséquences : seules des fiches neuves à référence moderne (`M79230B-0008`) entrent au catalogue,
+limité à ce que propose Lepage. Seuls des faits sont gardés, aucun texte descriptif ni la garantie
+du magasin. Le prix s'affiche « relevé chez Lepage », jamais comme prix officiel, et le lien vers
+un site de marque est masqué. Une fiche retirée ne marque pas la montre « plus produite »
+(`partialCatalog`) : Lepage ne prouve pas la fin de production. Garantie relevée à la main sur la
+page publique de Tudor. Fiches en français seulement.
+
+## 2026-10-31 – Lip intégrée, collecte activée par le propriétaire malgré ses mentions légales
+
+robots.txt autorise les fiches, mais les mentions légales de lip.fr interdisent sans autorisation
+expresse la représentation du site ou de ses éléments à d'autres fins que l'usage personnel,
+protègent ses bases de données et soumettent les liens vers le site à une autorisation écrite
+préalable. C'est une restriction du même ordre que celle qui a fait écarter Oris. Le propriétaire
+en a été informé et a choisi d'activer la collecte en assumant le risque, comme pour Venezianico.
+Aucune autorisation de Lip n'a été demandée ni n'est présumée. En cas de demande de retrait, la
+source est désactivée et ses données et visuels supprimés.
+
+Fiches relevées en français, versions anglaise et italienne pour les traductions : aucune n'est un
+marché national, donc pas de relevé de prix par pays. Garantie de 2 ans limitée aux achats sur
+lip.fr : affichée comme exclusion. La FAQ (révision tous les 3 à 5 ans) et la page des mouvements
+(au moins tous les 10 ans) divergent : les deux sont citées. Pas de déclinaisons proposées : les
+références n'encodent pas le modèle et le site n'a pas de sélecteur explicite.
+
+## 2026-10-31 – Une page en échec ne prouve pas un retrait
+
+Les montres et offres dont la page a échoué pendant une collecte ne sont plus marquées « plus
+produites » ni retirées. Une exécution pouvait dépasser le seuil de 80 % et, avec un blocage
+partiel, déclarer à tort des montres encore vendues (19 sur Venezianico). Les autres montres non
+revues restent traitées comme avant.
+
+## 2026-10-31 – Une entrée « Marques » dans l'en-tête, marques épinglées par compte
+
+Les noms de marques quittent la barre : au-delà de quelques marques, elle devenait illisible. Une
+entrée « Marques » ouvre un panneau avec recherche (sans accents, Entrée ouvre le premier résultat),
+marques épinglées puis liste alphabétique. La page `/marques` donne l'annuaire complet, découpé par
+lettre à partir de 13 marques.
+
+Un compte épingle une marque avec l'étoile (panneau, page Marques, page de la marque) : table
+`brand_favorites`, supprimée avec le compte, visible par lui seul, indiquée dans la politique de
+confidentialité. Les 3 premières s'affichent en lien direct dans la barre, toutes dans le panneau.
+Elles sont lues côté navigateur, comme la session : les pages restent statiques.
+
+Le pied de page relie `/marques` et les 12 marques les mieux couvertes : le panneau n'est pas dans
+le HTML serveur, et chaque marque doit rester atteignable par un lien pour les moteurs.
+`/marques` devra entrer au sitemap à l'ouverture publique (sitemap vide tant que le site est privé).
+
+## 2026-10-31 – Feuilletage de la liste filtrée depuis une fiche
+
+Depuis une fiche ouverte à partir du catalogue, Précédent, Suivant et les flèches du clavier
+parcourent la liste filtrée, page de résultats après page de résultats. La liste est gardée par
+onglet (`sessionStorage`), jamais dans l'URL de la fiche : pages statiques, canoniques et cache
+inchangés, et aucun doublon pour les moteurs. Les pages suivantes viennent de
+`/api/catalogue/parcours`, avec le même filtre que la page (`browseFilter`). Sans parcours (fiche
+ouverte directement), rien ne s'affiche.
+
+## 2026-10-31 – Venezianico intégrée, collecte activée par le propriétaire
+
+Marque demandée par le propriétaire, qui a ensuite décidé d'activer la collecte après avoir pris
+connaissance des deux points ci-dessous. Elle remplace la mise en attente envisagée le même jour.
+
+- **Accès** : la boutique (Shopify) a d'abord répondu 429 `local_rate_limited` à notre robot
+  identifié sur les pages produits et `/products.json`, après quelques requêtes et encore après
+  25 minutes d'arrêt, puis l'accès est revenu. Rythme fixé à 20 s entre deux fiches
+  (`minDelaySecs`). Pas de contournement (User-Agent de navigateur, relais) : en cas de nouveau
+  blocage, le disjoncteur arrête la collecte (docs/sources.md).
+- **Conditions** : la section 2 interdit de reproduire, copier ou exploiter toute partie du service
+  sans autorisation écrite. Formule type Shopify, moins explicite que les CGU d'Oris. **Aucune
+  demande n'a été envoyée à la marque et aucune autorisation n'est revendiquée** ; risque accepté
+  par le propriétaire, retrait immédiat sur demande de la marque.
+
+Choix de conception : fiches en anglais (ni français ni allemand publiés ;
+`it.venezianico.com` redirige selon le pays), donc `SOURCE_LANGUAGES` et avertissement sur les
+fiches françaises ; déclinaisons par préfixe de référence **et** nom publié, le préfixe seul
+couvrant des lignes distinctes (Ceramica, Madreperla) ; prix TTC UE (conditions, section 11),
+écartés si la page n'est pas en euros.
+
+## 2026-10-31 – Site privé sur demande
+
+Pour les essais du propriétaire, `test/test` est accepté dans le serveur de développement local
+(`NODE_ENV=development`, hors Vercel). Le minimum de 16 caractères reste requis ailleurs.
+Une configuration invalide affiche désormais une explication distincte des identifiants incorrects.
+
+Précision du propriétaire : l'administration n'a aucun lien ni bouton d'entrée sur le site.
+Son adresse est définie uniquement dans `ADMIN_ACCESS_PATH`, sans chemin par défaut.
+L'entrée `/administration` mentionnée dans l'implémentation initiale est remplacée : elle renvoie
+désormais 404 sans révéler l'adresse configurée. Identifiant et mot de passe restent requis.
+
+À la demande du propriétaire, l'intégralité du catalogue et des pages de contenu devient privée.
+Cette décision remplace l'ouverture publique et l'objectif SEO précédents : sitemap vide,
+exploration interdite et indexation désactivée, y compris en production.
+Les comptes Google/GitHub sont conservés, mais sans autorisation implicite, même s'ils existaient
+déjà. Une demande décrit les motivations, la provenance et les marques souhaitées.
+Le propriétaire accepte ou refuse dans `/administration`, avec identifiant et mot de passe définis
+dans les variables privées. Aucun compte administrateur par défaut ni envoi d'e-mail ajouté.
+La décision est consultable sur `/demande-acces` ; elle reste modifiable par l'administrateur.
+Les exceptions nécessaires à la connexion, la confidentialité et l'effacement du compte restent
+accessibles. Configuration et limites : [acces-prive.md](acces-prive.md).
+
 ## 2026-10-25 – Citizen et Seiko intégrées, Oris écartée
 
 Le propriétaire retient Citizen et Seiko et demande de retirer Oris du site. Ce choix remplace
@@ -400,6 +570,41 @@ et le chargement des pages extrêmement lents. Les builds de vérification reste
 | CI               | GitHub Actions : qualité, build, migrations + seed + scraper sur Postgres de service | Bloque les PR cassées avant Vercel.                                                                                         |
 | Indexation       | Seul `VERCEL_ENV=production` est indexable                                           | Éviter que les previews soient indexées (contenu dupliqué).                                                                 |
 | Langue           | Français partout (UI, docs, commits) ; identifiants de code en anglais               | Public francophone ; conventions de code universelles.                                                                      |
+
+## Atelier AV autonome (31 octobre 2026)
+
+À la demande du propriétaire, création d’un atelier de montres originales distinct du catalogue :
+`apps/atelier`, TypeScript, Three.js et Vite, service Docker optionnel sur le port local 4173.
+Deux directions retenues : 02 Obsidienne (métal noir) puis 01 Éclipse (cuir noir), aiguilles
+or champagne et initiales AV ; la forme coussin est écartée. Les concepts approuvés sont conservés
+dans le dossier `references` de l’atelier.
+
+Le code et les styles de l’atelier ne sont pas importés par le site Next.js. Aucun accès à la base,
+aucun lien de navigation et aucun déploiement ajouté. Le verrou npm et les contrôles restent
+communs au dépôt ; le build de l’atelier est explicite et distinct du build du site. Ce choix permet
+de travailler formes, matières et éclairage sans charger la 3D dans le catalogue.
+Première étude statique manipulable, sans animation automatique, avec rendu à la demande.
+Les dimensions et les assemblages simplifiés ne constituent pas un plan de fabrication.
+
+## Navigation entre Aiguille et AV (1er novembre 2026)
+
+Poursuite de l'étape 6 : entrée « Atelier AV » dans la navigation d'Aiguille, accompagnée d'une
+présentation séparée en pied de page ; retour visible dans l'en-tête de l'atelier. Passage par
+navigation complète, sans importer ni précharger le moteur 3D depuis le catalogue. Les deux
+thèmes et les droits d'accès restent indépendants. Le lien n'intègre pas les créations AV au
+catalogue des références commerciales suivies.
+
+En développement seulement, liens entre les ports 3000 et 4173 sur le même hôte local. En
+production, destinations HTTPS explicites (`ATELIER_URL` et `VITE_AIGUILLE_URL`), sans lien si
+la destination n'est pas configurée. L'atelier reste en français, annoncé dans les cinq langues
+du site. Ces choix préparent un parcours consultable localement ; les adresses d'hébergement,
+la protection d'accès de l'atelier et la publication restent à valider par le propriétaire.
+Le mode privé et la non-indexation du site ne sont pas modifiés.
+
+Complément du 3 novembre 2026, à la demande du propriétaire : `FEATURE_ATELIER=false`
+masque les entrées vers AV dans l'en-tête et le pied de page, y compris en développement.
+Variable absente : entrées autorisées. Ce réglage d'affichage est lu au build du site et
+ne remplace pas la protection ou l'arrêt du service autonome.
 
 ## Questions encore ouvertes
 

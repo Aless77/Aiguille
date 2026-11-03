@@ -19,12 +19,13 @@ export async function generateMetadata() {
 }
 
 export default async function SignInPage({ searchParams }: PageProps<"/[lang]/connexion">) {
-  const t = (await getDictionary()).dict.community.signIn;
+  const { dict } = await getDictionary();
+  const t = dict.community.signIn;
   return (
     <div className="mx-auto max-w-sm space-y-6 py-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-semibold tracking-tight">{t.title}</h1>
-        <p className="text-muted-foreground">{t.intro}</p>
+        <p className="text-muted-foreground">{dict.access.intro}</p>
       </div>
       <Suspense>
         <SignInOptions searchParams={searchParams} />

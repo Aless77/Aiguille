@@ -6,7 +6,7 @@ export const siteConfig = {
   name: "Aiguille",
   shortDescription: "Le comparateur de montres guidé par les données",
   description:
-    "Historique des prix, disponibilité et caractéristiques des montres Tissot, Hamilton, Longines, Seiko et Citizen. Gratuit, indépendant et sans publicité.",
+    "Historique des prix, disponibilité et caractéristiques des montres du catalogue. Gratuit, indépendant et sans publicité.",
   locale: "fr_FR",
   language: "fr",
   repository: "https://github.com/Aless77/Aiguille",
@@ -29,11 +29,12 @@ export function getSiteUrl(env: Env = process.env): string {
 }
 
 /**
- * Seule la production est indexable : les previews Vercel et le local ne doivent jamais
- * apparaître dans les moteurs (contenu dupliqué).
+ * Site privé sur décision du propriétaire (31 octobre 2026) : aucune indexation,
+ * même en production. Signature conservée pour les consommateurs existants.
  */
 export function isIndexable(env: Env = process.env): boolean {
-  return env.VERCEL_ENV === "production";
+  void env;
+  return false;
 }
 
 /** Construit une URL absolue à partir d'un chemin (« /montres/tissot »). */

@@ -257,6 +257,28 @@ export const users = pgTable("users", {
 
 export type User = typeof users.$inferSelect;
 
+/** L'authentification seule ne donne aucun accès au site : validation manuelle obligatoire. */
+export const accessRequests = pgTable("access_requests", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  motivation: text("motivation").notNull(),
+  origin: text("origin").notNull(),
+  interestedBrands: text("interested_brands").notNull(),
+  status: text("status", { enum: ["pending", "approved", "rejected"] })
+    .notNull()
+    .default("pending"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+});
+
+/** Compteurs partagés entre les instances pour limiter les tentatives administrateur. */
+export const adminLoginAttempts = pgTable("admin_login_attempts", {
+  key: text("key").primaryKey(),
+  attempts: integer("attempts").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+});
+
 /** Session ouverte (cookie). Supprimée à la déconnexion ou à expiration. */
 export const sessions = pgTable(
   "sessions",
@@ -489,6 +511,24 @@ export const wishlists = pgTable(
 );
 
 export type Wishlist = typeof wishlists.$inferSelect;
+
+/** Marques épinglées par un compte : accès direct dans l'en-tête. Supprimées avec le compte. */
+export const brandFavorites = pgTable(
+  "brand_favorites",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    brandId: integer("brand_id")
+      .notNull()
+      .references(() => brands.id, { onDelete: "cascade" }),
+    addedAt: timestamp("added_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.brandId] }),
+    index("brand_favorites_brand_idx").on(t.brandId),
+  ],
+);
 
 export const wishlistItems = pgTable(
   "wishlist_items",

@@ -77,8 +77,12 @@ jobs:
         working-directory: apps/web
       - name: Démarrer le site
         run: |
-          # Secret éphémère : Better Auth l'exige avec le serveur de production.
+          # Identifiants éphémères partagés avec Playwright, jamais utilisés en production.
           export BETTER_AUTH_SECRET="$(node -p 'require("node:crypto").randomBytes(32).toString("hex")')"
+          export ADMIN_USERNAME="$(node -p 'require("node:crypto").randomBytes(12).toString("hex")')"
+          export ADMIN_PASSWORD="$(node -p 'require("node:crypto").randomBytes(32).toString("hex")')"
+          export ADMIN_ACCESS_PATH="/gestion-$(node -p 'require("node:crypto").randomBytes(16).toString("hex")')"
+          node -e 'for (const key of ["BETTER_AUTH_SECRET", "ADMIN_USERNAME", "ADMIN_PASSWORD", "ADMIN_ACCESS_PATH"]) require("node:fs").appendFileSync(process.env.GITHUB_ENV, `${key}=${process.env[key]}\n`)'
           npm run start -w @aiguille/web &
           for i in $(seq 1 30); do curl -sf -o /dev/null http://localhost:3000/robots.txt && exit 0; sleep 2; done
           echo "::error::Le site ne répond pas" && exit 1

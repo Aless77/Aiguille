@@ -1,4 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
+import { createAdminToken } from "./src/lib/auth/admin-token";
+
+const baseURL = process.env.BASE_URL ?? "http://localhost:3000";
+const adminToken = createAdminToken();
 
 /**
  * Tests de bout en bout : parcours principaux et exigences SEO de docs/seo/checklist.md.
@@ -14,7 +18,25 @@ export default defineConfig({
   workers: process.env.CI ? 2 : 4,
   reporter: process.env.CI ? [["github"], ["list"]] : "list",
   use: {
-    baseURL: process.env.BASE_URL ?? "http://localhost:3000",
+    baseURL,
+    // Authentification réelle, sans désactiver le contrôle d'accès pour les tests du catalogue.
+    storageState: {
+      cookies: adminToken
+        ? [
+            {
+              name: "aiguille-admin",
+              value: adminToken,
+              domain: new URL(baseURL).hostname,
+              path: "/",
+              httpOnly: true,
+              secure: false,
+              sameSite: "Strict",
+              expires: -1,
+            },
+          ]
+        : [],
+      origins: [],
+    },
     locale: "fr-FR",
     trace: "retain-on-failure",
   },

@@ -5,9 +5,10 @@ import { createContext, useContext } from "react";
 /** Interrupteurs d'affichage (lib/features.ts) lus par les composants navigateur. */
 export interface ClientFeatures {
   score: boolean;
+  accounts: boolean;
 }
 
-const Context = createContext<ClientFeatures>({ score: false });
+const Context = createContext<ClientFeatures>({ score: false, accounts: false });
 
 export function FeaturesProvider({
   children,

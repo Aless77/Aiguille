@@ -2,7 +2,7 @@ import { getDb, refreshScores, reviews, watches } from "@aiguille/db";
 import { and, count, eq, gt, ne } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 
-import { getAuth } from "@/lib/auth/server";
+import { approvedSession } from "@/lib/auth/access";
 import { features } from "@/lib/features";
 import { DAILY_REVIEW_LIMIT, type OwnReview, reviewInput } from "@/lib/reviews/input";
 import { verifyTurnstile } from "@/lib/reviews/turnstile";
@@ -15,7 +15,7 @@ import { verifyTurnstile } from "@/lib/reviews/turnstile";
 const error = (status: number, message: string) => Response.json({ error: message }, { status });
 
 async function currentUserId(request: Request): Promise<string | null> {
-  const session = await getAuth().api.getSession({ headers: request.headers });
+  const session = await approvedSession(request.headers);
   return session?.user.id ?? null;
 }
 

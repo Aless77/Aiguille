@@ -104,8 +104,8 @@ test.describe("fichiers pour les moteurs", () => {
     expect(body).toMatch(/Disallow: \/\s*$/m);
   });
 
-  test("le sitemap liste des fiches montres", async ({ request }) => {
+  test("le sitemap privé ne divulgue aucune URL", async ({ request }) => {
     const body = await (await request.get("/sitemap.xml")).text();
-    expect(body).toMatch(/<loc>[^<]+\/montres\/[^/<]+\/[^/<]+\/[^/<]+<\/loc>/);
+    expect(body).not.toContain("<loc>");
   });
 });

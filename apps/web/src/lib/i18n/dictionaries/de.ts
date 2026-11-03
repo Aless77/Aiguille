@@ -1,3 +1,5 @@
+import { atelier } from "../messages/atelier";
+import { access } from "../messages/access";
 import { community } from "../messages/community";
 import { pages } from "../messages/pages";
 import { sections } from "../messages/sections";
@@ -5,10 +7,13 @@ import { catalog } from "../messages/catalog";
 import { type PartialDictionary } from "../dictionary";
 
 export const de: PartialDictionary = {
+  access: access.de,
+  atelier: atelier.de,
   common: { unknown: "Nicht angegeben", newTab: "(neuer Tab)", close: "Schließen" },
   nav: {
     label: "Hauptnavigation",
     allWatches: "Alle Uhren",
+    brands: "Marken",
     newArrivals: "Neuheiten",
     community: "Community",
     stores: "Geschäfte",
@@ -22,7 +27,7 @@ export const de: PartialDictionary = {
     independent:
       "{site} ist kostenlos, unabhängig und werbefrei: keine Verbindung zu Marken oder Händlern.",
     sources:
-      "Preise und technische Daten werden automatisch von den offiziellen Websites der Marken erfasst. Fotos: © die jeweiligen Marken, von ihren Websites angezeigt.",
+      "Preise und technische Daten werden automatisch von den offiziellen Websites der Marken und bei ihren Händlern erfasst. Fotos: © die jeweiligen Marken, von ihren Websites angezeigt.",
   },
   language: { label: "Sprache" },
   fallback: {
@@ -43,6 +48,7 @@ export const de: PartialDictionary = {
     discontinued: "Nicht mehr hergestellt",
     photo: "Foto: © {brand}",
     catalogPrice: "Offizieller Listenpreis",
+    retailerPrice: "Bei {retailer} erfasster Preis",
     availabilityOn: "{status} auf der Website von {brand}",
     bestPrice: "Bester gefundener Preis: ",
     alsoAt: "Auch bei ",
@@ -177,6 +183,28 @@ export const de: PartialDictionary = {
     signOut: "Abmelden",
     myLists: "Meine Wunschlisten",
     myAccount: "Mein Konto ({name})",
+    gallery: {
+      label: "Fotos der Uhr",
+      position: "Foto {index} von {total}",
+      open: "Foto vergrößern",
+      close: "Schließen",
+      previous: "Vorheriges Foto",
+      next: "Nächstes Foto",
+      zoomIn: "Vergrößern",
+      zoomOut: "Verkleinern",
+    },
+    brands: {
+      search: "Marke suchen",
+      mine: "Meine Marken",
+      all: "Alle Marken",
+      empty: "Keine Marke für „{query}“.",
+      seeAll: "Alle {count} Marken ansehen",
+      pin: "{brand} zu meinen Marken hinzufügen",
+      unpin: "{brand} aus meinen Marken entfernen",
+      pinShort: "Zu meinen Marken",
+      pinned: "In meinen Marken",
+      signInToPin: "Melden Sie sich an, um Ihre Marken anzuheften",
+    },
     close: "Schließen",
     country: {
       label: "Land",

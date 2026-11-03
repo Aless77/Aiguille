@@ -1,3 +1,5 @@
+import { atelier } from "../messages/atelier";
+import { access } from "../messages/access";
 import { community } from "../messages/community";
 import { pages } from "../messages/pages";
 import { sections } from "../messages/sections";
@@ -6,6 +8,8 @@ import { type Dictionary } from "./fr";
 
 /** Anglais : langue de repli, donc complet (TypeScript refuse une clé manquante). */
 export const en: Dictionary = {
+  access: access.en,
+  atelier: atelier.en,
   common: {
     unknown: "Not disclosed",
     newTab: "(new tab)",
@@ -14,6 +18,7 @@ export const en: Dictionary = {
   nav: {
     label: "Main navigation",
     allWatches: "All watches",
+    brands: "Brands",
     newArrivals: "New arrivals",
     community: "Community",
     stores: "Stores",
@@ -27,7 +32,7 @@ export const en: Dictionary = {
     independent:
       "{site} is free, independent and ad-free: no affiliation with brands or retailers.",
     sources:
-      "Prices and specifications collected automatically from the brands' official websites. Photos: © the respective brands, displayed from their websites.",
+      "Prices and specifications collected automatically from the brands' official websites and their retailers. Photos: © the respective brands, displayed from their websites.",
   },
   language: {
     label: "Language",
@@ -50,6 +55,7 @@ export const en: Dictionary = {
     discontinued: "Discontinued",
     photo: "Photo: © {brand}",
     catalogPrice: "Official list price",
+    retailerPrice: "Price recorded at {retailer}",
     availabilityOn: "{status} on the {brand} website",
     bestPrice: "Best price found: ",
     alsoAt: "Also at ",
@@ -184,6 +190,28 @@ export const en: Dictionary = {
     signOut: "Sign out",
     myLists: "My wish lists",
     myAccount: "My account ({name})",
+    gallery: {
+      label: "Watch photos",
+      position: "Photo {index} of {total}",
+      open: "Enlarge the photo",
+      close: "Close",
+      previous: "Previous photo",
+      next: "Next photo",
+      zoomIn: "Zoom in",
+      zoomOut: "Zoom out",
+    },
+    brands: {
+      search: "Search for a brand",
+      mine: "My brands",
+      all: "All brands",
+      empty: "No brand matches “{query}”.",
+      seeAll: "See all {count} brands",
+      pin: "Add {brand} to my brands",
+      unpin: "Remove {brand} from my brands",
+      pinShort: "Add to my brands",
+      pinned: "In my brands",
+      signInToPin: "Sign in to pin your brands",
+    },
     close: "Close",
     country: {
       label: "Country",
