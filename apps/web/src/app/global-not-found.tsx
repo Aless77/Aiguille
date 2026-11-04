@@ -21,11 +21,11 @@ export default function GlobalNotFound() {
         <main className="mx-auto w-full max-w-6xl space-y-4 px-4 py-24 text-center">
           <h1 className="text-3xl font-semibold tracking-tight">Page introuvable</h1>
           <p className="text-muted-foreground">
-            Cette montre ou cette page n&apos;existe pas, ou plus à cette adresse.
+            Cette page n&apos;existe pas, ou plus à cette adresse.
           </p>
           {/* Lien simple : pas de routeur client hors de la mise en page du site. */}
-          <a href="/montres" className="underline underline-offset-4">
-            Voir toutes les montres
+          <a href="/" className="underline underline-offset-4">
+            Retour à l&apos;accueil
           </a>
         </main>
       </body>

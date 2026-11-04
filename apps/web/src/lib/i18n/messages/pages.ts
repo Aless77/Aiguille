@@ -2,8 +2,8 @@
 const fr = {
   notFound: {
     title: "Page introuvable",
-    description: "Cette montre ou cette page n'existe pas, ou plus à cette adresse.",
-    browse: "Voir toutes les montres",
+    description: "Cette page n'existe pas, ou plus à cette adresse.",
+    browse: "Retour à l'accueil",
   },
   about: {
     metaTitle: "À propos : un comparateur de montres indépendant",
@@ -54,8 +54,8 @@ type Messages = typeof fr;
 const en: Messages = {
   notFound: {
     title: "Page not found",
-    description: "This watch or page does not exist, or is no longer at this address.",
-    browse: "Browse all watches",
+    description: "This page does not exist, or is no longer at this address.",
+    browse: "Back to home",
   },
   about: {
     metaTitle: "About: an independent watch comparison site",
@@ -102,9 +102,8 @@ const en: Messages = {
 const de: Messages = {
   notFound: {
     title: "Seite nicht gefunden",
-    description:
-      "Diese Uhr oder Seite existiert nicht oder ist nicht mehr unter dieser Adresse verfügbar.",
-    browse: "Alle Uhren ansehen",
+    description: "Diese Seite existiert nicht oder ist nicht mehr unter dieser Adresse verfügbar.",
+    browse: "Zur Startseite",
   },
   about: {
     metaTitle: "Über uns: unabhängiger Uhrenvergleich",
@@ -152,9 +151,8 @@ const de: Messages = {
 const it: Messages = {
   notFound: {
     title: "Pagina non trovata",
-    description:
-      "Questo orologio o questa pagina non esiste, o non è più disponibile a questo indirizzo.",
-    browse: "Vedi tutti gli orologi",
+    description: "Questa pagina non esiste o non è più disponibile a questo indirizzo.",
+    browse: "Torna alla home",
   },
   about: {
     metaTitle: "Chi siamo: confronto indipendente di orologi",
@@ -202,8 +200,8 @@ const it: Messages = {
 const es: Messages = {
   notFound: {
     title: "Página no encontrada",
-    description: "Este reloj o esta página no existe, o ya no está disponible en esta dirección.",
-    browse: "Ver todos los relojes",
+    description: "Esta página no existe o ya no está disponible en esta dirección.",
+    browse: "Volver al inicio",
   },
   about: {
     metaTitle: "Acerca de: comparador de relojes independiente",

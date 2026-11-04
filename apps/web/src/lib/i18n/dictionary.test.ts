@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { LOCALES } from "./config";
-import { format, resolveDictionary, translateLabel } from "./dictionary";
+import { format, publicDictionary, resolveDictionary, translateLabel } from "./dictionary";
 import { en } from "./dictionaries/en";
 
 describe("dictionnaires", () => {
@@ -61,5 +61,30 @@ describe("dictionnaires", () => {
         expect(variables(messages[key]!), `${locale}: ${key}`).toEqual(expected);
       }
     }
+  });
+});
+
+describe("publicDictionary", () => {
+  it("ne contient rien qui décrive le catalogue, dans aucune langue", () => {
+    for (const locale of LOCALES) {
+      const { dict } = resolveDictionary(locale);
+      const sent = JSON.stringify(publicDictionary(dict));
+      for (const leak of [
+        dict.nav.allWatches,
+        dict.nav.stores,
+        dict.nav.community,
+        dict.client.myLists,
+      ]) {
+        expect(sent, locale).not.toContain(leak);
+      }
+      expect(Object.keys(publicDictionary(dict))).toEqual(["client", "community"]);
+    }
+  });
+
+  it("garde les textes de connexion et du compte", () => {
+    const { dict } = resolveDictionary("fr");
+    const open = publicDictionary(dict);
+    expect(open.client.signIn).toBe(dict.client.signIn);
+    expect(open.community.account).toEqual(dict.community.account);
   });
 });

@@ -1,5 +1,6 @@
 import { getBrands } from "@/lib/catalog/queries";
 import { AtelierLink } from "@/components/atelier-link";
+import { MemberOnly } from "@/components/member-only";
 import { getAtelierUrl } from "@/lib/atelier";
 import { features } from "@/lib/features";
 import { Link } from "@/lib/i18n/client";
@@ -11,67 +12,86 @@ import { siteConfig } from "@/lib/site";
 const FOOTER_BRANDS = 12;
 
 export async function SiteFooter() {
-  const [brands, { dict }] = await Promise.all([getBrands(), getDictionary()]);
-  const t = dict.footer;
+  const { dict } = await getDictionary();
   return (
     <footer className="mt-16 border-t">
       <div className="mx-auto w-full max-w-6xl space-y-4 px-4 py-8 text-sm text-muted-foreground">
-        <AtelierLink
-          enabled={features.atelier()}
-          href={getAtelierUrl()}
-          className="group mb-6 flex items-center gap-5 rounded-lg border p-5 transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-4"
+        {/* Sans accès approuvé : seulement la confidentialité, rien qui décrive le catalogue. */}
+        <MemberOnly
+          otherwise={
+            <Link href="/confidentialite" className="hover:text-foreground">
+              {dict.footer.privacy}
+            </Link>
+          }
         >
-          <span aria-hidden className="font-serif text-3xl tracking-tighter text-foreground">
-            AV
-          </span>
-          <span className="flex-1 space-y-1">
-            <span className="block font-medium text-foreground">{dict.atelier.title}</span>
-            <span className="block">{dict.atelier.description}</span>
-            <span className="block text-xs">{dict.atelier.language}</span>
-          </span>
-          <span aria-hidden className="text-xl text-foreground">
-            ↗
-          </span>
-        </AtelierLink>
-        <nav aria-label={t.label} className="flex flex-wrap gap-4">
-          <Link href="/montres" className="hover:text-foreground">
-            {dict.nav.allWatches}
-          </Link>
-          <Link href="/nouveautes" className="hover:text-foreground">
-            {dict.nav.newArrivals}
-          </Link>
-          <Link href="/boutiques" className="hover:text-foreground">
-            {dict.nav.stores}
-          </Link>
-          <Link href="/prix-en-europe" className="hover:text-foreground">
-            {t.europePrices}
-          </Link>
-          <Link href="/methodologie" className="hover:text-foreground">
-            {t.methodology}
-          </Link>
-          <Link href="/confidentialite" className="hover:text-foreground">
-            {t.privacy}
-          </Link>
-          <Link href="/a-propos" className="hover:text-foreground">
-            {t.about}
-          </Link>
-        </nav>
-        <nav aria-label={dict.nav.brands} className="flex flex-wrap gap-x-4 gap-y-1">
-          <Link href="/marques" className="font-medium hover:text-foreground">
-            {dict.nav.brands}
-          </Link>
-          {brands
-            .filter((b) => b.watchCount > 0)
-            .slice(0, FOOTER_BRANDS)
-            .map((b) => (
-              <Link key={b.slug} href={`/montres/${b.slug}`} className="hover:text-foreground">
-                {b.name}
-              </Link>
-            ))}
-        </nav>
-        <p>{format(t.independent, { site: siteConfig.name })}</p>
-        <p>{t.sources}</p>
+          <FooterContent />
+        </MemberOnly>
       </div>
     </footer>
+  );
+}
+
+/** Rubriques, marques, atelier et présentation du site : pour les visiteurs qui ont accès. */
+async function FooterContent() {
+  const [brands, { dict }] = await Promise.all([getBrands(), getDictionary()]);
+  const t = dict.footer;
+  return (
+    <>
+      <AtelierLink
+        enabled={features.atelier()}
+        href={getAtelierUrl()}
+        className="group mb-6 flex items-center gap-5 rounded-lg border p-5 transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-4"
+      >
+        <span aria-hidden className="font-serif text-3xl tracking-tighter text-foreground">
+          AV
+        </span>
+        <span className="flex-1 space-y-1">
+          <span className="block font-medium text-foreground">{dict.atelier.title}</span>
+          <span className="block">{dict.atelier.description}</span>
+          <span className="block text-xs">{dict.atelier.language}</span>
+        </span>
+        <span aria-hidden className="text-xl text-foreground">
+          ↗
+        </span>
+      </AtelierLink>
+      <nav aria-label={t.label} className="flex flex-wrap gap-4">
+        <Link href="/montres" className="hover:text-foreground">
+          {dict.nav.allWatches}
+        </Link>
+        <Link href="/nouveautes" className="hover:text-foreground">
+          {dict.nav.newArrivals}
+        </Link>
+        <Link href="/boutiques" className="hover:text-foreground">
+          {dict.nav.stores}
+        </Link>
+        <Link href="/prix-en-europe" className="hover:text-foreground">
+          {t.europePrices}
+        </Link>
+        <Link href="/methodologie" className="hover:text-foreground">
+          {t.methodology}
+        </Link>
+        <Link href="/confidentialite" className="hover:text-foreground">
+          {t.privacy}
+        </Link>
+        <Link href="/a-propos" className="hover:text-foreground">
+          {t.about}
+        </Link>
+      </nav>
+      <nav aria-label={dict.nav.brands} className="flex flex-wrap gap-x-4 gap-y-1">
+        <Link href="/marques" className="font-medium hover:text-foreground">
+          {dict.nav.brands}
+        </Link>
+        {brands
+          .filter((b) => b.watchCount > 0)
+          .slice(0, FOOTER_BRANDS)
+          .map((b) => (
+            <Link key={b.slug} href={`/montres/${b.slug}`} className="hover:text-foreground">
+              {b.name}
+            </Link>
+          ))}
+      </nav>
+      <p>{format(t.independent, { site: siteConfig.name })}</p>
+      <p>{t.sources}</p>
+    </>
   );
 }
