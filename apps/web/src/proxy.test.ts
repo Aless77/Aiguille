@@ -50,7 +50,25 @@ describe("accès au site privé", () => {
     ]) {
       expect((await visit(path)).status).toBe(200);
     }
+    // Les ressources techniques et les API machine ne déclenchent aucune lecture de session.
+    approvedSession.mockClear();
+    for (const path of ["/api/auth/get-session", "/api/revalidate", "/robots.txt"])
+      await visit(path);
     expect(approvedSession).not.toHaveBeenCalled();
+  });
+  it("ne marque l'accès au catalogue que pour un visiteur approuvé, jamais sur demande", async () => {
+    const marker = "x-middleware-request-x-aiguille-catalog-access";
+    expect((await visit("/connexion")).headers.get(marker)).toBeNull();
+    const forged = await proxy(
+      new NextRequest("http://localhost:3000/connexion", {
+        headers: { "x-aiguille-catalog-access": "1" },
+      }),
+    );
+    expect(forged.headers.get(marker)).toBeNull();
+    approvedSession.mockResolvedValueOnce({ user: { id: "membre" } });
+    expect((await visit("/confidentialite")).headers.get(marker)).toBe("1");
+    validAdminToken.mockReturnValue(true);
+    expect((await visit("/montres")).headers.get(marker)).toBe("1");
   });
   it("masque l'ancienne adresse et ne propose aucune redirection vers l'adresse privée", async () => {
     for (const path of ["/administration", "/fr/administration", "/en/administration"]) {

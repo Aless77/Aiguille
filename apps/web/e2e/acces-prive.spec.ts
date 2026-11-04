@@ -20,6 +20,16 @@ test("un visiteur ne peut accéder ni au catalogue ni aux données", async ({
   await expect(
     page.getByRole("link", { name: "Se connecter pour demander un accès" }),
   ).toBeVisible();
+  // Rien du catalogue sans accès : ni navigation ni rubriques, même dans le code de la page.
+  await expect(page.getByRole("navigation", { name: "Navigation principale" })).toHaveCount(0);
+  for (const path of ["/demande-acces", "/connexion", "/confidentialite", "/compte"]) {
+    await page.goto(path);
+    const html = await page.content();
+    for (const leak of ["Toutes les montres", "Nouveautés", "Boutiques", "/montres/", "Longines"]) {
+      expect(html, `${path} : ${leak}`).not.toContain(leak);
+    }
+  }
+  await page.goto("/demande-acces");
   expect((await request.get("/api/avis?montre=1")).status()).toBe(403);
   expect((await request.get("/api/listes")).status()).toBe(403);
   const response = await request.get("/listes/inconnue", { maxRedirects: 0 });

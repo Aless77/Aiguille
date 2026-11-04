@@ -5,6 +5,7 @@ import { localizePath, splitLocale } from "@/lib/i18n/config";
 import { approvedSession } from "@/lib/auth/access";
 import { ADMIN_COOKIE, validAdminToken } from "@/lib/auth/admin-token";
 import { ADMIN_ENTRY_HEADER, getAdminAccessPath } from "@/lib/auth/admin-path";
+import { CATALOG_ACCESS_HEADER, OPEN_PAGES } from "@/lib/auth/catalog-access";
 
 /**
  * Routage des langues (lib/i18n/config.ts). Toutes les pages vivent sous app/[lang] :
@@ -27,6 +28,7 @@ async function routeRequest(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   // Ne jamais faire confiance à un marqueur envoyé par le navigateur.
   requestHeaders.delete(ADMIN_ENTRY_HEADER);
+  requestHeaders.delete(CATALOG_ACCESS_HEADER);
   const adminPath = getAdminAccessPath();
   const unprefixedPath =
     first === DEFAULT_LOCALE ? pathname.slice(DEFAULT_LOCALE.length + 1) : path;
@@ -42,7 +44,7 @@ async function routeRequest(request: NextRequest) {
     url.pathname = `/${locale}/administration`;
     return NextResponse.rewrite(url, { request: { headers: requestHeaders } });
   }
-  const publicPage = ["/connexion", "/demande-acces", "/confidentialite", "/compte"].includes(path);
+  const publicPage = OPEN_PAGES.includes(path);
   const publicResource = [
     "/robots.txt",
     "/sitemap.xml",
@@ -52,9 +54,14 @@ async function routeRequest(request: NextRequest) {
   ].includes(pathname);
   const authApi = pathname.startsWith("/api/auth/");
   const machineApi = pathname === "/api/revalidate";
-  if (!publicPage && !publicResource && !authApi && !machineApi && first !== DEFAULT_LOCALE) {
-    const admin = validAdminToken(request.cookies.get(ADMIN_COOKIE)?.value);
-    if (!admin && !(await approvedSession(request.headers))) {
+  if (!publicResource && !authApi && !machineApi && first !== DEFAULT_LOCALE) {
+    const allowed =
+      validAdminToken(request.cookies.get(ADMIN_COOKIE)?.value) ||
+      (await approvedSession(request.headers)) !== null;
+    // Pages ouvertes : servies à tous, mais sans rien du catalogue (en-tête, pied de page)
+    // tant que le marqueur d'accès n'est pas posé.
+    if (allowed) requestHeaders.set(CATALOG_ACCESS_HEADER, "1");
+    else if (!publicPage) {
       if (pathname.startsWith("/api/"))
         return NextResponse.json(
           { error: "Accès réservé aux comptes approuvés." },

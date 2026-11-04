@@ -5,6 +5,7 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { CountryPrompt } from "@/components/country-field";
+import { MemberOnly } from "@/components/member-only";
 import { BrandFavoritesProvider } from "@/lib/catalog/brand-favorites-client";
 import { features } from "@/lib/features";
 import { JsonLd, organizationJsonLd, websiteJsonLd } from "@/lib/seo/json-ld";
@@ -20,7 +21,7 @@ import {
 } from "@/lib/i18n/config";
 import { LocaleProvider } from "@/lib/i18n/client";
 import { FeaturesProvider } from "@/lib/features-client";
-import { format } from "@/lib/i18n/dictionary";
+import { format, publicDictionary } from "@/lib/i18n/dictionary";
 import { getDictionary } from "@/lib/i18n/server";
 import { notFound } from "next/navigation";
 
@@ -95,14 +96,20 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
             flash blanc). Script inline bloquant en tête de <body>, volontairement hors de
             next/script (exécuté trop tard) et de <head> (recréé côté client par React 19). */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-        <LocaleProvider locale={lang} dict={dict}>
+        {/* Pages ouvertes : textes de connexion et de compte seulement ; le groupe (catalogue)
+            et la navigation des membres fournissent le dictionnaire complet. */}
+        <LocaleProvider locale={lang} dict={publicDictionary(dict)}>
           <FeaturesProvider score={features.score()} accounts={features.accounts()}>
             <BrandFavoritesProvider enabled={features.accounts()}>
               <NuqsAdapter>
                 <SiteHeader />
                 <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</div>
                 <SiteFooter />
-                {features.accounts() && <CountryPrompt />}
+                {features.accounts() && (
+                  <MemberOnly>
+                    <CountryPrompt />
+                  </MemberOnly>
+                )}
                 <FallbackNotice
                   messages={
                     missing.length
@@ -114,7 +121,10 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
             </BrandFavoritesProvider>
           </FeaturesProvider>
         </LocaleProvider>
-        <JsonLd data={[websiteJsonLd(), organizationJsonLd()]} />
+        {/* Description du site : réservée aux visiteurs qui ont accès au catalogue. */}
+        <MemberOnly>
+          <JsonLd data={[websiteJsonLd(), organizationJsonLd()]} />
+        </MemberOnly>
       </body>
     </html>
   );

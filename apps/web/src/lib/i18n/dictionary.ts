@@ -58,3 +58,20 @@ export function format(text: string, vars: Record<string, string | number> = {})
 export function translateLabel(table: Record<string, string>, french: string): string {
   return table[french] ?? french;
 }
+
+/**
+ * Textes envoyés au navigateur sur les pages ouvertes sans accès (connexion, demande d'accès,
+ * compte, confidentialité) : seulement ceux de leurs composants interactifs (connexion, compte,
+ * thème). Le reste du dictionnaire décrit le catalogue et ne doit pas figurer dans ces pages.
+ * Les pages du catalogue et la navigation des membres reçoivent le dictionnaire complet.
+ */
+export function publicDictionary(dict: Dictionary): Dictionary {
+  const { signIn, signOut, myAccount, close, country } = dict.client;
+  const { signIn: signInTexts, account, misc } = dict.community;
+  const open = {
+    client: { signIn, signOut, myAccount, close, country },
+    community: { signIn: signInTexts, account, misc },
+  };
+  // Forme partielle assumée : seuls les composants des pages ouvertes la lisent.
+  return open as unknown as Dictionary;
+}
