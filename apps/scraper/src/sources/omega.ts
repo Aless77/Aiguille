@@ -209,12 +209,13 @@ export const omega: OfficialAdapter = {
   parse: parseOmega,
   translate: translateOmega,
   minDelaySecs: DELAY_SECS,
+  // Prix publiés vérifiés le 4 novembre 2026. nl-nl n'affiche aucun prix (offre sans montant) :
+  // les Pays-Bas ne sont pas relevés.
   locales: {
     FR: "fr-fr",
     DE: "de-de",
     IT: "it-it",
     ES: "es-es",
-    NL: "nl-nl",
     AT: "de-at",
     GB: "en-gb",
   },
